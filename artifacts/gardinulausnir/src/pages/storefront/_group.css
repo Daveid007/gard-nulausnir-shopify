@@ -1,0 +1,70 @@
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap");
+
+/* Sólmyrkvun's Nordic technical-architecture theme. */
+:root {
+  --background: 210 43% 98%;
+  --foreground: 210 29% 11%;
+  --border: 215 19% 25%;
+  --card: 0 0% 100%;
+  --card-foreground: 210 29% 11%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 210 29% 11%;
+  --primary: 207 51% 76%;
+  --primary-foreground: 210 29% 11%;
+  --secondary: 210 43% 98%;
+  --secondary-foreground: 210 29% 11%;
+  --muted: 207 25% 91%;
+  --muted-foreground: 215 16% 35%;
+  --accent: 207 51% 76%;
+  --accent-foreground: 210 29% 11%;
+  --destructive: 0 70% 45%;
+  --destructive-foreground: 42 25% 95%;
+  --input: 215 19% 25%;
+  --ring: 207 51% 76%;
+  --app-font-sans: "Outfit", sans-serif;
+  --app-font-serif: "Playfair Display", serif;
+  --font-sans: var(--app-font-sans);
+  --font-serif: var(--app-font-serif);
+  --font-mono: Menlo, monospace;
+  --radius: 0rem;
+}
+
+.dark {
+  --background: 210 29% 11%;
+  --foreground: 210 43% 98%;
+  --border: 207 25% 70%;
+  --card: 215 19% 18%;
+  --card-foreground: 210 43% 98%;
+  --primary: 207 51% 76%;
+  --primary-foreground: 210 29% 11%;
+  --secondary: 215 19% 25%;
+  --secondary-foreground: 210 43% 98%;
+  --muted: 215 19% 25%;
+  --muted-foreground: 207 25% 75%;
+}
+
+.solmyrkvun-grid {
+  font-family: var(--app-font-sans);
+  color: hsl(var(--foreground));
+  background: hsl(var(--background));
+}
+
+.solmyrkvun-grid .font-serif { font-family: var(--app-font-serif); }
+.solmyrkvun-grid input, .solmyrkvun-grid select { font: inherit; }
+
+.solmyrkvun-grid {
+  background: #f3f7f8;
+}
+
+.solmyrkvun-grid .sol-rule { border-color: rgba(36, 49, 59, .14); }
+.solmyrkvun-grid .sol-kicker { color: #4d7899; }
+.solmyrkvun-grid .sol-action {
+  background: #a2cbe7;
+  transition: background-color .22s ease, transform .22s ease;
+}
+.solmyrkvun-grid .sol-action:hover { background: #83b5d7; transform: translateY(-2px); }
+.solmyrkvun-grid .sol-product-card img { transition: transform .6s cubic-bezier(.22,.7,.2,1), opacity .35s ease; }
+.solmyrkvun-grid .sol-product-card:hover img { transform: scale(1.045); }
+@keyframes sol-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+.solmyrkvun-grid .sol-rise { animation: sol-rise .65s both cubic-bezier(.22,.7,.2,1); }
+.solmyrkvun-grid .sol-rise-2 { animation: sol-rise .65s .12s both cubic-bezier(.22,.7,.2,1); }
