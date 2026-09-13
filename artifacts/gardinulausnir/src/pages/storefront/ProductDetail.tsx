@@ -4,6 +4,8 @@ import { Link, useParams } from "wouter";
 import { products as fallbackProducts } from "./_shared/data";
 import { useStorefrontCatalog } from "./_shared/catalog";
 import { BrandLogo } from "./_shared/BrandLogo";
+import { LEGACY_CART_OPEN_EVENT, LegacyCalculator, type LegacyCalculatorKind } from "@/components/LegacyCalculator";
+import type { RollerProductIdentity } from "@/components/legacy-calculators/PriceCalculator";
 
 import {
   accessories,
@@ -37,6 +39,20 @@ export function ProductDetail() {
   const isRoller = product.category === "Rúllugardínur";
   const isHoneycomb = product.category === "Hunangskambsgardínur";
   const isCustomizer = isRoller || isHoneycomb;
+  const rollerProduct: RollerProductIdentity | undefined =
+    product.id === "square-cassette" || product.id === "arc-cassette" || product.id === "open-roll"
+      ? product.id
+      : undefined;
+  const legacyCalculator: LegacyCalculatorKind | null =
+    product.id === "honeycomb-45mm" ? "honeycomb-45"
+      : product.id === "honeycomb-25mm" ? "honeycomb-25"
+        : product.id === "day-night" ? "day-night"
+          : product.id === "top-down-bottom-up" ? "tdbu"
+            : product.id === "vertical-45mm" ? "vertical"
+              : product.id === "dual-roller" ? "dual-roller"
+                : product.id === "zebra-blind" ? "zebra"
+                  : rollerProduct ? "roller"
+                    : null;
 
   const [opacity, setOpacity] = useState<"blackout" | "light-filtering">("blackout");
 
@@ -103,20 +119,27 @@ export function ProductDetail() {
       <header className="flex h-[74px] items-center justify-between border-b border-[#d8e1e5] px-5 md:px-10">
         <BrandLogo className="h-9 w-[182px] sm:h-10 sm:w-[202px]" />
         <nav className="hidden gap-8 text-[10px] uppercase tracking-[.18em] md:flex"><a href="#vörulýsing">{product.category}</a><a href="#upplýsingar">Leiðbeiningar</a><a href="#ráðgjöf">Ráðgjöf</a></nav>
-        <button onClick={() => setCartOpen(true)} className="flex items-center gap-2 text-[10px] uppercase tracking-[.18em]"><ShoppingBag size={16} /> Karfa <span className="grid h-5 w-5 place-items-center rounded-full bg-[#24313b] text-[9px] text-[#f7f9fa]">{cart}</span></button>
+        <button
+          aria-label={legacyCalculator ? "Opna reiknivélarkörfu" : "Opna körfu"}
+          onClick={() => legacyCalculator ? window.dispatchEvent(new Event(LEGACY_CART_OPEN_EVENT)) : setCartOpen(true)}
+          className="flex items-center gap-2 text-[10px] uppercase tracking-[.18em]"
+        >
+          <ShoppingBag size={16} /> Karfa {!legacyCalculator && <span className="grid h-5 w-5 place-items-center rounded-full bg-[#24313b] text-[9px] text-[#f7f9fa]">{cart}</span>}
+        </button>
       </header>
 
       <main id="top">
-        <div className="mx-auto max-w-[1510px] px-5 pt-5 md:px-10 md:pt-8">
+        <div className="mx-auto flex max-w-[1510px] items-center justify-between gap-4 px-5 pt-5 md:px-10 md:pt-8">
           <Link href="/collection" className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[.18em] text-[#667984]"><ArrowLeft size={14} /> Allar gardínur</Link>
+          {legacyCalculator && <a href="#legacy-calculator" className="inline-flex items-center gap-2 bg-[#a2c2e2] px-4 py-3 text-[10px] uppercase tracking-[.15em] text-[#24313b] transition hover:bg-[#89b0d5]">Opna verðreiknivél <Ruler size={14} /></a>}
         </div>
-        <section id="vörulýsing" className="mx-auto grid max-w-[1510px] gap-8 px-5 pb-16 pt-7 md:grid-cols-[minmax(0,1.12fr)_minmax(370px,.88fr)] md:gap-14 md:px-10 md:pb-28">
+        <section id="vörulýsing" className={`mx-auto grid max-w-[1510px] gap-8 px-5 pb-16 pt-7 ${legacyCalculator ? "md:grid-cols-1" : "md:grid-cols-[minmax(0,1.12fr)_minmax(370px,.88fr)]"} md:gap-14 md:px-10 md:pb-28`}>
           <div className="grid grid-cols-[.27fr_.73fr] gap-3 md:gap-5">
             <div className="flex flex-col gap-3 md:gap-5">
               <button onClick={() => setImageView("primary")} className={`relative aspect-[.72] overflow-hidden border-2 ${imageView === "primary" ? "border-[#24313b]" : "border-transparent opacity-65"}`}><img src={product.image} alt={product.title} className="h-full w-full object-cover" /></button>
               <button onClick={() => setImageView("secondary")} className={`relative aspect-[.72] overflow-hidden border-2 transition hover:opacity-100 ${imageView === "secondary" ? "border-[#24313b]" : "border-transparent opacity-65"}`}><img src={product.secondary} alt={`${product.title}, önnur sýn`} className="h-full w-full object-cover" /></button>
             </div>
-            <div className="relative min-h-[550px] overflow-hidden bg-[#c8d6dc] md:min-h-[760px]">
+             <div className={`relative overflow-hidden bg-[#c8d6dc] ${legacyCalculator ? "h-[300px] max-h-[420px] md:h-[420px] md:max-h-[420px]" : "min-h-[550px] md:min-h-[760px]"}`}>
               <img src={activeImage} alt={product.title} className="h-full w-full object-cover object-center transition-opacity duration-300" />
               
               {isCustomizer && currentFabric?.image ? (
@@ -130,7 +153,16 @@ export function ProductDetail() {
             </div>
           </div>
 
-          <div className="pt-2 md:sticky md:top-5 md:h-fit">
+          {legacyCalculator ? (
+            <div className="min-w-0">
+              <div className="mb-7">
+                <p className="mb-3 text-[10px] uppercase tracking-[.26em] text-[#6892b8]">{product.category} / THEdoûr</p>
+                <h1 className="font-serif text-[clamp(2.7rem,4.8vw,5.2rem)] leading-[.9] tracking-[-.06em]">{product.title}</h1>
+                <p className="mt-4 max-w-2xl text-sm text-[#5a6b74]">{product.subtitle}</p>
+              </div>
+              <LegacyCalculator kind={legacyCalculator} rollerProduct={rollerProduct} />
+            </div>
+          ) : <div className="pt-2 md:sticky md:top-5 md:h-fit">
             <p className="mb-4 text-[10px] uppercase tracking-[.26em] text-[#6892b8]">{product.category} / THEdoûr</p>
             <h1 className="font-serif text-[clamp(2.7rem,4.8vw,5.2rem)] leading-[.9] tracking-[-.06em]">{product.title}</h1>
             <div className="mt-7 flex items-end justify-between gap-5 border-b border-[#ccd9df] pb-5"><p className="text-sm text-[#5a6b74]">{product.subtitle}</p><p className="whitespace-nowrap font-serif text-2xl tracking-tight">{price.toLocaleString("is-IS")} kr.</p></div>
@@ -221,7 +253,7 @@ export function ProductDetail() {
             <p className="border-y border-[#ccd9df] py-4 text-center text-[10px] uppercase tracking-[.16em] text-[#5b7485]">Afhending innan 10–15 virkra daga</p>
 
             <div id="upplýsingar" className="mt-4">{["Efni & ljós", "Mæling & uppsetning", "Sendingar & skil"].map((detail) => <div key={detail} className="border-b border-[#ccd9df]"><button onClick={() => setOpenDetail(openDetail === detail ? null : detail)} className="flex w-full items-center justify-between py-5 text-left text-[10px] uppercase tracking-[.18em]">{detail}<ChevronDown size={16} className={`transition ${openDetail === detail ? "rotate-180" : ""}`} /></button>{openDetail === detail && <p className="max-w-md pb-5 text-sm leading-6 text-[#5a6b74]">{detail === "Efni & ljós" ? `${product.title} er sérsmíðað kerfi frá THEdoûr. Veldu lit og uppsetningu sem hentar birtu, næði og loftflæði rýmisins.` : detail === "Mæling & uppsetning" ? "Sláðu inn breidd og hæð hér að ofan. Allar festingar fylgja og við getum yfirfarið málin áður en sérsniðin framleiðsla hefst." : "Við sendum frá Reykjavík. Sérsniðnar vörur eru framleiddar eftir pöntun og ekki hægt að skila."}</p>}</div>)}</div>
-          </div>
+          </div>}
         </section>
 
         <section id="ráðgjöf" className="bg-[#dbe9ee] px-5 py-16 md:px-10 md:py-24">
@@ -229,7 +261,7 @@ export function ProductDetail() {
         </section>
       </main>
 
-      {isCustomizer && <div className="fixed inset-x-3 bottom-3 z-10 flex items-center gap-3 rounded-full border border-[#a2c2e2] bg-[#24313b] p-2 pl-5 text-[#f7f9fa] shadow-2xl md:hidden"><button onClick={() => setMobileSummaryOpen(!mobileSummaryOpen)} className="min-w-0 flex-1 text-left"><span className="block text-[8px] uppercase tracking-[.14em] text-[#a2c2e2]">{dimensions} · {currentFabric?.name}</span><span className="font-serif text-xl">{price.toLocaleString("is-IS")} kr.</span></button><button onClick={addToCart} className="rounded-full bg-[#a2c2e2] px-4 py-3 text-[9px] uppercase tracking-[.13em] text-[#24313b]">Bæta í körfu</button>{mobileSummaryOpen && <div className="absolute inset-x-0 bottom-[68px] rounded-2xl border border-[#a2c2e2] bg-[#24313b] p-5 text-xs shadow-2xl"><button onClick={() => setMobileSummaryOpen(false)} className="float-right text-[9px] uppercase">Loka</button><p className="mb-4 text-[9px] uppercase tracking-[.18em] text-[#a2c2e2]">Pöntunaryfirlit</p><p>{currentFabric?.name} · {opacity === "blackout" ? "Myrkvun" : "Ljósdempað"}</p><p className="mt-2">{mounts[mount]} · {mechanisms[mechanism]}</p><p className="mt-2">{sideRails ? "Með hliðarsporum" : "Án hliðarspora"} · {holders[holder]}</p></div>}</div>}
+       {isCustomizer && !legacyCalculator && <div className="fixed inset-x-3 bottom-3 z-10 flex items-center gap-3 rounded-full border border-[#a2c2e2] bg-[#24313b] p-2 pl-5 text-[#f7f9fa] shadow-2xl md:hidden"><button onClick={() => setMobileSummaryOpen(!mobileSummaryOpen)} className="min-w-0 flex-1 text-left"><span className="block text-[8px] uppercase tracking-[.14em] text-[#a2c2e2]">{dimensions} · {currentFabric?.name}</span><span className="font-serif text-xl">{price.toLocaleString("is-IS")} kr.</span></button><button onClick={addToCart} className="rounded-full bg-[#a2c2e2] px-4 py-3 text-[9px] uppercase tracking-[.13em] text-[#24313b]">Bæta í körfu</button>{mobileSummaryOpen && <div className="absolute inset-x-0 bottom-[68px] rounded-2xl border border-[#a2c2e2] bg-[#24313b] p-5 text-xs shadow-2xl"><button onClick={() => setMobileSummaryOpen(false)} className="float-right text-[9px] uppercase">Loka</button><p className="mb-4 text-[9px] uppercase tracking-[.18em] text-[#a2c2e2]">Pöntunaryfirlit</p><p>{currentFabric?.name} · {opacity === "blackout" ? "Myrkvun" : "Ljósdempað"}</p><p className="mt-2">{mounts[mount]} · {mechanisms[mechanism]}</p><p className="mt-2">{sideRails ? "Með hliðarsporum" : "Án hliðarspora"} · {holders[holder]}</p></div>}</div>}
 
       {cartOpen && <div className="fixed inset-0 z-20 bg-[#24313b]/35"><aside className="ml-auto flex h-full w-full max-w-md flex-col bg-[#f7f9fa] p-6 shadow-2xl"><div className="flex items-center justify-between border-b border-[#ccd9df] pb-5"><p className="text-[10px] uppercase tracking-[.2em]">Karfa / {cart} vörur</p><button onClick={() => setCartOpen(false)} aria-label="Loka körfu"><X size={20} /></button></div>{cart ? <><div className="flex gap-4 py-6"><img src={activeImage} alt="" className="h-28 w-20 object-cover" /><div className="flex-1"><h3 className="font-serif text-2xl">{product.title}</h3><p className="mt-2 text-xs text-[#667984]">{currentFabric?.name} · {finishes[finishIndex]?.name} prófíll · {dimensions}</p><p className="text-xs text-[#667984]">{isCustomizer ? `${mounts[mount]} · ${mechanisms[mechanism]}` : accessories[accessory].name}</p><p className="mt-4 text-sm">{price.toLocaleString("is-IS")} kr. / stk.</p></div></div><div className="mt-auto border-t border-[#ccd9df] pt-5"><div className="mb-5 flex justify-between font-serif text-2xl"><span>Samtals</span><span>{(price * cart).toLocaleString("is-IS")} kr.</span></div><button className="w-full bg-[#a2c2e2] py-4 text-[10px] uppercase tracking-[.18em]">Halda áfram í greiðslu</button></div></> : <div className="grid flex-1 place-items-center text-center"><p className="text-sm text-[#667984]">Karfan bíður eftir rétta birtunni.</p></div>}</aside></div>}
     </div>
