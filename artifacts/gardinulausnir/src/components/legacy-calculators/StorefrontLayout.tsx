@@ -143,14 +143,14 @@ export function StorefrontLayout({
         </div>
         
         <div id="upplýsingar" className="mt-4">
-          {["Efni & ljós", "Mæling & uppsetning", "Sendingar & skil"].map((detail) => (
+          {["Efni & ljós", "Mæling & uppsetning"].map((detail) => (
             <div key={detail} className="border-b border-[#ccd9df]">
               <button onClick={() => setOpenDetail(openDetail === detail ? null : detail)} className="flex w-full items-center justify-between py-5 text-left text-[10px] uppercase tracking-[.18em]">
                 {detail}<ChevronDown size={16} className={`transition ${openDetail === detail ? "rotate-180" : ""}`} />
               </button>
               {openDetail === detail && (
                 <p className="max-w-md pb-5 text-sm leading-6 text-[#5a6b74]">
-                  {detail === "Efni & ljós" ? `${product.title} er sérsmíðað kerfi frá THEdoûr. Veldu lit og uppsetningu sem hentar birtu, næði og loftflæði rýmisins.` : detail === "Mæling & uppsetning" ? "Sláðu inn breidd og hæð hér að ofan til að senda inn rétta grunnstillingu fyrir tilboðið." : "Upplýsingar um afhendingu og skilmála eru staðfestar áður en pöntun er samþykkt."}
+                  {detail === "Efni & ljós" ? `${product.title} er sérsmíðað kerfi frá THEdoûr. Veldu lit og uppsetningu sem hentar birtu, næði og loftflæði rýmisins.` : "Sláðu inn breidd og hæð hér að ofan til að senda inn rétta grunnstillingu fyrir tilboðið."}
                 </p>
               )}
             </div>
