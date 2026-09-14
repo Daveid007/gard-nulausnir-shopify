@@ -7,6 +7,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const calculatorDir = join(root, "src", "components", "legacy-calculators");
 const productDetailPath = join(root, "src", "pages", "storefront", "ProductDetail.tsx");
 const wrapperPath = join(root, "src", "components", "LegacyCalculator.tsx");
+const layoutPath = join(calculatorDir, "StorefrontLayout.tsx");
 const dualPricing = await import(pathToFileURL(join(root, "src", "lib", "dualRollerPricing.ts")).href);
 
 const source = async (name) => readFile(join(calculatorDir, `${name}.tsx`), "utf8");
@@ -38,6 +39,19 @@ assert.match(await source("Honeycomb25Calculator"), /MIN_WIDTH = 400[\s\S]*MAX_W
 assert.match(await source("VerticalCalculator"), /MAX_SQM_PER_PIECE = 14/, "vertical area cap changed");
 
 const productDetail = await readFile(productDetailPath, "utf8");
+const storefrontLayout = await readFile(layoutPath, "utf8");
+assert.match(storefrontLayout, /data-testid="product-box"/, "product box layout marker missing");
+assert.match(storefrontLayout, /data-testid="gallery"/, "gallery layout marker missing");
+assert.match(storefrontLayout, /data-testid="config-card"/, "configuration card marker missing");
+assert.match(storefrontLayout, /data-testid="live-price"/, "live price marker missing");
+assert.match(productDetail, /<ProductInfoFooter\s*\/>/, "product footer must render directly below configurator");
+const footerSource = await readFile(join(root, "src", "components", "ProductInfoFooter.tsx"), "utf8");
+assert.match(footerSource, /data-testid="footer"/, "four-column footer marker missing");
+assert.match(footerSource, /lg:grid-cols-4/, "footer must have four desktop columns");
+assert.doesNotMatch(productDetail, /related|recommend/i, "product detail must not render related products");
+const rollerUnitRawISK = 33.48 * 1.2 * 1.6 * 461;
+assert.equal(Math.ceil(rollerUnitRawISK / 100) * 100, 29700, "roller unit display must match cart rounding");
+assert.equal(Math.ceil(rollerUnitRawISK / 100) * 100 * 3, 89100, "roller quantity-3 display must round each cart unit");
 for (const id of ["honeycomb-45mm", "honeycomb-25mm", "day-night", "top-down-bottom-up", "vertical-45mm", "dual-roller", "zebra-blind", "square-cassette", "arc-cassette", "open-roll"]) {
   assert.match(productDetail, new RegExp(id), `${id} is not routed to a legacy calculator`);
 }
@@ -50,7 +64,13 @@ assert.match(rollerSource, /"open-roll": \["C5"\]/, "open roll family changed");
 assert.match(rollerSource, /"square-cassette": "C2"/, "square cassette default changed");
 assert.match(rollerSource, /"arc-cassette": "C1"/, "arc cassette default changed");
 assert.match(rollerSource, /"open-roll": "C5"/, "open roll default changed");
-assert.match(rollerSource, /cassette: `\$\{cassette\.code\}/, "roller cart payload must contain selected cassette code");
+assert.match(rollerSource, /const \[bottomRailColor, setBottomRailColor\] = useState<string>\("Hvítur"\)/, "roller bottom rail colour state missing");
+assert.match(rollerSource, /BOTTOM_RAIL_COLORS\.map/, "roller bottom rail colour selector missing");
+assert.match(rollerSource, /cassette: `\$\{cassette\.code\} — \$\{cassette\.is\}`/, "roller cart payload must preserve cassette code and description");
+assert.match(rollerSource, /rail: `\$\{bottomRail\.is\} \(\$\{bottomRail\.dims\}\) · \$\{bottomRailColor\}`/, "roller cart payload must preserve rail dimensions and colour");
+const honeycomb25Source = await source("Honeycomb25Calculator");
+assert.match(honeycomb25Source, /resolveRailColor/, "25 mm honeycomb must reset invalid finish colours");
+assert.match(honeycomb25Source, /operation === "motor" \? MOTORIZED_RAIL_COLORS : CASSETTE_RAIL_COLORS/, "25 mm honeycomb must switch finish options with operation");
 
 const wrapper = await readFile(wrapperPath, "utf8");
 assert.match(wrapper, /LEGACY_CART_OPEN_EVENT/, "shared cart-open event missing");

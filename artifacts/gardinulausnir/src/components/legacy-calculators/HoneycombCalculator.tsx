@@ -17,6 +17,8 @@ import { useCart, HOLDER_USD } from "@/lib/cart";
 import { FABRICS, type FabricInfo } from "@/lib/fabrics";
 import { CASSETTE_RAIL_COLORS, MOTORIZED_RAIL_COLORS, HONEYCOMB_BOTTOM_RAIL_COLORS, HOLDER_COLORS, resolveRailColor } from "@/assets/railImages";
 import { normalizeQuantity } from "@/lib/quantity";
+import { StorefrontLayout } from "./StorefrontLayout";
+import { MeasurementGuideTrigger } from "@/components/MeasurementGuide";
 
 // Formula: supplier_usd × 2 (freight) × 124 (rate) × 1.5 (markup) × 1.24 (VAT) = × 461
 const USD_TO_ISK_RETAIL = 461;
@@ -170,7 +172,7 @@ function fmtISK(v: number) {
   return v.toLocaleString("is-IS", { maximumFractionDigits: 0 }) + " kr";
 }
 
-export default function HoneycombCalculator() {
+export default function HoneycombCalculator({ product }: { product?: any }) {
   const [width, setWidth] = useState<number>(1200);
   const [height, setHeight] = useState<number>(1500);
   const [quantity, setQuantity] = useState<number>(1);
@@ -237,6 +239,54 @@ export default function HoneycombCalculator() {
       widthOK, heightOK, areaOK, w, h,
     };
   }, [width, height, quantity, operation, sideTrack, fabric, holder]);
+
+  const validSize = calc.widthOK && calc.heightOK && calc.areaOK;
+  const addToCart = () => addItem({
+    type: "honeycomb",
+    qty: normalizeQuantity(quantity),
+    width,
+    height,
+    fabricCode: fabric.code,
+    fabricName: `${fabric.is} (${fabric.name})`,
+    fabricType: fabric.type,
+    fabricUsdPerSqm: fabric.usdPerSqm,
+    operation,
+    sideTrack,
+    railColor,
+    bottomRail: bottomRailColor,
+    holder,
+  });
+
+  return (
+    <StorefrontLayout
+      product={product}
+      priceISK={calc.totalISK}
+      activeFabric={{ name: `${fabric.is} — ${fabric.name}`, image: fabric.image }}
+      quantity={quantity}
+      setQuantity={(next) => setQuantity(normalizeQuantity(next))}
+      canAddToCart={validSize}
+      onAddToCart={addToCart}
+      controls={
+        <div className="space-y-5 border-b border-[#ccd9df] py-6">
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <span className="text-[10px] uppercase tracking-[.18em]">Mál</span>
+            <MeasurementGuideTrigger />
+          </div>
+          <div className="grid grid-cols-2 gap-3" data-testid="dimensions">
+            <label><span className="mb-2 block text-[9px] uppercase tracking-[.14em] text-[#667984]">Breidd · cm</span><input data-testid="hc-width" aria-label="Breidd í sentímetrum" type="number" min="80" max="275" step="0.1" value={width / 10} onChange={(e) => setWidth((Number(e.target.value) || 0) * 10)} className="w-full border border-[#ccd9df] bg-transparent px-3 py-3 text-sm" /></label>
+            <label><span className="mb-2 block text-[9px] uppercase tracking-[.14em] text-[#667984]">Hæð · cm</span><input data-testid="hc-height" aria-label="Hæð í sentímetrum" type="number" min="50" max="300" step="0.1" value={height / 10} onChange={(e) => setHeight((Number(e.target.value) || 0) * 10)} className="w-full border border-[#ccd9df] bg-transparent px-3 py-3 text-sm" /></label>
+          </div>
+          {!validSize && <p className="text-xs text-red-600">Stærð er utan framleiðslumarka (80–275 × 50–300 cm, hámark 5,6 m²).</p>}
+          <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Stýring</span><div className="grid grid-cols-3 gap-2">{(["manual", "cordless", "motor"] as Operation[]).map((item) => <button type="button" key={item} onClick={() => handleOperationChange(item)} className={`border px-2 py-3 text-[10px] uppercase ${operation === item ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{item === "manual" ? "Handvirk" : item === "cordless" ? "Þráðlaus" : "Mótor"}</button>)}</div></div>
+          <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Ljós og efni</span><div className="flex flex-wrap gap-2">{(["sheer", "translucent", "blackout", "dualdeck"] as FabricType[]).map((type) => <div key={type} className="contents">{grouped[type].map((item) => <button type="button" key={item.code} onClick={() => setFabricCode(item.code)} className={`relative h-11 w-11 overflow-hidden rounded-full border ${fabricCode === item.code ? "border-[#24313b] scale-110" : "border-transparent"}`} aria-label={`Velja ${item.name}`}><img src={item.image} alt="" className="h-full w-full object-cover" />{fabricCode === item.code && <Check size={13} className="absolute inset-0 m-auto" />}</button>)}</div>)}</div></div>
+          <label className="flex items-center justify-between border border-[#ccd9df] px-3 py-3 text-[10px] uppercase"><span>Hliðarspor</span><input type="checkbox" checked={sideTrack} onChange={(e) => setSideTrack(e.target.checked)} /></label>
+          <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Litur á botnlistum</span><div className="flex flex-wrap gap-2">{HONEYCOMB_BOTTOM_RAIL_COLORS.map((item) => <button type="button" key={item.value} onClick={() => setBottomRailColor(item.value)} className={`border px-3 py-2 text-[10px] ${bottomRailColor === item.value ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{item.value}</button>)}</div></div>
+          <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Finish · litur á braut</span><div className="flex flex-wrap gap-2">{(operation === "motor" ? MOTORIZED_RAIL_COLORS : CASSETTE_RAIL_COLORS).map((item) => <button type="button" key={item.value} onClick={() => setRailColor(item.value)} className={`border px-3 py-2 text-[10px] ${railColor === item.value ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{item.value}</button>)}</div></div>
+          <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Lásahaldari</span><div className="flex flex-wrap gap-2"><button type="button" onClick={() => setHolder(null)} className={`border px-3 py-2 text-[10px] ${holder === null ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>Enginn</button>{HOLDER_COLORS.map((item) => <button type="button" key={item.value} onClick={() => setHolder(item.value)} className={`border px-3 py-2 text-[10px] ${holder === item.value ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{item.is}</button>)}</div></div>
+        </div>
+      }
+    />
+  );
 
   return (
     <section id="honeycomb-calculator" className="py-16 md:py-24 bg-white border-t border-border/30 relative">

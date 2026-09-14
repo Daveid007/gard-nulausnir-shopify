@@ -34,21 +34,8 @@ function CalculatorCartStatus() {
 
   return (
     <>
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 border-b border-[#24313b]/10 bg-[#eaf1f5] px-4 py-3 text-xs md:px-6">
-        <p className="text-[#526772]">
-          Upprunalegar verðreglur · uppsetning vistuð í staðbundinni körfu.
-        </p>
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="inline-flex shrink-0 items-center gap-2 text-[10px] uppercase tracking-[.16em] text-[#24313b]"
-        >
-          <ShoppingBag size={15} />
-          {itemCount ? `${itemCount} í körfu · ${formatIsk(totalIsk)}` : "Karfan er tóm"}
-        </button>
-      </div>
       {isOpen && (
-        <div className="fixed inset-0 z-50 bg-[#24313b]/35" role="dialog" aria-label="Staðbundin karfa">
+        <div className="fixed inset-0 z-[100] bg-[#24313b]/35" role="dialog" aria-label="Staðbundin karfa">
           <aside className="ml-auto flex h-full w-full max-w-md flex-col bg-[#f7f9fa] p-6 text-[#24313b] shadow-2xl">
             <div className="flex items-center justify-between border-b border-[#ccd9df] pb-5">
               <p className="text-[10px] uppercase tracking-[.2em]">Karfa / {itemCount} vörur</p>
@@ -98,39 +85,34 @@ function CalculatorCartStatus() {
   );
 }
 
-function CalculatorBody({ kind, rollerProduct }: { kind: LegacyCalculatorKind; rollerProduct?: RollerProductIdentity }) {
+function CalculatorBody({ kind, rollerProduct, product }: { kind: LegacyCalculatorKind; rollerProduct?: RollerProductIdentity; product: any }) {
   switch (kind) {
     case "roller":
-      return <PriceCalculator productIdentity={rollerProduct} />;
+      return <PriceCalculator productIdentity={rollerProduct} product={product} />;
     case "honeycomb-45":
-      return <HoneycombCalculator />;
+      return <HoneycombCalculator product={product} />;
     case "honeycomb-25":
-      return <Honeycomb25Calculator />;
+      return <Honeycomb25Calculator product={product} />;
     case "day-night":
-      return <DayNightCalculator />;
+      return <DayNightCalculator product={product} />;
     case "tdbu":
-      return <TDBUCalculator />;
+      return <TDBUCalculator product={product} />;
     case "vertical":
-      return <VerticalCalculator />;
+      return <VerticalCalculator product={product} />;
     case "dual-roller":
-      return <DualRollerCalculator />;
+      return <DualRollerCalculator product={product} />;
     case "zebra":
-      return <ZebraBlindCalculator />;
+      return <ZebraBlindCalculator product={product} />;
   }
 }
 
-/**
- * The calculators are the original Solmyrkvun calculators. They retain their
- * own sizing constraints, supplier pricing and cart payloads; this wrapper
- * only supplies the contexts that the original components require.
- */
-export function LegacyCalculator({ kind, rollerProduct }: { kind: LegacyCalculatorKind; rollerProduct?: RollerProductIdentity }) {
+export function LegacyCalculator({ kind, rollerProduct, product }: { kind: LegacyCalculatorKind; rollerProduct?: RollerProductIdentity; product: any }) {
   return (
     <CartProvider>
       <RailColorProvider>
-        <div id="legacy-calculator" className="overflow-hidden rounded-2xl border border-[#24313b]/10 bg-white text-[#24313b]">
+        <div id="legacy-calculator" className="text-[#24313b]">
           <CalculatorCartStatus />
-          <CalculatorBody kind={kind} rollerProduct={rollerProduct} />
+          <CalculatorBody kind={kind} rollerProduct={rollerProduct} product={product} />
         </div>
       </RailColorProvider>
     </CartProvider>
