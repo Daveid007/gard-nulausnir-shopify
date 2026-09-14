@@ -7,6 +7,7 @@ import NotFound from '@/pages/not-found';
 import Homepage from '@/pages/storefront/Homepage';
 import Collection from '@/pages/storefront/Collection';
 import ProductDetail from '@/pages/storefront/ProductDetail';
+import MeasurementPage from '@/pages/storefront/MeasurementPage';
 import {
   Route,
   Switch,
@@ -23,6 +24,7 @@ function Router() {
     <RoutedErrorBoundary>
       <Switch>
         <Route path="/" component={Homepage} />
+        <Route path="/maelingar" component={MeasurementPage} />
         <Route path="/collection" component={Collection} />
         <Route path="/products/:id" component={ProductDetail} />
         <Route component={NotFound} />

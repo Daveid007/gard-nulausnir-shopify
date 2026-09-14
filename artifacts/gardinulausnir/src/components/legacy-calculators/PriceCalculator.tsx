@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
+import { StorefrontLayout } from "./StorefrontLayout";
 import { Calculator, Info } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -16,8 +17,11 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { useCart, HOLDER_USD } from "@/lib/cart";
 import { ShoppingBag } from "lucide-react";
+import { MeasurementGuideTrigger } from "@/components/MeasurementGuide";
 import { BOTTOM_RAIL_COLORS, HOLDER_COLORS } from "@/assets/railImages";
 import { normalizeQuantity } from "@/lib/quantity";
+import { COLLECTIONS } from "@/pages/storefront/_shared/fabric-collections";
+import { swatchUrl } from "@/pages/storefront/_shared/swatches";
 import railWrapped from "@/assets/accessory-thumbs/Fabric_wrapped_1779913347334.png";
 import railSquare from "@/assets/accessory-thumbs/Square_1779913347335.png";
 import railSilent from "@/assets/accessory-thumbs/Square_1779913347335.png";
@@ -191,6 +195,11 @@ const FABRICS: Fabric[] = [
   { category: "Myrkvun / Blackout", series: "EBR12022 Blockout",    code: "EBR120220003", shade: "Taupe",      pricePerSqmUSD: 53.2 },
 ];
 
+type FabricFilter = "all" | "light-filtering" | "screen" | "blackout";
+const ROLLER_SWATCH_IMAGES = new Map(
+  COLLECTIONS.flatMap((collection) => collection.swatches.map((swatch) => [swatch.code, swatchUrl(swatch.img)] as const)),
+);
+
 const easeOut = "easeOut" as const;
 
 const fadeUp = {
@@ -203,7 +212,7 @@ function formatISK(value: number): string {
   return new Intl.NumberFormat("is-IS").format(rounded) + " kr";
 }
 
-export function PriceCalculator({ productIdentity = "square-cassette" }: { productIdentity?: RollerProductIdentity }) {
+export function PriceCalculator({ productIdentity = "square-cassette", product }: { productIdentity?: RollerProductIdentity; product?: any }) {
   const [width, setWidth] = useState<number>(1200);
   const [height, setHeight] = useState<number>(1600);
   const [operation, setOperation] = useState<Operation>("chain");
@@ -214,6 +223,7 @@ export function PriceCalculator({ productIdentity = "square-cassette" }: { produ
   const [bottomRailCode, setBottomRailCode] = useState<string>("wrapped");
   const [bottomRailColor, setBottomRailColor] = useState<string>("Hvítur");
   const [holder, setHolder] = useState<"white" | "navy" | "black" | null>(null);
+  const [fabricFilter, setFabricFilter] = useState<FabricFilter>("all");
   const { addItem } = useCart();
 
   const cassetteOptions = useMemo(
@@ -242,12 +252,18 @@ export function PriceCalculator({ productIdentity = "square-cassette" }: { produ
   const grouped = useMemo(() => {
     const map = new Map<string, Fabric[]>();
     for (const f of FABRICS) {
+      const matchesFilter =
+        fabricFilter === "all" ||
+        (fabricFilter === "light-filtering" && f.category === "Hálfgegnsætt / Translucent") ||
+        (fabricFilter === "screen" && f.category === "Screen") ||
+        (fabricFilter === "blackout" && f.category === "Myrkvun / Blackout");
+      if (!matchesFilter) continue;
       const arr = map.get(f.category) ?? [];
       arr.push(f);
       map.set(f.category, arr);
     }
     return Array.from(map.entries());
-  }, []);
+  }, [fabricFilter]);
 
   const calc = useMemo(() => {
     const w = width / 1000;
@@ -275,397 +291,189 @@ export function PriceCalculator({ productIdentity = "square-cassette" }: { produ
   const validSize = width >= 300 && width <= 3000 && height >= 300 && height <= 3500;
 
   return (
-    <section id="calculator" className="py-32 bg-secondary/40 border-y border-border/50">
-      <div className="container mx-auto px-6">
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          variants={fadeUp}
-          className="text-center max-w-3xl mx-auto mb-12"
-        >
-          <p className="text-xs uppercase tracking-[0.25em] text-primary/70 font-semibold mb-4">
-            Verðreiknivél · Price calculator
-          </p>
-          <h2 className="font-serif text-4xl md:text-6xl font-bold mb-4">Reiknaðu verðið</h2>
-          <p className="text-xl text-muted-foreground mb-3">Estimate your price</p>
-          <p className="text-foreground/75 leading-relaxed">
-            Sláðu inn stærð, veldu efni og stýringu — fáðu áætlað verð á einu augabragði. Endanlegt tilboð er staðfest með mælingu á staðnum.
-          </p>
-        </motion.div>
+    <StorefrontLayout
+      product={product}
+      priceISK={calc.totalISK}
+      activeFabric={{ name: `${fabric.series} - ${fabric.shade}`, image: ROLLER_SWATCH_IMAGES.get(fabric.code) || undefined }}
+      quantity={quantity}
+      setQuantity={(next) => setQuantity(normalizeQuantity(next))}
+      canAddToCart={validSize}
+      onAddToCart={() => {
+        addItem({
+          type: "roller",
+          qty: quantity,
+          width,
+          height,
+          cassette: `${cassette.code} — ${cassette.is}`,
+          rail: `${bottomRail.is} (${bottomRail.dims}) · ${bottomRailColor}`,
+          fabricCode: fabric.code,
+          fabricName: `${fabric.series} — ${fabric.shade}`,
+          fabricUsdPerSqm: fabric.pricePerSqmUSD,
+          operation,
+          sideTrack,
+          holder,
+        });
+      }}
+      controls={
+        <div className="space-y-6 py-6 border-b border-[#ccd9df]">
+          {/* Dimensions */}
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <span className="text-[10px] uppercase tracking-[.18em]">Mál</span>
+            <MeasurementGuideTrigger />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <label className="block">
+              <span className="mb-2 block text-[9px] uppercase tracking-[.14em] text-[#667984]">Breidd · cm</span>
+              <input aria-label="Breidd í sentímetrum" data-testid="roller-width" type="number" min="30" max="300" step="0.1" value={width / 10} onChange={(e) => setWidth((Number(e.target.value) || 0) * 10)} className="w-full border border-[#ccd9df] bg-transparent px-3 py-3 text-sm outline-none transition focus:border-[#24313b]" />
+            </label>
+            <label className="block">
+              <span className="mb-2 block text-[9px] uppercase tracking-[.14em] text-[#667984]">Hæð · cm</span>
+              <input aria-label="Hæð í sentímetrum" data-testid="roller-height" type="number" min="30" max="350" step="0.1" value={height / 10} onChange={(e) => setHeight((Number(e.target.value) || 0) * 10)} className="w-full border border-[#ccd9df] bg-transparent px-3 py-3 text-sm outline-none transition focus:border-[#24313b]" />
+            </label>
+          </div>
+          {!validSize && <p className="text-xs text-red-600 mt-2">Stærð verður að vera 30–300 cm breidd og 30–350 cm hæð.</p>}
 
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          variants={fadeUp}
-          className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8"
-        >
-          {/* INPUTS */}
-          <div className="bg-background rounded-2xl border border-border/60 p-8 space-y-7">
-            {/* Size */}
-            <div>
-              <Label className="text-sm font-semibold mb-3 block">
-                Stærð glugga <span className="text-muted-foreground font-normal">(mm)</span>
-              </Label>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="width" className="text-xs text-muted-foreground mb-1.5 block">Breidd / Width</Label>
-                  <Input
-                    id="width"
-                    type="number"
-                    min={300}
-                    max={3000}
-                    step={10}
-                    value={width}
-                    onChange={(e) => setWidth(Number(e.target.value) || 0)}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="height" className="text-xs text-muted-foreground mb-1.5 block">Hæð / Height</Label>
-                  <Input
-                    id="height"
-                    type="number"
-                    min={300}
-                    max={3500}
-                    step={10}
-                    value={height}
-                    onChange={(e) => setHeight(Number(e.target.value) || 0)}
-                  />
-                </div>
-              </div>
-              {!validSize && (
-                <p className="text-xs text-destructive mt-2">
-                  Stærð verður að vera 300–3000 mm breidd og 300–3500 mm hæð.
-                </p>
-              )}
+          {/* Operation */}
+          <div>
+            <span className="mb-3 block text-[10px] uppercase tracking-[.18em]">Stýring</span>
+            <div className="grid grid-cols-3 gap-2">
+              {([
+                { v: "chain", is: "Keðja" },
+                { v: "cordless", is: "Þráðlaus" },
+                { v: "motor", is: "Mótor" },
+              ] as const).map((o) => (
+                <button
+                  key={o.v}
+                  type="button"
+                  onClick={() => setOperation(o.v)}
+                  className={`border px-2 py-3 text-center text-[10px] uppercase tracking-[.1em] transition ${operation === o.v ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}
+                >
+                  {o.is}
+                </button>
+              ))}
             </div>
+          </div>
 
-            {/* Operation */}
-            <div>
-              <Label className="text-sm font-semibold mb-3 block">Stýring / Operation</Label>
-              <div className="grid grid-cols-3 gap-2">
-                {([
-                  { v: "chain",    is: "Keðja",     en: "Chain" },
-                  { v: "cordless", is: "Þráðlaus",  en: "Cordless" },
-                  { v: "motor",    is: "Mótor",     en: "Motorized" },
-                ] as const).map((o) => (
-                  <button
-                    key={o.v}
-                    type="button"
-                    onClick={() => setOperation(o.v)}
-                    className={`px-3 py-3 rounded-lg border-2 text-center transition-colors ${
-                      operation === o.v
-                        ? "border-primary bg-primary/5"
-                        : "border-border/60 hover:border-primary/40"
-                    }`}
-                  >
-                    <div className="font-semibold text-sm">{o.is}</div>
-                    <div className="text-xs text-muted-foreground">{o.en}</div>
+          {/* Fabric */}
+          <div>
+            <span className="mb-3 block text-[10px] uppercase tracking-[.18em]">Efni</span>
+            <div data-testid="fabric-filters" className="mb-3 flex flex-wrap gap-2" role="group" aria-label="Sía eftir ljósstýringu">
+              {([
+                ["all", "Allt"],
+                ["light-filtering", "Ljós síað"],
+                ["screen", "Skjáefni"],
+                ["blackout", "Myrkvun"],
+              ] as const).map(([value, label]) => (
+                <button type="button" key={value} onClick={() => setFabricFilter(value)} aria-pressed={fabricFilter === value} className={`border px-3 py-2 text-[10px] uppercase tracking-[.08em] ${fabricFilter === value ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{label}</button>
+              ))}
+            </div>
+            <div data-testid="fabric-swatches" className="mb-4 grid max-h-64 grid-cols-5 gap-2 overflow-y-auto pr-1 sm:grid-cols-7">
+              {grouped.flatMap(([, items]) => items).map((item) => {
+                const image = ROLLER_SWATCH_IMAGES.get(item.code);
+                return (
+                  <button type="button" key={item.code} onClick={() => setFabricCode(item.code)} aria-label={`Velja ${item.series} ${item.shade}`} aria-pressed={fabric.code === item.code} className={`group relative aspect-square overflow-hidden border bg-[#eef3f5] ${fabric.code === item.code ? "border-2 border-[#24313b]" : "border-[#ccd9df]"}`}>
+                    {image ? <img src={image} alt="" className="h-full w-full object-cover transition group-hover:scale-105" /> : <span className="grid h-full place-items-center p-1 text-center text-[8px] leading-tight text-[#43515a]">{item.shade}</span>}
+                    <span className="absolute inset-x-0 bottom-0 truncate bg-[#24313b]/75 px-1 py-1 text-[8px] text-white">{item.code}</span>
                   </button>
+                );
+              })}
+            </div>
+            <Select value={fabricCode} onValueChange={setFabricCode}>
+              <SelectTrigger className="w-full rounded-none border-[#ccd9df] h-12 text-sm focus:ring-0 focus:border-[#24313b]">
+                <SelectValue placeholder="Veldu efni" />
+              </SelectTrigger>
+              <SelectContent className="max-h-80 rounded-none border-[#ccd9df]">
+                {grouped.map(([cat, items]) => (
+                  <SelectGroup key={cat}>
+                    <SelectLabel className="text-[10px] uppercase tracking-[.1em] text-[#667984]">{cat}</SelectLabel>
+                    {items.map((f) => (
+                      <SelectItem key={f.code} value={f.code} className="text-sm">
+                        <span className="font-medium">{f.series}</span> — {f.code} {f.shade}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
                 ))}
-              </div>
-            </div>
+              </SelectContent>
+            </Select>
+          </div>
 
-            {/* Fabric */}
-            <div>
-              <Label htmlFor="fabric" className="text-sm font-semibold mb-3 block">
-                Efni / Fabric
-              </Label>
-              <Select value={fabricCode} onValueChange={setFabricCode}>
-                <SelectTrigger id="fabric" className="w-full">
-                  <SelectValue placeholder="Veldu efni" />
-                </SelectTrigger>
-                <SelectContent className="max-h-80">
-                  {grouped.map(([cat, items]) => (
-                    <SelectGroup key={cat}>
-                      <SelectLabel>{cat}</SelectLabel>
-                      {items.map((f) => (
-                        <SelectItem key={f.code} value={f.code}>
-                          <span className="font-medium">{f.series}</span>
-                          <span className="text-muted-foreground"> — {f.code} {f.shade}</span>
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-muted-foreground mt-2">
-                Valið: <span className="font-medium text-foreground">{fabric.series}</span> · {fabric.code} · {fabric.shade}
-              </p>
-            </div>
-
-            {/* Cassette & Bottom rail */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div>
-                <Label className="text-sm font-semibold mb-3 block">
-                  Kassetta / Cassette
-                </Label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {cassetteOptions.map((c) => {
-                    const selected = c.code === cassetteCode;
-                    return (
-                      <button
-                        key={c.code}
-                        type="button"
-                        onClick={() => setCassetteCode(c.code)}
-                        className={`group text-left rounded-lg border overflow-hidden transition-all ${
-                          selected
-                            ? "border-primary ring-2 ring-primary/30 bg-primary/5"
-                            : "border-border/60 hover:border-primary/50 bg-background"
-                        }`}
-                        aria-pressed={selected}
-                      >
-                        <div className="aspect-[4/3] bg-stone-50 overflow-hidden">
-                          <img
-                            src={c.image}
-                            alt={`${c.is} — ${c.en}`}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div className="p-2">
-                          <p className="text-xs font-semibold leading-tight truncate">{c.is}</p>
-                          <p className="text-[10px] text-muted-foreground leading-tight truncate">
-                            {c.en} · {c.dims}
-                          </p>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-                <p className="text-xs text-muted-foreground mt-2">
-                  Valið: <span className="font-medium text-foreground">{cassette.is}</span> · {cassette.en} · {cassette.dims}
-                </p>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <Label className="text-sm font-semibold mb-3 block">
-                    Botnstöng / Bottom rail
-                  </Label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {BOTTOM_RAILS.map((b) => {
-                      const selected = b.code === bottomRailCode;
-                      return (
-                        <button
-                          key={b.code}
-                          type="button"
-                          onClick={() => setBottomRailCode(b.code)}
-                          className={`group text-left rounded-lg border overflow-hidden transition-all ${
-                            selected
-                              ? "border-primary ring-2 ring-primary/30 bg-primary/5"
-                              : "border-border/60 hover:border-primary/50 bg-background"
-                          }`}
-                          aria-pressed={selected}
-                        >
-                          <div className="aspect-[4/3] bg-stone-50 overflow-hidden">
-                            <img
-                              src={b.image}
-                              alt={`${b.is} — ${b.en}`}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                          <div className="p-2">
-                            <p className="text-xs font-semibold leading-tight truncate">{b.is}</p>
-                            <p className="text-[10px] text-muted-foreground leading-tight truncate">
-                              {b.en} · {b.dims}
-                            </p>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Valið: <span className="font-medium text-foreground">{bottomRail.is}</span> · {bottomRail.en} · {bottomRail.dims}
-                  </p>
-                </div>
-
-                <div>
-                  <Label className="text-sm font-semibold mb-2 block">
-                    Litur á botnstöng <span className="text-muted-foreground font-normal text-xs">/ Bottom rail colour</span>
-                  </Label>
-                  <div className="grid grid-cols-5 gap-1.5">
-                    {BOTTOM_RAIL_COLORS.map((rc) => {
-                      const selected = bottomRailColor === rc.value;
-                      return (
-                        <button key={rc.value} type="button" onClick={() => setBottomRailColor(rc.value)}
-                          className={`flex flex-col items-center gap-1 p-1 rounded-lg border transition-all ${selected ? "border-primary ring-2 ring-primary/30 bg-primary/5" : "border-border/50 hover:border-primary/40 bg-background"}`}
-                          aria-pressed={selected}>
-                          <div className="w-full aspect-square rounded-md overflow-hidden">
-                            <img src={rc.image} alt={rc.value} className="w-full h-full object-cover" loading="lazy" />
-                          </div>
-                          <span className="text-[10px] font-medium text-center leading-tight">{rc.value}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Extras */}
-            <div className="space-y-4 pt-2 border-t border-border/40">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="sidetrack" className="text-sm font-semibold block">
-                    Hliðarspor / Side track
-                  </Label>
-                  <p className="text-xs text-muted-foreground">Algjör myrkvun, lokar fyrir ljósleka frá hliðum.</p>
-                </div>
-                <Switch id="sidetrack" checked={sideTrack} onCheckedChange={setSideTrack} />
-              </div>
-
-              {/* Pull holder */}
-              <div>
-                <Label className="text-sm font-semibold mb-3 block">
-                  Lásahaldari / Pull holder <span className="text-muted-foreground font-normal text-xs">(+{(HOLDER_USD * USD_TO_ISK_ACCESSORY).toLocaleString("is-IS", { maximumFractionDigits: 0 })} kr stk)</span>
-                </Label>
-                <div className="grid grid-cols-4 gap-2">
-                  <button type="button" onClick={() => setHolder(null)}
-                    className={`flex flex-col items-center gap-1.5 p-2 rounded-lg border-2 transition-colors ${holder === null ? "border-primary bg-primary/5" : "border-border/60 hover:border-primary/40"}`}
-                    aria-pressed={holder === null}>
-                    <div className="w-full aspect-square rounded-md overflow-hidden bg-secondary/40 flex items-center justify-center">
-                      <span className="text-xl text-muted-foreground font-light">–</span>
-                    </div>
-                    <span className="text-xs font-medium">Enginn</span>
-                  </button>
-                  {HOLDER_COLORS.map((hc) => {
-                    const selected = holder === hc.value;
-                    return (
-                      <button key={hc.value} type="button" onClick={() => setHolder(hc.value)}
-                        className={`flex flex-col items-center gap-1.5 p-2 rounded-lg border-2 transition-colors ${selected ? "border-primary bg-primary/5" : "border-border/60 hover:border-primary/40"}`}
-                        aria-pressed={selected}>
-                        <div className="w-full aspect-square rounded-md overflow-hidden">
-                          <img src={hc.image} alt={hc.en} className="w-full h-full object-cover" loading="lazy" />
-                        </div>
-                        <span className="text-xs font-medium">{hc.is}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex-1">
-                  <Label htmlFor="qty" className="text-sm font-semibold block">Fjöldi / Quantity</Label>
-                  <p className="text-xs text-muted-foreground">Hversu margar gardínur með þessari uppsetningu.</p>
-                </div>
-                <Input
-                  id="qty"
-                  type="number"
-                  min={1}
-                  max={99}
-                  value={quantity}
-                  onChange={(e) => setQuantity(normalizeQuantity(Number(e.target.value)))}
-                  className="w-24"
-                />
-              </div>
+          {/* Cassette */}
+          <div>
+            <span className="mb-3 block text-[10px] uppercase tracking-[.18em]">Kassetta / finish</span>
+            <div className="grid grid-cols-2 gap-2">
+              {cassetteOptions.map((c) => (
+                <button
+                  key={c.code}
+                  type="button"
+                  onClick={() => setCassetteCode(c.code)}
+                  aria-pressed={c.code === cassetteCode}
+                  aria-label={`Velja ${c.is}, ${c.dims}`}
+                  className={`border p-2 text-left transition ${c.code === cassetteCode ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}
+                >
+                  <img src={c.image} alt={c.is} className="mb-2 h-16 w-full object-contain bg-white mix-blend-multiply" />
+                  <div className="text-[10px] font-medium truncate">{c.is}</div>
+                  <div className="text-[9px] text-[#667984] truncate">{c.dims}</div>
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* OUTPUT */}
-          <div className="bg-primary text-primary-foreground rounded-2xl p-8 flex flex-col">
-            <div className="flex items-center gap-2 mb-6">
-              <Calculator className="w-5 h-5" />
-              <span className="text-xs uppercase tracking-wider opacity-80">Áætlað verð</span>
-            </div>
-
-            <div className="space-y-4 text-sm opacity-90 mb-6">
-              <div className="flex justify-between">
-                <span>Stærð</span>
-                <span className="font-medium tabular-nums">{(width/1000).toFixed(2)} × {(height/1000).toFixed(2)} m</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Flatarmál</span>
-                <span className="font-medium tabular-nums">{validSize ? `${calc.sqm.toFixed(2)} m²` : "—"}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Stýring</span>
-                <span className="font-medium">{operation === "chain" ? "Keðja" : operation === "cordless" ? "Þráðlaus" : "Mótor"}</span>
-              </div>
-              <div className="flex justify-between gap-3">
-                <span>Kassetta</span>
-                <span className="font-medium text-right">{cassette.is} <span className="opacity-70">({cassette.dims})</span></span>
-              </div>
-              <div className="flex justify-between gap-3">
-                <span>Botnstöng</span>
-                <span className="font-medium text-right">{bottomRail.is} <span className="opacity-70">({bottomRail.dims})</span></span>
-              </div>
-              <div className="flex justify-between">
-                <span>Litur á botnstöng</span>
-                <span className="font-medium">{bottomRailColor}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Hliðarspor</span>
-                <span className="font-medium">{sideTrack ? "Já" : "Nei"}</span>
-              </div>
-              {holder && (
-                <div className="flex justify-between">
-                  <span>Lásahaldari</span>
-                  <span className="font-medium">{holder === "white" ? "Hvítur" : holder === "navy" ? "Marínublár" : "Svartur"} +{(HOLDER_USD * USD_TO_ISK_ACCESSORY).toLocaleString("is-IS", { maximumFractionDigits: 0 })} kr</span>
-                </div>
-              )}
-            </div>
-
-            <div className="border-t border-primary-foreground/20 pt-6 mb-6">
-              {quantity > 1 && (
-                <div className="flex justify-between text-sm opacity-90 mb-3">
-                  <span>Per stk.</span>
-                  <span className="font-semibold tabular-nums">{validSize ? formatISK(calc.perPieceISK) : "—"}</span>
-                </div>
-              )}
-              <div className="flex justify-between items-baseline">
-                <span className="text-sm uppercase tracking-wider opacity-80">
-                  {quantity > 1 ? `Samtals (${quantity} stk)` : "Samtals"}
-                </span>
-                <span className="font-serif text-4xl font-bold tabular-nums">
-                  {validSize ? formatISK(calc.totalISK) : "—"}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-2 text-xs opacity-75 mb-6 leading-relaxed">
-              <Info className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-              <p>
-                Áætlað verð m.v. núverandi gengi og innifelur efni og stýribúnað. Uppsetning (15.000 kr) og endanlegt tilboð gefið eftir mælingu á staðnum.
-              </p>
-            </div>
-
-            <div className="mt-auto space-y-2">
-              <Button
-                type="button"
-                size="lg"
-                variant="secondary"
-                className="w-full"
-                disabled={!validSize}
-                onClick={() =>
-                  addItem({
-                    type: "roller",
-                    qty: quantity,
-                    width,
-                    height,
-                    cassette: `${cassette.code} — ${cassette.is}`,
-                    rail: `${bottomRail.is} (${bottomRail.dims}) · ${bottomRailColor}`,
-                    fabricCode: fabric.code,
-                    fabricName: `${fabric.series} · ${fabric.code} ${fabric.shade}`,
-                    fabricUsdPerSqm: fabric.pricePerSqmUSD,
-                    operation,
-                    sideTrack,
-                    holder,
-                  })
-                }
-                data-testid="add-roller-to-cart"
-              >
-                <ShoppingBag className="w-4 h-4 mr-2" />
-                Bæta í körfu <span className="ml-2 opacity-70 font-normal">| Add to cart</span>
-              </Button>
-              <Button asChild variant="ghost" className="w-full text-primary-foreground hover:bg-primary-foreground/10">
-                <a href="#contact">Eða biðja um tilboð / Or request quote</a>
-              </Button>
+          {/* Bottom rail */}
+          <div>
+            <span className="mb-3 block text-[10px] uppercase tracking-[.18em]">Botnlisti · Hulinn / Ál</span>
+            <div className="grid grid-cols-2 gap-2">
+              {BOTTOM_RAILS.map((b) => (
+                <button
+                  key={b.code}
+                  type="button"
+                  onClick={() => setBottomRailCode(b.code)}
+                  className={`border p-2 text-left transition ${b.code === bottomRailCode ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}
+                >
+                  <img src={b.image} alt={b.is} className="mb-2 h-16 w-full object-contain bg-white mix-blend-multiply" />
+                  <div className="text-[10px] font-medium truncate">{b.is}</div>
+                  <div className="text-[9px] text-[#667984] truncate">{b.dims}</div>
+                </button>
+              ))}
             </div>
           </div>
-        </motion.div>
-      </div>
-    </section>
+
+          <div>
+            <span className="mb-3 block text-[10px] uppercase tracking-[.18em]">Litur á botnlista · Hulinn / Ál</span>
+            <div className="grid grid-cols-5 gap-2">
+              {BOTTOM_RAIL_COLORS.map((color) => (
+                <button
+                  key={color.value}
+                  type="button"
+                  onClick={() => setBottomRailColor(color.value)}
+                  aria-pressed={bottomRailColor === color.value}
+                  aria-label={`Velja lit á botnlista: ${color.value}`}
+                  className={`border p-1 transition ${bottomRailColor === color.value ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}
+                >
+                  <img src={color.image} alt={color.value} className="aspect-square w-full object-cover" loading="lazy" />
+                  <span className="mt-1 block truncate text-[8px]">{color.value}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Side track */}
+          <label className="flex cursor-pointer items-center justify-between border border-[#ccd9df] px-3 py-3 text-[10px] uppercase tracking-[.1em]">
+            <span>Hliðarspor (Myrkvun)</span>
+            <input type="checkbox" checked={sideTrack} onChange={(e) => setSideTrack(e.target.checked)} className="accent-[#24313b]" />
+          </label>
+          <div>
+            <span className="mb-3 block text-[10px] uppercase tracking-[.18em]">Lásahaldari</span>
+            <div className="flex flex-wrap gap-2">
+              <button type="button" onClick={() => setHolder(null)} className={`border px-3 py-2 text-[10px] ${holder === null ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>Enginn</button>
+              {HOLDER_COLORS.map((item) => <button type="button" key={item.value} onClick={() => setHolder(item.value)} className={`border px-3 py-2 text-[10px] ${holder === item.value ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{item.is}</button>)}
+            </div>
+          </div>
+          <label className="flex items-center justify-between border border-[#ccd9df] px-3 py-3 text-[10px] uppercase tracking-[.1em]">
+            <span>Fjöldi</span>
+            <input aria-label="Fjöldi" data-testid="roller-quantity" type="number" min="1" max="99" step="1" value={quantity} onChange={(e) => setQuantity(normalizeQuantity(Number(e.target.value)))} className="w-20 border border-[#ccd9df] bg-transparent px-2 py-2 text-center" />
+          </label>
+        </div>
+      }
+    />
   );
 }
