@@ -7,6 +7,7 @@ import { BrandLogo } from "./_shared/BrandLogo";
 import { LEGACY_CART_OPEN_EVENT, LegacyCalculator, type LegacyCalculatorKind } from "@/components/LegacyCalculator";
 import { ProductInfoFooter } from "@/components/ProductInfoFooter";
 import { MeasurementGuideTrigger } from "@/components/MeasurementGuide";
+import { ResponsiveImage } from "@/components/ResponsiveImage";
 import type { RollerProductIdentity } from "@/components/legacy-calculators/PriceCalculator";
 import NotFound from "@/pages/not-found";
 
@@ -162,25 +163,31 @@ export function ProductDetail() {
           {legacyCalculator ? (
             <LegacyCalculator kind={legacyCalculator} rollerProduct={rollerProduct} product={product} />
           ) : (
-             <div data-testid="product-box" className="grid md:grid-cols-[minmax(0,1.12fr)_minmax(370px,.88fr)] gap-8 md:gap-14">
-               <div data-testid="gallery" className="grid grid-cols-[.27fr_.73fr] gap-3 md:gap-5 h-fit">
-                <div className="flex flex-col gap-3 md:gap-5">
-                  <button onClick={() => setImageView("primary")} className={`relative aspect-[.72] overflow-hidden border-2 ${imageView === "primary" ? "border-[#24313b]" : "border-transparent opacity-65"}`}><img src={product.image} alt={product.title} className="h-full w-full object-cover" /></button>
-                  <button onClick={() => setImageView("secondary")} className={`relative aspect-[.72] overflow-hidden border-2 transition hover:opacity-100 ${imageView === "secondary" ? "border-[#24313b]" : "border-transparent opacity-65"}`}><img src={product.secondary} alt={`${product.title}, önnur sýn`} className="h-full w-full object-cover" /></button>
+             <div data-testid="product-box" className="grid min-w-0 md:grid-cols-[minmax(0,1.12fr)_minmax(370px,.88fr)] gap-8 md:gap-14">
+               <div data-testid="gallery" className="grid min-w-0 grid-cols-[minmax(0,.27fr)_minmax(0,.73fr)] gap-3 md:gap-5 h-fit">
+                <div className="flex min-w-0 flex-col gap-3 md:gap-5">
+                  <button onClick={() => setImageView("primary")} className={`relative flex aspect-[4/3] max-h-[160px] items-center justify-center overflow-hidden border-2 bg-[#e8eef1] ${imageView === "primary" ? "border-[#24313b]" : "border-transparent opacity-65"}`}><ResponsiveImage src={product.image} alt={product.title} sizes="120px" className="max-h-full max-w-full object-contain p-2" /></button>
+                  <button onClick={() => setImageView("secondary")} className={`relative flex aspect-[4/3] max-h-[160px] items-center justify-center overflow-hidden border-2 bg-[#e8eef1] transition hover:opacity-100 ${imageView === "secondary" ? "border-[#24313b]" : "border-transparent opacity-65"}`}><ResponsiveImage src={product.secondary} alt={`${product.title}, önnur sýn`} sizes="120px" className="max-h-full max-w-full object-contain p-2" /></button>
                 </div>
-                 <div className="relative overflow-hidden bg-[#c8d6dc] min-h-[550px] md:min-h-[760px]">
-                  <img src={activeImage} alt={product.title} className="h-full w-full object-cover object-center transition-opacity duration-300" />
-                  
-                  {isCustomizer && currentFabric?.image ? (
-                    <div className="pointer-events-none absolute inset-0 opacity-40 mix-blend-multiply transition-opacity duration-300" style={{ backgroundImage: `url(${currentFabric.image})`, backgroundSize: '150px' }} />
-                  ) : isCustomizer && currentFabric && 'tone' in currentFabric ? (
-                    <div className="pointer-events-none absolute inset-0 mix-blend-color opacity-30 transition-colors duration-300" style={{ backgroundColor: currentFabric.tone }} />
-                  ) : null}
-
-                  <div className="absolute left-4 top-4 bg-[#f7f9fa]/90 px-3 py-2 text-[9px] uppercase tracking-[.18em]">{product.note}</div>
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#24313b]/60 to-transparent px-6 pb-6 pt-20 text-[10px] uppercase tracking-[.18em] text-[#f7f9fa]">Sérsmíðað eftir máli</div>
-                   <button type="button" data-testid="gallery-zoom" onClick={() => setZoom(true)} className="absolute right-4 top-4 grid h-10 w-10 place-items-center bg-[#f7f9fa]/90 text-[#24313b]" aria-label="Stækka mynd"><ZoomIn size={17} /></button>
-                </div>
+                  <div className="min-w-0">
+                    <div className="relative flex w-full aspect-[4/3] max-h-[500px] items-center justify-center overflow-hidden bg-[#c8d6dc] p-4">
+                      <ResponsiveImage src={activeImage} alt={product.title} sizes="(min-width: 768px) 55vw, 100vw" className="max-h-full max-w-full object-contain transition-opacity duration-300" />
+                      <div className="absolute left-4 top-4 bg-[#f7f9fa]/90 px-3 py-2 text-[9px] uppercase tracking-[.18em]">{product.note}</div>
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#24313b]/60 to-transparent px-6 pb-6 pt-20 text-[10px] uppercase tracking-[.18em] text-[#f7f9fa]">Sérsmíðað eftir máli</div>
+                      <button type="button" data-testid="gallery-zoom" onClick={() => setZoom(true)} className="absolute right-4 top-4 grid h-10 w-10 place-items-center bg-[#f7f9fa]/90 text-[#24313b]" aria-label="Stækka mynd"><ZoomIn size={17} /></button>
+                    </div>
+                    {isCustomizer && currentFabric && (
+                      <div className="mt-3 flex items-center gap-3 border border-[#ccd9df] bg-[#f7f9fa] p-3">
+                        <span className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden border border-[#ccd9df] bg-white" style={!currentFabric.image && "tone" in currentFabric && currentFabric.tone ? { backgroundColor: currentFabric.tone } : undefined}>
+                          {currentFabric.image && <ResponsiveImage src={currentFabric.image} alt="" sizes="64px" className="max-h-full max-w-full object-contain p-1" />}
+                        </span>
+                        <span>
+                          <span className="block text-[9px] uppercase tracking-[.16em] text-[#667984]">Valið efni</span>
+                          <span className="mt-1 block text-sm text-[#24313b]">{currentFabric.name}</span>
+                        </span>
+                      </div>
+                    )}
+                  </div>
               </div>
 
                <div data-testid="config-card" className="pt-2 md:sticky md:top-5 md:h-[calc(100vh-40px)] md:overflow-y-auto pr-2 custom-scrollbar pb-10">
@@ -196,10 +203,10 @@ export function ProductDetail() {
                          key={'code' in item ? item.code : item.name} 
                          onClick={() => { setFabricIndex(index); setImageView(index % 2 ? "secondary" : "primary"); }} 
                          aria-label={`Velja ${item.name}`} 
-                         className={`relative h-10 w-10 overflow-hidden rounded-full border transition ${currentFabricIndex === index ? "border-[#24313b] scale-110" : "border-transparent hover:border-[#90a5ae]"}`} 
+                           className={`relative h-10 w-10 overflow-hidden rounded-full border transition ${currentFabricIndex === index ? "border-[#24313b]" : "border-transparent hover:border-[#90a5ae]"}`}
                          style={'tone' in item && item.tone ? { backgroundColor: item.tone } : undefined}
                        >
-                         {item.image && <img src={item.image} alt="" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" />}
+                         {item.image && <ResponsiveImage src={item.image} alt="" loading="lazy" decoding="async" sizes="40px" className="absolute inset-0 h-full w-full object-contain p-0.5" />}
                          {currentFabricIndex === index && <Check size={14} className="absolute inset-0 m-auto text-[#24313b] z-10" style={item.image ? { filter: 'drop-shadow(0px 0px 2px rgba(255,255,255,0.8))' } : {}} />}
                        </button>
                      ))}
@@ -281,12 +288,12 @@ export function ProductDetail() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 sm:p-10" role="dialog" aria-modal="true" aria-label="Stækkuð mynd" onMouseDown={(event) => { if (event.target === event.currentTarget) setZoom(false); }}>
           <div className="relative max-h-full max-w-full">
             <button type="button" onClick={() => setZoom(false)} className="absolute right-2 top-2 z-10 grid h-10 w-10 place-items-center bg-[#f7f9fa] text-[#24313b]" aria-label="Loka stækkaðri mynd"><X size={18} /></button>
-            <img src={activeImage} alt={`${product.title}, stækkuð mynd`} className="max-h-[90vh] max-w-full object-contain" />
+            <ResponsiveImage src={activeImage} alt={`${product.title}, stækkuð mynd`} sizes="90vw" className="max-h-[90vh] max-w-full object-contain" />
           </div>
         </div>
       )}
 
-      {cartOpen && <div className="fixed inset-0 z-50 bg-[#24313b]/35"><aside className="ml-auto flex h-full w-full max-w-md flex-col bg-[#f7f9fa] p-6 shadow-2xl"><div className="flex items-center justify-between border-b border-[#ccd9df] pb-5"><p className="text-[10px] uppercase tracking-[.2em]">Karfa / {cart} vörur</p><button onClick={() => setCartOpen(false)} aria-label="Loka körfu"><X size={20} /></button></div>{cart ? <><div className="flex gap-4 py-6"><img src={activeImage} alt="" className="h-28 w-20 object-cover" /><div className="flex-1"><h3 className="font-serif text-2xl">{product.title}</h3><p className="mt-2 text-xs text-[#667984]">{currentFabric?.name} · {dimensions}</p><p className="mt-4 text-sm">{product.price} / stk.</p></div></div><div className="mt-auto border-t border-[#ccd9df] pt-5"><div className="mb-5 flex justify-between font-serif text-2xl"><span>Samtals</span><span>{(price * cart).toLocaleString("is-IS")} kr.</span></div><button className="w-full bg-[#a2c2e2] py-4 text-[10px] uppercase tracking-[.18em]">Halda áfram í greiðslu</button></div></> : <div className="grid flex-1 place-items-center text-center"><p className="text-sm text-[#667984]">Karfan bíður eftir rétta birtunni.</p></div>}</aside></div>}
+      {cartOpen && <div className="fixed inset-0 z-50 bg-[#24313b]/35"><aside className="ml-auto flex h-full w-full max-w-md flex-col bg-[#f7f9fa] p-6 shadow-2xl"><div className="flex items-center justify-between border-b border-[#ccd9df] pb-5"><p className="text-[10px] uppercase tracking-[.2em]">Karfa / {cart} vörur</p><button onClick={() => setCartOpen(false)} aria-label="Loka körfu"><X size={20} /></button></div>{cart ? <><div className="flex gap-4 py-6"><ResponsiveImage src={activeImage} alt="" sizes="80px" className="h-28 w-20 object-contain bg-[#e8eef1] p-1" /><div className="flex-1"><h3 className="font-serif text-2xl">{product.title}</h3><p className="mt-2 text-xs text-[#667984]">{currentFabric?.name} · {dimensions}</p><p className="mt-4 text-sm">{product.price} / stk.</p></div></div><div className="mt-auto border-t border-[#ccd9df] pt-5"><div className="mb-5 flex justify-between font-serif text-2xl"><span>Samtals</span><span>{(price * cart).toLocaleString("is-IS")} kr.</span></div><button className="w-full bg-[#a2c2e2] py-4 text-[10px] uppercase tracking-[.18em]">Halda áfram í greiðslu</button></div></> : <div className="grid flex-1 place-items-center text-center"><p className="text-sm text-[#667984]">Karfan bíður eftir rétta birtunni.</p></div>}</aside></div>}
     </div>
   );
 }

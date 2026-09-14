@@ -1,6 +1,7 @@
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { ChevronDown, Minus, Plus, ShoppingBag, ZoomIn, X } from "lucide-react";
 import { normalizeQuantity } from "@/lib/quantity";
+import { ResponsiveImage } from "@/components/ResponsiveImage";
 
 export function StorefrontLayout({
   product,
@@ -49,47 +50,75 @@ export function StorefrontLayout({
     : Math.ceil(priceISK / 100) * 100;
 
   return (
-    <div data-testid="product-box" className="grid gap-8 md:grid-cols-[minmax(0,1.12fr)_minmax(370px,.88fr)] md:gap-14">
+    <div data-testid="product-box" className="grid min-w-0 gap-8 md:grid-cols-[minmax(0,1.12fr)_minmax(370px,.88fr)] md:gap-14">
       {/* LEFT COLUMN */}
-      <div data-testid="gallery" className="grid grid-cols-[.27fr_.73fr] gap-3 md:gap-5">
-        <div className="flex flex-col gap-3 md:gap-5">
-          <button type="button" onClick={() => setImageView("primary")} className={`relative aspect-[.72] overflow-hidden border-2 ${imageView === "primary" ? "border-[#24313b]" : "border-transparent opacity-65"}`} aria-label="Skoða aðalmynd">
-            <img src={product.image} alt={product.title} className="h-full w-full object-cover" />
+      <div data-testid="gallery" className="grid min-w-0 grid-cols-[minmax(0,.27fr)_minmax(0,.73fr)] gap-3 md:gap-5">
+        <div className="flex min-w-0 flex-col gap-3 md:gap-5">
+          <button type="button" onClick={() => setImageView("primary")} className={`relative flex aspect-[4/3] max-h-[160px] items-center justify-center overflow-hidden border-2 bg-[#e8eef1] ${imageView === "primary" ? "border-[#24313b]" : "border-transparent opacity-65"}`} aria-label="Skoða aðalmynd">
+            <ResponsiveImage src={product.image} alt={product.title} sizes="120px" className="max-h-full max-w-full object-contain p-2" />
           </button>
-          <button type="button" onClick={() => setImageView("secondary")} className={`relative aspect-[.72] overflow-hidden border-2 transition hover:opacity-100 ${imageView === "secondary" ? "border-[#24313b]" : "border-transparent opacity-65"}`} aria-label="Skoða aðra mynd">
-            <img src={product.secondary} alt={`${product.title}, önnur sýn`} className="h-full w-full object-cover" />
+          <button type="button" onClick={() => setImageView("secondary")} className={`relative flex aspect-[4/3] max-h-[160px] items-center justify-center overflow-hidden border-2 bg-[#e8eef1] transition hover:opacity-100 ${imageView === "secondary" ? "border-[#24313b]" : "border-transparent opacity-65"}`} aria-label="Skoða aðra mynd">
+            <ResponsiveImage src={product.secondary} alt={`${product.title}, önnur sýn`} sizes="120px" className="max-h-full max-w-full object-contain p-2" />
           </button>
           {activeFabric.image && (
-            <button type="button" data-testid="swatch-zoom" onClick={() => setZoom({ src: activeFabric.image!, alt: `${activeFabric.name}, nærmynd` })} className="relative aspect-square overflow-hidden border-2 border-transparent opacity-80 hover:opacity-100 transition group bg-white" aria-label={`Stækka sýnishorn ${activeFabric.name}`}>
-              <img src={activeFabric.image} alt="Nærmynd" className="h-full w-full object-cover" />
+            <button type="button" data-testid="swatch-zoom" onClick={() => setZoom({ src: activeFabric.image!, alt: `${activeFabric.name}, nærmynd` })} className="relative flex aspect-square items-center justify-center overflow-hidden border-2 border-transparent bg-white opacity-80 transition hover:opacity-100 group" aria-label={`Stækka sýnishorn ${activeFabric.name}`}>
+              <ResponsiveImage src={activeFabric.image} alt="Nærmynd" sizes="120px" className="max-h-full max-w-full object-contain p-1" />
+              <div className="absolute inset-0 bg-black/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition" aria-hidden="true">
+                <ZoomIn className="text-white" />
+              </div>
+            </button>
+          )}
+          {activeFabric.pattern && (
+            <button type="button" onClick={() => setZoom({ src: activeFabric.pattern!, alt: `${activeFabric.name}, seinna lag` })} className="relative flex aspect-square items-center justify-center overflow-hidden border-2 border-transparent bg-white opacity-80 transition hover:opacity-100 group" aria-label={`Stækka seinna lag ${activeFabric.name}`}>
+              <ResponsiveImage src={activeFabric.pattern} alt="Seinna lag" sizes="120px" className="max-h-full max-w-full object-contain p-1" />
               <div className="absolute inset-0 bg-black/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition" aria-hidden="true">
                 <ZoomIn className="text-white" />
               </div>
             </button>
           )}
         </div>
-        <div className="relative overflow-hidden bg-[#c8d6dc] min-h-[550px] md:min-h-[760px]">
-          <img src={activeImage} alt={product.title} className="h-full w-full object-cover object-center transition-opacity duration-300" />
-          
-          {activeFabric.pattern ? (
-            <div className="pointer-events-none absolute inset-0 opacity-40 mix-blend-multiply transition-opacity duration-300" style={{ backgroundImage: `url(${activeFabric.pattern})`, backgroundSize: '150px' }} />
-          ) : activeFabric.image ? (
-            <div className="pointer-events-none absolute inset-0 opacity-40 mix-blend-multiply transition-opacity duration-300" style={{ backgroundImage: `url(${activeFabric.image})`, backgroundSize: '150px' }} />
-          ) : activeFabric.tone ? (
-            <div className="pointer-events-none absolute inset-0 mix-blend-color opacity-30 transition-colors duration-300" style={{ backgroundColor: activeFabric.tone }} />
-          ) : null}
+        <div className="min-w-0">
+          <div className="relative flex w-full aspect-[4/3] max-h-[500px] items-center justify-center overflow-hidden bg-[#c8d6dc] p-4">
+            <ResponsiveImage src={activeImage} alt={product.title} sizes="(min-width: 768px) 55vw, 100vw" className="max-h-full max-w-full object-contain transition-opacity duration-300" />
 
-          <div className="absolute left-4 top-4 bg-[#f7f9fa]/90 px-3 py-2 text-[9px] uppercase tracking-[.18em]">{product.note}</div>
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#24313b]/60 to-transparent px-6 pb-6 pt-20 text-[10px] uppercase tracking-[.18em] text-[#f7f9fa]">Sérsmíðað eftir máli</div>
-          <button
-            type="button"
-            data-testid="gallery-zoom"
-            onClick={() => setZoom({ src: activeImage, alt: `${product.title}, stækkuð mynd` })}
-            className="absolute right-4 top-4 grid h-10 w-10 place-items-center bg-[#f7f9fa]/90 text-[#24313b] transition hover:bg-white"
-            aria-label="Stækka mynd"
-          >
-            <ZoomIn size={17} />
-          </button>
+            <div className="absolute left-4 top-4 bg-[#f7f9fa]/90 px-3 py-2 text-[9px] uppercase tracking-[.18em]">{product.note}</div>
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#24313b]/60 to-transparent px-6 pb-6 pt-20 text-[10px] uppercase tracking-[.18em] text-[#f7f9fa]">Sérsmíðað eftir máli</div>
+            <button
+              type="button"
+              data-testid="gallery-zoom"
+              onClick={() => setZoom({ src: activeImage, alt: `${product.title}, stækkuð mynd` })}
+              className="absolute right-4 top-4 grid h-10 w-10 place-items-center bg-[#f7f9fa]/90 text-[#24313b] transition hover:bg-white"
+              aria-label="Stækka mynd"
+            >
+              <ZoomIn size={17} />
+            </button>
+          </div>
+          {activeFabric.image ? (
+            <button
+              type="button"
+              onClick={() => setZoom({ src: activeFabric.image!, alt: `${activeFabric.name}, nærmynd` })}
+              className="mt-3 flex w-full items-center gap-3 border border-[#ccd9df] bg-[#f7f9fa] p-3 text-left transition hover:border-[#90a5ae]"
+              aria-label={`Stækka valið efni ${activeFabric.name}`}
+            >
+              <span className={`flex h-16 shrink-0 items-center justify-center gap-1 overflow-hidden border border-[#ccd9df] bg-white ${activeFabric.pattern ? "w-28" : "w-16"}`}>
+                <ResponsiveImage src={activeFabric.image} alt="" sizes={activeFabric.pattern ? "56px" : "64px"} className="max-h-full min-w-0 max-w-full object-contain p-1" />
+                {activeFabric.pattern && <ResponsiveImage src={activeFabric.pattern} alt="" sizes="56px" className="max-h-full min-w-0 max-w-full object-contain p-1" />}
+              </span>
+              <span>
+                <span className="block text-[9px] uppercase tracking-[.16em] text-[#667984]">Valið efni</span>
+                <span className="mt-1 block text-sm text-[#24313b]">{activeFabric.name}</span>
+              </span>
+              <ZoomIn size={15} className="ml-auto text-[#667984]" aria-hidden="true" />
+            </button>
+          ) : activeFabric.tone ? (
+            <div className="mt-3 flex items-center gap-3 border border-[#ccd9df] bg-[#f7f9fa] p-3">
+              <span className="h-16 w-16 shrink-0 border border-[#ccd9df]" style={{ backgroundColor: activeFabric.tone }} />
+              <span>
+                <span className="block text-[9px] uppercase tracking-[.16em] text-[#667984]">Valið efni</span>
+                <span className="mt-1 block text-sm text-[#24313b]">{activeFabric.name}</span>
+              </span>
+            </div>
+          ) : null}
         </div>
       </div>
 
@@ -133,7 +162,7 @@ export function StorefrontLayout({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 sm:p-10" role="dialog" aria-modal="true" aria-label="Stækkuð mynd" onMouseDown={(event) => { if (event.target === event.currentTarget) setZoom(null); }}>
           <div className="relative max-h-full max-w-full">
             <button ref={closeButtonRef} type="button" onClick={() => setZoom(null)} className="absolute right-2 top-2 z-10 grid h-10 w-10 place-items-center bg-[#f7f9fa] text-[#24313b]" aria-label="Loka stækkaðri mynd"><X size={18} /></button>
-            <img src={zoom.src} alt={zoom.alt} className="max-h-[90vh] max-w-full object-contain" />
+            <ResponsiveImage src={zoom.src} alt={zoom.alt} sizes="90vw" className="max-h-[90vh] max-w-full object-contain" />
           </div>
         </div>
       )}

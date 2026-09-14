@@ -187,7 +187,7 @@ export default function VerticalCalculator({ product }: { product?: any }) {
             <label><span className="mb-2 block text-[9px] uppercase tracking-[.14em] text-[#667984]">Hæð · cm</span><input data-testid="vertical-height" aria-label="Hæð í sentímetrum" type="number" min="60" max="350" step="0.1" value={height / 10} onChange={(e) => setHeight((Number(e.target.value) || 0) * 10)} className="w-full border border-[#ccd9df] bg-transparent px-3 py-3 text-sm" /></label>
           </div>
           {!validSize && <p className="text-xs text-red-600">Stærð er utan framleiðslumarka (80–400 × 60–350 cm, hámark 14 m²).</p>}
-          <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Efni</span><div className="flex flex-wrap gap-2">{(Object.keys(grouped) as FabricType[]).flatMap((type) => grouped[type]).map((item) => <button type="button" key={item.code} onClick={() => setFabricCode(item.code)} className={`relative h-11 w-11 overflow-hidden rounded-full border ${fabric.code === item.code ? "border-[#24313b] scale-110" : "border-transparent"}`} aria-label={`Velja ${item.name}`}><img src={item.image} alt="" className="h-full w-full object-cover" /></button>)}</div></div>
+          <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Efni</span><div className="flex flex-wrap gap-2">{(Object.keys(grouped) as FabricType[]).flatMap((type) => grouped[type]).map((item) => <button type="button" key={item.code} onClick={() => setFabricCode(item.code)} className={`relative h-11 w-11 overflow-hidden rounded-full border ${fabric.code === item.code ? "border-[#24313b]" : "border-transparent"}`} aria-label={`Velja ${item.name}`}><img src={item.image} alt="" className="h-full w-full object-contain" /></button>)}</div></div>
           <div className="grid grid-cols-2 gap-2"><div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Stýring</span><div className="grid grid-cols-2 gap-2">{(["manual", "motor"] as Operation[]).map((item) => <button type="button" key={item} onClick={() => handleOperationChange(item)} className={`border px-2 py-3 text-[10px] uppercase ${operation === item ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{item === "manual" ? "Handvirk" : "Mótor"}</button>)}</div></div><div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Opnun</span><div className="grid grid-cols-1 gap-2">{(["centre", "left", "right"] as OpeningType[]).map((item) => <button type="button" key={item} onClick={() => setOpeningType(item)} className={`border px-2 py-3 text-[10px] uppercase ${openingType === item ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{item === "centre" ? "Miðopnun" : item === "left" ? "Vinstri" : "Hægri"}</button>)}</div></div></div>
            <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Finish · litur á brautum</span><div className="flex flex-wrap gap-2">{(operation === "motor" ? MOTORIZED_RAIL_COLORS : CASSETTE_RAIL_COLORS).map((item) => <button type="button" key={item.value} onClick={() => setRailColor(item.value)} className={`border px-3 py-2 text-[10px] ${railColor === item.value ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{item.value}</button>)}</div></div>
         </div>
@@ -225,8 +225,8 @@ export default function VerticalCalculator({ product }: { product?: any }) {
           className="grid grid-cols-3 gap-3 mb-12 rounded-2xl overflow-hidden"
         >
           {[vertImg1, vertImg2, vertImg3].map((src, i) => (
-            <div key={i} className="aspect-[3/4] overflow-hidden rounded-xl">
-              <img src={src} alt={`Lóðrétt honeycomb ${i + 1}`} className="w-full h-full object-cover" />
+            <div key={i} className="aspect-[4/3] max-h-[500px] overflow-hidden rounded-xl bg-muted">
+              <img src={src} alt={`Lóðrétt honeycomb ${i + 1}`} className="w-full h-full object-contain" />
             </div>
           ))}
         </motion.div>
@@ -290,7 +290,7 @@ export default function VerticalCalculator({ product }: { product?: any }) {
                             className={`group flex flex-col items-center p-1.5 rounded-lg border transition-all ${selected ? "border-primary ring-2 ring-primary/30 bg-primary/5" : "border-border/50 hover:border-primary/40 bg-background"}`}
                             aria-pressed={selected} title={`${f.is} · ${f.name} · ${f.code}`}>
                             <div className="w-full aspect-square rounded-md overflow-hidden border border-border/60 shadow-sm bg-muted">
-                              <img src={f.image} alt={`${f.is} (${f.name})`} className="w-full h-full object-cover" loading="lazy" />
+                              <img src={f.image} alt={`${f.is} (${f.name})`} className="w-full h-full object-contain" loading="lazy" />
                             </div>
                             <span className="text-[10px] font-semibold mt-1 leading-tight text-center truncate w-full">{f.is}</span>
                           </button>
@@ -347,7 +347,7 @@ export default function VerticalCalculator({ product }: { product?: any }) {
                         className={`flex flex-col items-center gap-1 p-1 rounded-lg border transition-all ${selected ? "border-primary ring-2 ring-primary/30 bg-primary/5" : "border-border/50 hover:border-primary/40 bg-background"}`}
                         aria-pressed={selected}>
                         <div className="w-full aspect-square rounded-md overflow-hidden">
-                          <img src={rc.image} alt={rc.value} className="w-full h-full object-cover" loading="lazy" />
+                          <img src={rc.image} alt={rc.value} className="w-full h-full object-contain" loading="lazy" />
                         </div>
                         <span className="text-[10px] font-medium text-center leading-tight">{rc.value}</span>
                       </button>

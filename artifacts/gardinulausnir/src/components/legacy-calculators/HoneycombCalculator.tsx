@@ -278,7 +278,7 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
           </div>
           {!validSize && <p className="text-xs text-red-600">Stærð er utan framleiðslumarka (80–275 × 50–300 cm, hámark 5,6 m²).</p>}
           <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Stýring</span><div className="grid grid-cols-3 gap-2">{(["manual", "cordless", "motor"] as Operation[]).map((item) => <button type="button" key={item} onClick={() => handleOperationChange(item)} className={`border px-2 py-3 text-[10px] uppercase ${operation === item ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{item === "manual" ? "Handvirk" : item === "cordless" ? "Þráðlaus" : "Mótor"}</button>)}</div></div>
-          <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Ljós og efni</span><div className="flex flex-wrap gap-2">{(["sheer", "translucent", "blackout", "dualdeck"] as FabricType[]).map((type) => <div key={type} className="contents">{grouped[type].map((item) => <button type="button" key={item.code} onClick={() => setFabricCode(item.code)} className={`relative h-11 w-11 overflow-hidden rounded-full border ${fabricCode === item.code ? "border-[#24313b] scale-110" : "border-transparent"}`} aria-label={`Velja ${item.name}`}><img src={item.image} alt="" className="h-full w-full object-cover" />{fabricCode === item.code && <Check size={13} className="absolute inset-0 m-auto" />}</button>)}</div>)}</div></div>
+          <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Ljós og efni</span><div className="flex flex-wrap gap-2">{(["sheer", "translucent", "blackout", "dualdeck"] as FabricType[]).map((type) => <div key={type} className="contents">{grouped[type].map((item) => <button type="button" key={item.code} onClick={() => setFabricCode(item.code)} className={`relative h-11 w-11 overflow-hidden rounded-full border ${fabricCode === item.code ? "border-[#24313b]" : "border-transparent"}`} aria-label={`Velja ${item.name}`}><img src={item.image} alt="" className="h-full w-full object-contain" />{fabricCode === item.code && <Check size={13} className="absolute inset-0 m-auto" />}</button>)}</div>)}</div></div>
           <label className="flex items-center justify-between border border-[#ccd9df] px-3 py-3 text-[10px] uppercase"><span>Hliðarspor</span><input type="checkbox" checked={sideTrack} onChange={(e) => setSideTrack(e.target.checked)} /></label>
           <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Litur á botnlistum</span><div className="flex flex-wrap gap-2">{HONEYCOMB_BOTTOM_RAIL_COLORS.map((item) => <button type="button" key={item.value} onClick={() => setBottomRailColor(item.value)} className={`border px-3 py-2 text-[10px] ${bottomRailColor === item.value ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{item.value}</button>)}</div></div>
           <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Finish · litur á braut</span><div className="flex flex-wrap gap-2">{(operation === "motor" ? MOTORIZED_RAIL_COLORS : CASSETTE_RAIL_COLORS).map((item) => <button type="button" key={item.value} onClick={() => setRailColor(item.value)} className={`border px-3 py-2 text-[10px] ${railColor === item.value ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{item.value}</button>)}</div></div>
@@ -345,7 +345,7 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
                               title={`${f.is} · ${f.name} · ${f.code}`}
                               data-testid={`hc-fabric-${f.code}`}
                             >
-                              <img src={f.image} alt={f.is} className={`w-full h-full object-cover ${theme.imgFilterClass}`} loading="lazy" />
+                              <img src={f.image} alt={f.is} className={`w-full h-full object-contain ${theme.imgFilterClass}`} loading="lazy" />
                               {theme.imgOverlayClass && (
                                 <div className={`absolute inset-0 pointer-events-none ${theme.imgOverlayClass}`} />
                               )}
@@ -443,7 +443,7 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
                         className={`flex flex-col items-center gap-1 p-1 rounded-lg border transition-all ${selected ? "border-primary ring-2 ring-primary/30 bg-primary/5" : "border-border/50 hover:border-primary/40 bg-background"}`}
                         aria-pressed={selected}>
                         <div className="w-full aspect-square rounded-md overflow-hidden">
-                          <img src={rc.image} alt={rc.value} className="w-full h-full object-cover" loading="lazy" />
+                          <img src={rc.image} alt={rc.value} className="w-full h-full object-contain" loading="lazy" />
                         </div>
                         <span className="text-[10px] font-medium text-center leading-tight">{rc.value}</span>
                       </button>
@@ -467,7 +467,7 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
                       className={`flex flex-col items-center gap-1 p-1 rounded-lg border transition-all ${selected ? "border-primary ring-2 ring-primary/30 bg-primary/5" : "border-border/50 hover:border-primary/40 bg-background"}`}
                       aria-pressed={selected}>
                       <div className="w-full aspect-square rounded-md overflow-hidden">
-                        <img src={rc.image} alt={rc.value} className="w-full h-full object-cover" loading="lazy" />
+                          <img src={rc.image} alt={rc.value} className="w-full h-full object-contain" loading="lazy" />
                       </div>
                       <span className="text-[10px] font-medium text-center leading-tight">{rc.value}</span>
                     </button>
@@ -498,7 +498,7 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
                       className={`flex flex-col items-center gap-1 p-1 rounded-lg border transition-all ${selected ? "border-primary ring-2 ring-primary/30 bg-primary/5" : "border-border/50 hover:border-primary/40 bg-background"}`}
                       aria-pressed={selected}>
                       <div className="w-full aspect-square rounded-md overflow-hidden">
-                        <img src={hc.image} alt={hc.en} className="w-full h-full object-cover" loading="lazy" />
+                          <img src={hc.image} alt={hc.en} className="w-full h-full object-contain" loading="lazy" />
                       </div>
                       <span className="text-[10px] font-medium text-center leading-tight">{hc.is}</span>
                     </button>

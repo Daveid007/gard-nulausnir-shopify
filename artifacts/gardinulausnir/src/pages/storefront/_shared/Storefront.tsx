@@ -3,6 +3,7 @@ import { ArrowRight, Menu, ShoppingBag, X } from "lucide-react";
 import { Link } from "wouter";
 import type { Product } from "./data";
 import { BrandLogo } from "./BrandLogo";
+import { ResponsiveImage } from "@/components/ResponsiveImage";
 
 export function Header({ cartCount = 0, categoryNav = false, onCartClick }: { cartCount?: number; categoryNav?: boolean; onCartClick?: () => void }) {
   const [open, setOpen] = useState(false);
@@ -33,6 +34,8 @@ export function ProductCard({ product, accentBadge = false }: { product: Product
   const recoverImage = (event: React.SyntheticEvent<HTMLImageElement>, fallback?: string) => {
     const image = event.currentTarget;
     if (fallback && image.src !== fallback) {
+      image.removeAttribute("srcset");
+      image.removeAttribute("sizes");
       image.src = fallback;
       return;
     }
@@ -40,9 +43,9 @@ export function ProductCard({ product, accentBadge = false }: { product: Product
   };
 
   return <article className="group relative">
-    <div className="relative aspect-[4/5] overflow-hidden bg-[#e8eef1]">
-      <img src={product.image} alt={product.title} loading="lazy" decoding="async" onError={(event) => recoverImage(event, product.fallbackImage ?? product.secondary)} className="absolute inset-0 h-full w-full object-cover transition-opacity duration-500 group-hover:opacity-0" />
-      <img src={product.secondary} alt="" loading="lazy" decoding="async" onError={(event) => recoverImage(event, product.fallbackSecondary ?? product.image)} className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+    <div className="relative aspect-[4/3] overflow-hidden bg-[#e8eef1]">
+      <ResponsiveImage src={product.image} alt={product.title} loading="lazy" decoding="async" sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw" onError={(event) => recoverImage(event, product.fallbackImage ?? product.secondary)} className="absolute inset-0 h-full w-full object-contain p-3 transition-opacity duration-500 group-hover:opacity-0" />
+      <ResponsiveImage src={product.secondary} alt="" loading="lazy" decoding="async" sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw" onError={(event) => recoverImage(event, product.fallbackSecondary ?? product.image)} className="absolute inset-0 h-full w-full object-contain p-3 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
       {product.note && <span className={`absolute left-3 top-3 px-2 py-1 text-[9px] uppercase tracking-[.16em] ${accentBadge ? "bg-[#a2c2e2] text-[#24313b]" : "bg-[#f7f9fa]/90"}`}>{product.note}</span>}
        <Link href={actionHref} className="absolute bottom-0 left-0 right-0 translate-y-0 bg-[#a2c2e2] px-3 py-3 text-left text-[9px] font-medium uppercase tracking-[.14em] transition-transform duration-300 sm:translate-y-full sm:px-4 sm:py-4 sm:text-[10px] sm:tracking-[.18em] sm:group-hover:translate-y-0">Velja stærð <ArrowRight size={14} className="float-right" /></Link>
     </div>
