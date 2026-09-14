@@ -361,7 +361,7 @@ export default function ZebraBlindCalculator({ product }: { product?: any }) {
                       aria-pressed={selected}
                     >
                       <div className="w-full aspect-square rounded-md overflow-hidden">
-                        <img src={rc.image} alt={rc.value} className="w-full h-full object-cover" loading="lazy" />
+                        <img src={rc.image} alt={rc.value} className="w-full h-full object-contain" loading="lazy" />
                       </div>
                       <span className="text-[10px] font-medium text-center leading-tight">{rc.value}</span>
                     </button>

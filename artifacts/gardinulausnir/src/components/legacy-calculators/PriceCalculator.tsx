@@ -372,7 +372,7 @@ export function PriceCalculator({ productIdentity = "square-cassette", product }
                 const image = ROLLER_SWATCH_IMAGES.get(item.code);
                 return (
                   <button type="button" key={item.code} onClick={() => setFabricCode(item.code)} aria-label={`Velja ${item.series} ${item.shade}`} aria-pressed={fabric.code === item.code} className={`group relative aspect-square overflow-hidden border bg-[#eef3f5] ${fabric.code === item.code ? "border-2 border-[#24313b]" : "border-[#ccd9df]"}`}>
-                    {image ? <img src={image} alt="" className="h-full w-full object-cover transition group-hover:scale-105" /> : <span className="grid h-full place-items-center p-1 text-center text-[8px] leading-tight text-[#43515a]">{item.shade}</span>}
+                    {image ? <img src={image} alt="" className="h-full w-full object-contain" /> : <span className="grid h-full place-items-center p-1 text-center text-[8px] leading-tight text-[#43515a]">{item.shade}</span>}
                     <span className="absolute inset-x-0 bottom-0 truncate bg-[#24313b]/75 px-1 py-1 text-[8px] text-white">{item.code}</span>
                   </button>
                 );
@@ -449,7 +449,7 @@ export function PriceCalculator({ productIdentity = "square-cassette", product }
                   aria-label={`Velja lit á botnlista: ${color.value}`}
                   className={`border p-1 transition ${bottomRailColor === color.value ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}
                 >
-                  <img src={color.image} alt={color.value} className="aspect-square w-full object-cover" loading="lazy" />
+                  <img src={color.image} alt={color.value} className="aspect-square w-full object-contain" loading="lazy" />
                   <span className="mt-1 block truncate text-[8px]">{color.value}</span>
                 </button>
               ))}

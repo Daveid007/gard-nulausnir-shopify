@@ -1,5 +1,4 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Ruler } from "lucide-react";
 
 export const measurementAdvice =
   "Gott ráð: Notið alltaf málband úr málmi (ekki saumamálband) og gefið upp mál í sentimetrum (cm) eða millimetrum (mm).";
@@ -89,15 +88,16 @@ function OutsideMountDiagram() {
 function MeasurementGuideBody({ compact = false }: { compact?: boolean }) {
   return (
     <div className={compact ? "space-y-6" : "space-y-10"}>
-      <section aria-labelledby="inside-mount-heading" className="space-y-5">
+      <div className={`grid items-start gap-5 ${compact ? "" : "lg:grid-cols-2"}`}>
+      <section aria-labelledby="inside-mount-heading" className="space-y-5 border border-[#ccd9df] bg-white/50 p-5 md:p-6">
         <div>
           <p className="text-[10px] uppercase tracking-[.2em] text-[#6892b8]">A</p>
           <h2 id="inside-mount-heading" className="mt-1 font-serif text-3xl leading-tight tracking-[-.04em]">
-            Innan í gluggaop
+            Innan á karm
           </h2>
           <p className="mt-1 text-sm text-[#667984]">(Inside Mount / Í fellingu)</p>
         </div>
-        <div className="grid gap-5 md:grid-cols-[minmax(0,1fr)_minmax(260px,.72fr)] md:items-center">
+        <div className="grid gap-5">
           <div className="order-2 space-y-4 md:order-1">
             <div className="rounded-none border border-[#ccd9df] bg-[#f7f9fa] p-4">
               <h3 className="text-sm font-medium">Breidd</h3>
@@ -112,8 +112,13 @@ function MeasurementGuideBody({ compact = false }: { compact?: boolean }) {
               </p>
             </div>
             <p className="border-l-2 border-[#a2c2e2] pl-4 text-sm leading-6 text-[#596872]">
-              Athugið dýpt gluggakarmsins og hvort hún nægi fyrir þá festingu sem valin er. Lágmarksdýpt ræðst af kerfinu — fáið staðfestingu ef þið eruð í vafa.
+              <strong>Lágmarksdýpt karms: 6–7 cm.</strong> Mælið lausa dýpt frá frambrún karms og athugið hvort handföng eða aðrar hindranir séu fyrir. Nákvæm dýpt fer eftir gardínugerð og festingum; fáið hana staðfesta fyrir pöntun.
             </p>
+            <aside role="note" data-testid="factory-tolerance-notice" className="border border-[#a2c2e2] bg-[#eaf1f5] p-4 text-sm leading-6">
+              <p className="mb-2 font-medium">Vikmörk við innanáfestingu</p>
+              <p>Gefið upp nákvæm mál á opi. Verksmiðjan dregur sjálfkrafa frá rétt vikmörk fyrir festingar og vélbúnað.</p>
+              <p className="mt-2 text-[#596872]">Ekki draga vikmörk frá sjálf. Fyrir utanáfestingu fylgið leiðbeiningunum um skörun hér að neðan.</p>
+            </aside>
           </div>
           <div className="order-1 border border-[#ccd9df] bg-[#eaf1f5] p-3 md:order-2">
             <InsideMountDiagram />
@@ -121,15 +126,15 @@ function MeasurementGuideBody({ compact = false }: { compact?: boolean }) {
         </div>
       </section>
 
-      <section aria-labelledby="outside-mount-heading" className="space-y-5 border-t border-[#ccd9df] pt-8">
+      <section aria-labelledby="outside-mount-heading" className="space-y-5 border border-[#ccd9df] bg-white/50 p-5 md:p-6">
         <div>
           <p className="text-[10px] uppercase tracking-[.2em] text-[#6892b8]">B</p>
           <h2 id="outside-mount-heading" className="mt-1 font-serif text-3xl leading-tight tracking-[-.04em]">
-            Utan á gluggakarm / Vegg
+            Utan á karm / Vegg
           </h2>
           <p className="mt-1 text-sm text-[#667984]">(Outside Mount / Yfir op)</p>
         </div>
-        <div className="grid gap-5 md:grid-cols-[minmax(0,1fr)_minmax(260px,.72fr)] md:items-center">
+        <div className="grid gap-5">
           <div className="space-y-4">
             <div className="rounded-none border border-[#ccd9df] bg-[#f7f9fa] p-4">
               <h3 className="text-sm font-medium">Breidd gluggaops</h3>
@@ -149,6 +154,7 @@ function MeasurementGuideBody({ compact = false }: { compact?: boolean }) {
           </div>
         </div>
       </section>
+      </div>
 
       <section aria-labelledby="calculator-measurements-heading" className="space-y-4 border-t border-[#ccd9df] pt-8">
         <h2 id="calculator-measurements-heading" className="font-serif text-2xl tracking-[-.03em]">
@@ -220,11 +226,11 @@ export function MeasurementGuideTrigger() {
         <button
           type="button"
           data-testid="measurement-guide-trigger"
-          aria-label="Hvernig á að mæla?"
+          aria-label="📐 Mælingaleiðbeiningar"
           className="inline-flex shrink-0 items-center gap-1.5 text-[10px] font-medium uppercase tracking-[.12em] text-[#557b9e] transition-colors hover:text-[#24313b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6892b8] focus-visible:ring-offset-2"
         >
-          <Ruler size={14} strokeWidth={1.6} aria-hidden="true" />
-          Hvernig á að mæla?
+          <span aria-hidden="true">📐</span>
+          Mælingaleiðbeiningar
         </button>
       </DialogTrigger>
       <DialogContent
@@ -232,7 +238,7 @@ export function MeasurementGuideTrigger() {
         className="max-w-3xl border-[#ccd9df] bg-[#f7f9fa] p-5 text-[#24313b] sm:p-8"
       >
         <DialogHeader className="pr-8 text-left">
-          <DialogTitle className="font-serif text-3xl tracking-[-.04em]">Hvernig á að mæla?</DialogTitle>
+          <DialogTitle className="font-serif text-3xl tracking-[-.04em]">Mælingaleiðbeiningar</DialogTitle>
           <DialogDescription className="text-sm text-[#667984]">
             Veldu innan í gluggaop eða utan á gluggakarm / vegg eftir uppsetningu.
           </DialogDescription>

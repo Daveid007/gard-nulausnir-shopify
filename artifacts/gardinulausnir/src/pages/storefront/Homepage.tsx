@@ -3,6 +3,7 @@ import { ArrowRight, CircleHelp, Menu, Ruler, ShoppingBag, X } from "lucide-reac
 import { Link } from "wouter";
 import "./_group.css";
 import { BrandLogo } from "./_shared/BrandLogo";
+import { ResponsiveImage } from "@/components/ResponsiveImage";
 
 const collectionHref = "/collection";
 
@@ -50,8 +51,8 @@ function HeroBanner() {
           <p className="mt-6 max-w-sm text-sm leading-6 text-[#43515a]">Veldu vandaðar gardínur eftir máli fyrir þitt heimili. Fjölbreytt efni, fallegir litir og ráðgjöf við val og mælingar.</p>
           <a href="#collections" className="sol-action mt-8 inline-flex w-fit items-center gap-3 px-5 py-3.5 text-[10px] uppercase tracking-[.17em]">Skoða gardínur <ArrowRight size={14} /></a>
         </div>
-        <div className="relative min-h-[330px] bg-[#edf2f4] md:min-h-[520px]">
-          <img src="https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-honeycomb-45mm.png?v=1787921250" alt="Hunangskambsgardína í ljósu rými" fetchPriority="high" className="absolute inset-0 h-full w-full object-cover object-center" />
+        <div className="relative flex min-h-[330px] items-center justify-center bg-[#edf2f4] p-5 md:min-h-[520px] md:p-10">
+          <ResponsiveImage src="https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-honeycomb-45mm.png?v=1787921250" alt="Hunangskambsgardína í ljósu rými" fetchPriority="high" sizes="(min-width: 768px) 55vw, 100vw" className="max-h-[460px] max-w-full object-contain" />
           <p className="absolute bottom-5 left-5 bg-[#f7f9fa]/90 px-3 py-2 text-[9px] uppercase tracking-[.17em] text-[#24313b] md:bottom-7 md:left-7">Ráðgjöf heima hjá þér</p>
         </div>
       </div>
@@ -67,8 +68,10 @@ function CategoryTilesGrid() {
           <div><p className="sol-kicker text-[9px] uppercase tracking-[.24em] text-[#6892b8]">Finndu þínar gardínur</p><h2 className="mt-3 font-serif text-4xl tracking-[-.05em] text-[#24313b] md:text-5xl">Gardínur eftir þínum málum.</h2></div>
         </div>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {collections.map((collection) => <Link key={collection.id} href={collection.href} aria-label={`Skoða ${collection.title}`} className="group relative flex min-h-[310px] cursor-pointer touch-manipulation flex-col justify-end overflow-hidden bg-[#dce9ee] p-6 outline-none transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:ring-1 hover:ring-[#a2c2e2] hover:shadow-[0_14px_28px_rgba(67,81,90,0.14)] focus-visible:-translate-y-1 focus-visible:ring-2 focus-visible:ring-[#6892b8] active:scale-[.99] md:min-h-[390px]">
-            <img src={collection.image} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover opacity-35 mix-blend-multiply transition-transform duration-500 group-hover:scale-105" />
+          {collections.map((collection) => <Link key={collection.id} href={collection.href} aria-label={`Skoða ${collection.title}`} className="group relative flex min-h-[310px] cursor-pointer touch-manipulation flex-col overflow-hidden bg-[#dce9ee] p-6 outline-none transition-[box-shadow] duration-300 ease-out hover:ring-1 hover:ring-[#a2c2e2] hover:shadow-[0_14px_28px_rgba(67,81,90,0.14)] focus-visible:ring-2 focus-visible:ring-[#6892b8] md:min-h-[390px]">
+             <div className="relative -mx-6 -mt-6 mb-6 flex aspect-[4/3] max-h-[250px] items-center justify-center overflow-hidden bg-[#e8eef1]">
+               <ResponsiveImage src={collection.image} alt="" loading="lazy" sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw" className="max-h-full max-w-full object-contain p-4 opacity-65 mix-blend-multiply" />
+             </div>
             <div className="relative">
               <h3 lang="is" className="font-serif text-[1.85rem] leading-[.98] tracking-[-.045em] text-[#24313b]">{collection.title}</h3>
               <p className="mt-3 text-sm leading-5 text-[#43515a]">{collection.description}</p>

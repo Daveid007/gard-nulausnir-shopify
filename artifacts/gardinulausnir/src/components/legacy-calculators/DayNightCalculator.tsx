@@ -189,8 +189,8 @@ export default function DayNightCalculator({ product }: { product?: any }) {
         <div className="space-y-5 border-b border-[#ccd9df] py-6">
           <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Samsetning tveggja laga</span><div className="grid grid-cols-3 gap-2">{DAYNIGHT_COMBO_KEYS.map((key) => <button type="button" key={key} onClick={() => selectCombo(key)} className={`border px-2 py-3 text-left text-[10px] ${comboKey === key ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{DAYNIGHT_COMBOS[key].is}</button>)}</div></div>
           <div className="grid grid-cols-2 gap-3">
-            <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Daglag · {front.is}</span><div className="flex flex-wrap gap-2">{frontFabrics.map((item) => <button type="button" key={item.code} onClick={() => setFrontCode(item.code)} className={`h-11 w-11 overflow-hidden rounded-full border ${front.code === item.code ? "border-[#24313b] scale-110" : "border-transparent"}`} aria-label={`Velja ${item.name}`}><img src={item.image} alt="" className="h-full w-full object-cover" /></button>)}</div></div>
-            <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Næturlag · {back.is}</span><div className="flex flex-wrap gap-2">{backFabrics.map((item) => <button type="button" key={item.code} onClick={() => setBackCode(item.code)} className={`h-11 w-11 overflow-hidden rounded-full border ${back.code === item.code ? "border-[#24313b] scale-110" : "border-transparent"}`} aria-label={`Velja ${item.name}`}><img src={item.image} alt="" className="h-full w-full object-cover" /></button>)}</div></div>
+            <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Daglag · {front.is}</span><div className="flex flex-wrap gap-2">{frontFabrics.map((item) => <button type="button" key={item.code} onClick={() => setFrontCode(item.code)} className={`h-11 w-11 overflow-hidden rounded-full border ${front.code === item.code ? "border-[#24313b]" : "border-transparent"}`} aria-label={`Velja ${item.name}`}><img src={item.image} alt="" className="h-full w-full object-contain" /></button>)}</div></div>
+            <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Næturlag · {back.is}</span><div className="flex flex-wrap gap-2">{backFabrics.map((item) => <button type="button" key={item.code} onClick={() => setBackCode(item.code)} className={`h-11 w-11 overflow-hidden rounded-full border ${back.code === item.code ? "border-[#24313b]" : "border-transparent"}`} aria-label={`Velja ${item.name}`}><img src={item.image} alt="" className="h-full w-full object-contain" /></button>)}</div></div>
           </div>
            <div className="mb-2 flex items-center justify-between gap-3">
              <span className="text-[10px] uppercase tracking-[.18em]">Mál</span>
@@ -284,7 +284,7 @@ export default function DayNightCalculator({ product }: { product?: any }) {
                           className={`relative aspect-square rounded-md overflow-hidden transition-all ${selected ? "ring-4 ring-amber-600 ring-offset-1 ring-offset-amber-50" : "ring-1 ring-border hover:ring-amber-400"}`}
                           aria-pressed={selected} title={`${f.is} · ${f.name} · ${f.code}`}
                           data-testid={`dn-front-${f.code}`}>
-                          <img src={f.image} alt={f.is} className="w-full h-full object-cover" loading="lazy" />
+                          <img src={f.image} alt={f.is} className="w-full h-full object-contain" loading="lazy" />
                           {selected && (
                             <div className="absolute inset-0 flex items-center justify-center bg-amber-900/30">
                               <Check className="w-4 h-4 text-white drop-shadow" strokeWidth={3} />
@@ -310,7 +310,7 @@ export default function DayNightCalculator({ product }: { product?: any }) {
                           className={`relative aspect-square rounded-md overflow-hidden transition-all ${selected ? "ring-4 ring-amber-400 ring-offset-1 ring-offset-slate-900" : "ring-1 ring-slate-600 hover:ring-amber-300"}`}
                           aria-pressed={selected} title={`${f.is} · ${f.name} · ${f.code} — 100% myrkur`}
                           data-testid={`dn-back-${f.code}`}>
-                          <img src={f.image} alt={f.is} className="w-full h-full object-cover brightness-75 contrast-110" loading="lazy" />
+                          <img src={f.image} alt={f.is} className="w-full h-full object-contain brightness-75 contrast-110" loading="lazy" />
                           <div className="absolute inset-0 bg-slate-950/30 pointer-events-none" />
                           {selected && (
                             <div className="absolute inset-0 flex items-center justify-center bg-slate-950/60">
@@ -406,7 +406,7 @@ export default function DayNightCalculator({ product }: { product?: any }) {
                         className={`flex flex-col items-center gap-1 p-1 rounded-lg border transition-all ${selected ? "border-primary ring-2 ring-primary/30 bg-primary/5" : "border-border/50 hover:border-primary/40 bg-background"}`}
                         aria-pressed={selected}>
                         <div className="w-full aspect-square rounded-md overflow-hidden">
-                          <img src={rc.image} alt={rc.value} className="w-full h-full object-cover" loading="lazy" />
+                          <img src={rc.image} alt={rc.value} className="w-full h-full object-contain" loading="lazy" />
                         </div>
                         <span className="text-[10px] font-medium text-center leading-tight">{rc.value}</span>
                       </button>

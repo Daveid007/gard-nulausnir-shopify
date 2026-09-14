@@ -158,8 +158,8 @@ export default function DualRollerCalculator({ product }: { product?: any }) {
         <div className="space-y-5 border-b border-[#ccd9df] py-6">
           <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Samsetning tveggja laga</span><div className="grid grid-cols-3 gap-2">{DUAL_ROLLER_COMBO_KEYS.map((key) => <button type="button" key={key} onClick={() => selectCombo(key)} className={`border px-2 py-3 text-left text-[10px] ${comboKey === key ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{DUAL_ROLLER_COMBOS[key].is}</button>)}</div></div>
           <div className="grid grid-cols-2 gap-3">
-            <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Fremra lag · {front.is}</span><div className="flex flex-wrap gap-2">{frontFabrics.map((item) => <button type="button" key={item.code} onClick={() => setFrontCode(item.code)} className={`h-11 w-11 overflow-hidden rounded-full border ${front.code === item.code ? "border-[#24313b] scale-110" : "border-transparent"}`} aria-label={`Velja ${item.name}`}><img src={item.image} alt="" className="h-full w-full object-cover" /></button>)}</div></div>
-            <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Aftara lag · {back.is}</span><div className="flex flex-wrap gap-2">{backFabrics.map((item) => <button type="button" key={item.code} onClick={() => setBackCode(item.code)} className={`h-11 w-11 overflow-hidden rounded-full border ${back.code === item.code ? "border-[#24313b] scale-110" : "border-transparent"}`} aria-label={`Velja ${item.name}`}><img src={item.image} alt="" className="h-full w-full object-cover" /></button>)}</div></div>
+             <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Fremra lag · {front.is}</span><div className="flex flex-wrap gap-2">{frontFabrics.map((item) => <button type="button" key={item.code} onClick={() => setFrontCode(item.code)} className={`h-11 w-11 overflow-hidden rounded-full border ${front.code === item.code ? "border-[#24313b]" : "border-transparent"}`} aria-label={`Velja ${item.name}`}><img src={item.image} alt="" className="h-full w-full object-contain" /></button>)}</div></div>
+             <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Aftara lag · {back.is}</span><div className="flex flex-wrap gap-2">{backFabrics.map((item) => <button type="button" key={item.code} onClick={() => setBackCode(item.code)} className={`h-11 w-11 overflow-hidden rounded-full border ${back.code === item.code ? "border-[#24313b]" : "border-transparent"}`} aria-label={`Velja ${item.name}`}><img src={item.image} alt="" className="h-full w-full object-contain" /></button>)}</div></div>
           </div>
            <div className="mb-2 flex items-center justify-between gap-3">
              <span className="text-[10px] uppercase tracking-[.18em]">Mál</span>
@@ -273,7 +273,7 @@ export default function DualRollerCalculator({ product }: { product?: any }) {
                           title={`${f.is} · ${f.name} · ${f.code}`}
                           data-testid={`dr-front-${f.code}`}
                         >
-                          <img src={f.image} alt={f.is} className="w-full h-full object-cover" loading="lazy" />
+                          <img src={f.image} alt={f.is} className="w-full h-full object-contain" loading="lazy" />
                           {selected && (
                             <div className="absolute inset-0 flex items-center justify-center bg-amber-900/30">
                               <Check className="w-4 h-4 text-white drop-shadow" strokeWidth={3} />
@@ -319,7 +319,7 @@ export default function DualRollerCalculator({ product }: { product?: any }) {
                           <img
                             src={f.image}
                             alt={f.is}
-                            className={`w-full h-full object-cover ${isBlackout ? "brightness-75 contrast-110" : ""}`}
+                            className={`w-full h-full object-contain ${isBlackout ? "brightness-75 contrast-110" : ""}`}
                             loading="lazy"
                           />
                           {isBlackout && <div className="absolute inset-0 bg-slate-950/30 pointer-events-none" />}
@@ -424,7 +424,7 @@ export default function DualRollerCalculator({ product }: { product?: any }) {
                         aria-pressed={selected}
                       >
                         <div className="w-full aspect-square rounded-md overflow-hidden">
-                          <img src={rc.image} alt={rc.value} className="w-full h-full object-cover" loading="lazy" />
+                          <img src={rc.image} alt={rc.value} className="w-full h-full object-contain" loading="lazy" />
                         </div>
                         <span className="text-[10px] font-medium text-center leading-tight">{rc.value}</span>
                       </button>
