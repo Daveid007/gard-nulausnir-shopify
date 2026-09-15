@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRailColor } from "@/lib/railColor";
 import { AnimatePresence, motion } from "framer-motion";
 import { Calculator, Info, ShoppingBag } from "lucide-react";
@@ -81,8 +81,8 @@ const VERTICAL_FABRICS: VerticalFabric[] = Object.keys(VERTICAL_PRICING).map((co
 });
 
 const TYPE_LABELS: Record<FabricType, { is: string; en: string }> = {
-  translucent: { is: "Hálfgegnsætt", en: "Translucent" },
-  blackout:    { is: "Myrkrið",      en: "Blackout" },
+  translucent: { is: "Ljós síað / Light filtering", en: "Translucent" },
+  blackout:    { is: "Myrkvun / Blackout",          en: "Blackout" },
 };
 
 function fmtISK(v: number) {
@@ -95,6 +95,7 @@ export default function VerticalCalculator({ product }: { product?: any }) {
   const [height, setHeight] = useState<number>(2400);
   const [quantity, setQuantity] = useState<number>(1);
   const [fabricCode, setFabricCode] = useState<string>("KT401");
+  const [fabricType, setFabricType] = useState<FabricType>("translucent");
   const [operation, setOperation] = useState<Operation>("manual");
   const [openingType, setOpeningType] = useState<OpeningType>("centre");
   const { railColor, setRailColor } = useRailColor();
@@ -115,16 +116,22 @@ export default function VerticalCalculator({ product }: { product?: any }) {
     setOperation(next);
   }
 
-  const fabric = useMemo(
-    () => VERTICAL_FABRICS.find((f) => f.code === fabricCode) ?? VERTICAL_FABRICS[0],
-    [fabricCode],
-  );
-
   const grouped = useMemo(() => {
     const groups: Record<FabricType, VerticalFabric[]> = { translucent: [], blackout: [] };
     for (const f of VERTICAL_FABRICS) groups[f.type].push(f);
     return groups;
   }, []);
+
+  const fabric = useMemo(
+    () => grouped[fabricType].find((f) => f.code === fabricCode) ?? grouped[fabricType][0] ?? VERTICAL_FABRICS[0],
+    [fabricCode, fabricType, grouped],
+  );
+
+  useEffect(() => {
+    if (!grouped[fabricType].some((f) => f.code === fabricCode)) {
+      setFabricCode(grouped[fabricType][0]?.code ?? VERTICAL_FABRICS[0].code);
+    }
+  }, [fabricCode, fabricType, grouped]);
 
   const calc = useMemo(() => {
     const w = Math.max(0.3, width / 1000);
@@ -187,7 +194,23 @@ export default function VerticalCalculator({ product }: { product?: any }) {
             <label><span className="mb-2 block text-[9px] uppercase tracking-[.14em] text-[#667984]">Hæð · cm</span><input data-testid="vertical-height" aria-label="Hæð í sentímetrum" type="number" min="60" max="350" step="0.1" value={height / 10} onChange={(e) => setHeight((Number(e.target.value) || 0) * 10)} className="w-full border border-[#ccd9df] bg-transparent px-3 py-3 text-sm" /></label>
           </div>
           {!validSize && <p className="text-xs text-red-600">Stærð er utan framleiðslumarka (80–400 × 60–350 cm, hámark 14 m²).</p>}
-          <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Efni</span><div className="flex flex-wrap gap-2">{(Object.keys(grouped) as FabricType[]).flatMap((type) => grouped[type]).map((item) => <button type="button" key={item.code} onClick={() => setFabricCode(item.code)} className={`relative h-11 w-11 overflow-hidden rounded-full border ${fabric.code === item.code ? "border-[#24313b]" : "border-transparent"}`} aria-label={`Velja ${item.name}`}><img src={item.image} alt="" className="h-full w-full object-contain" /></button>)}</div></div>
+          <div>
+            <span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Efni</span>
+            <div className="mb-3 grid grid-cols-2 gap-2" data-testid="vertical-fabric-types">
+              {(["translucent", "blackout"] as FabricType[]).map((type) => (
+                <button type="button" key={type} onClick={() => setFabricType(type)} aria-pressed={fabricType === type} data-testid={`vertical-fabric-type-${type}`} className={`border px-2 py-2 text-[10px] uppercase tracking-[.06em] ${fabricType === type ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>
+                  {TYPE_LABELS[type].is}
+                </button>
+              ))}
+            </div>
+            <div data-testid="vertical-fabrics" className="flex flex-wrap gap-2">
+              {grouped[fabricType].map((item) => (
+                <button type="button" key={item.code} onClick={() => setFabricCode(item.code)} className={`relative h-11 w-11 overflow-hidden rounded-full border ${fabric.code === item.code ? "border-[#24313b]" : "border-transparent"}`} aria-label={`Velja ${item.is} · ${item.name} (${item.code})`} aria-pressed={fabric.code === item.code}>
+                  <img src={item.image} alt={item.is} className="h-full w-full object-contain" />
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="grid grid-cols-2 gap-2"><div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Stýring</span><div className="grid grid-cols-2 gap-2">{(["manual", "motor"] as Operation[]).map((item) => <button type="button" key={item} onClick={() => handleOperationChange(item)} className={`border px-2 py-3 text-[10px] uppercase ${operation === item ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{item === "manual" ? "Handvirk" : "Mótor"}</button>)}</div></div><div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Opnun</span><div className="grid grid-cols-1 gap-2">{(["centre", "left", "right"] as OpeningType[]).map((item) => <button type="button" key={item} onClick={() => setOpeningType(item)} className={`border px-2 py-3 text-[10px] uppercase ${openingType === item ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{item === "centre" ? "Miðopnun" : item === "left" ? "Vinstri" : "Hægri"}</button>)}</div></div></div>
            <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Finish · litur á brautum</span><div className="flex flex-wrap gap-2">{(operation === "motor" ? MOTORIZED_RAIL_COLORS : CASSETTE_RAIL_COLORS).map((item) => <button type="button" key={item.value} onClick={() => setRailColor(item.value)} className={`border px-3 py-2 text-[10px] ${railColor === item.value ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{item.value}</button>)}</div></div>
         </div>

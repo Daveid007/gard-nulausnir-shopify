@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { ArrowRight, CircleHelp, Menu, Ruler, ShoppingBag, X } from "lucide-react";
+import { ArrowRight, Menu, Ruler, ShoppingBag, X } from "lucide-react";
 import { Link } from "wouter";
 import "./_group.css";
 import { BrandLogo } from "./_shared/BrandLogo";
+import { HelpDrawer } from "./_shared/HelpDrawer";
 import { ResponsiveImage } from "@/components/ResponsiveImage";
 
 const collectionHref = "/collection";
@@ -22,20 +23,20 @@ function HomepageHeader() {
       <div className="mx-auto flex h-[76px] max-w-[1480px] items-center justify-between gap-4 px-5 md:px-10">
         <BrandLogo className="h-10 w-[202px] sm:h-11 sm:w-[222px]" />
         <nav className="hidden items-center gap-6 text-[10px] uppercase tracking-[.16em] text-[#43515a] lg:flex" aria-label="Aðalleiðsögn">
-          <a href="#collections" className="transition-colors hover:text-[#6892b8]">Gardínur</a>
+           <Link href={collectionHref} className="transition-colors hover:text-[#6892b8]">Gardínur</Link>
           <Link href="/maelingar" className="inline-flex items-center gap-2 transition-colors hover:text-[#6892b8]"><Ruler size={15} strokeWidth={1.5} />Mælingar</Link>
-          <a href="mailto:hallo@gardinulausnir.is" className="inline-flex items-center gap-2 transition-colors hover:text-[#6892b8]"><CircleHelp size={15} strokeWidth={1.5} />Hjálp</a>
+          <HelpDrawer />
         </nav>
         <div className="flex items-center gap-4">
-          <a href="#collections" className="hidden text-[10px] uppercase tracking-[.16em] text-[#43515a] sm:inline">Vöruflokkar</a>
+           <Link href={collectionHref} className="hidden text-[10px] uppercase tracking-[.16em] text-[#43515a] sm:inline">Vöruflokkar</Link>
           <Link href={collectionHref} aria-label="Opna körfu" className="flex items-center gap-2 text-[10px] uppercase tracking-[.16em]"><ShoppingBag size={18} strokeWidth={1.25} /><span className="hidden sm:inline">Karfa</span></Link>
           <button type="button" onClick={() => setMenuOpen((open) => !open)} className="grid h-9 w-9 place-items-center lg:hidden" aria-label={menuOpen ? "Loka valmynd" : "Opna valmynd"}>{menuOpen ? <X size={20} /> : <Menu size={20} />}</button>
         </div>
       </div>
       {menuOpen && <nav className="border-t border-[#24313b]/10 bg-[#f7f9fa] px-5 py-4 lg:hidden" aria-label="Farsímaleiðsögn">
-        <a href="#collections" onClick={() => setMenuOpen(false)} className="block py-3 text-[10px] uppercase tracking-[.16em]">Gardínur</a>
+         <Link href={collectionHref} onClick={() => setMenuOpen(false)} className="block py-3 text-[10px] uppercase tracking-[.16em]">Gardínur</Link>
         <Link href="/maelingar" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 py-3 text-[10px] uppercase tracking-[.16em]"><Ruler size={15} strokeWidth={1.5} />Mælingar</Link>
-        <a href="mailto:hallo@gardinulausnir.is" className="flex items-center gap-2 py-3 text-[10px] uppercase tracking-[.16em]"><CircleHelp size={15} strokeWidth={1.5} />Hjálp</a>
+        <HelpDrawer />
       </nav>}
     </header>
   );
@@ -86,14 +87,14 @@ function CategoryTilesGrid() {
 
 function InformationalFooter() {
   const columns = [
-    ["Um okkur", ["Saga Gardínulausna", "Vandaðar gardínur eftir máli"]],
-    ["Þjónusta", ["Heimaráðgjöf", "Mæling og uppsetning"]],
-    ["Flokkar", ["Hunangskambsgardínur", "Rúllugardínur", "WINdoûr Single", "WINdoûr Duo", "Thedoûr Hurðir & Net"]],
-    ["Hafa samband", ["hallo@gardinulausnir.is", "Fá ráðgjöf"]],
+    ["Um okkur", [{ label: "Saga Gardínulausna", href: "/um-okkur" }, { label: "Vandaðar gardínur eftir máli", href: "/um-okkur" }]],
+    ["Þjónusta", [{ label: "Heimaráðgjöf", href: "/maelingar" }, { label: "Mæling og uppsetning", href: "/maelingar" }]],
+    ["Flokkar", [{ label: "Hunangskambsgardínur", href: `${collectionHref}#honeycomb` }, { label: "Rúllugardínur", href: `${collectionHref}#roller` }, { label: "WINdoûr Single", href: `${collectionHref}#windour-single` }, { label: "WINdoûr Duo", href: `${collectionHref}#windour-duo` }, { label: "Thedoûr Hurðir & Net", href: `${collectionHref}#thedour-doors` }]],
+    ["Hafa samband", [{ label: "hallo@gardinulausnir.is", href: "mailto:hallo@gardinulausnir.is" }, { label: "Fá ráðgjöf", href: "/maelingar" }]],
   ] as const;
   return <footer className="border-t border-[#24313b]/10 bg-[#eaf1f5] px-5 py-12 md:px-10 md:py-16">
     <div className="mx-auto grid max-w-[1480px] gap-10 sm:grid-cols-2 lg:grid-cols-4">
-      {columns.map(([title, links]) => <div key={title}><p className="text-[9px] uppercase tracking-[.2em] text-[#71808a]">{title}</p><div className="mt-4 grid gap-3 text-[10px] uppercase tracking-[.13em] text-[#43515a]">{links.map((link) => <span key={link}>{link}</span>)}</div></div>)}
+      {columns.map(([title, links]) => <div key={title}><p className="text-[9px] uppercase tracking-[.2em] text-[#71808a]">{title}</p><div className="mt-4 grid gap-3 text-[10px] uppercase tracking-[.13em] text-[#43515a]">{links.map((link) => <Link key={link.label} href={link.href} className="hover:text-[#6892b8] transition-colors">{link.label}</Link>)}</div></div>)}
     </div>
     <p className="mx-auto mt-12 max-w-[1480px] border-t border-[#24313b]/10 pt-5 font-serif text-2xl text-[#24313b]">Gardínulausnir.is</p>
   </footer>;

@@ -68,6 +68,37 @@ assert.match(rollerSource, /const \[bottomRailColor, setBottomRailColor\] = useS
 assert.match(rollerSource, /BOTTOM_RAIL_COLORS\.map/, "roller bottom rail colour selector missing");
 assert.match(rollerSource, /cassette: `\$\{cassette\.code\} — \$\{cassette\.is\}`/, "roller cart payload must preserve cassette code and description");
 assert.match(rollerSource, /rail: `\$\{bottomRail\.is\} \(\$\{bottomRail\.dims\}\) · \$\{bottomRailColor\}`/, "roller cart payload must preserve rail dimensions and colour");
+
+// Fabric type changes must filter both controls from the same source list and
+// immediately move the selected identity into the new eligible collection.
+assert.match(rollerSource, /fabricFilter === "blackout" && f\.category === "Myrkvun \/ Blackout"/, "roller blackout filter must use the blackout collection");
+assert.match(rollerSource, /fabricFilter === "light-filtering" && f\.category === "Hálfgegnsætt \/ Translucent"/, "roller light-filtering filter must use its own collection");
+assert.match(rollerSource, /setFabricCode\(eligible\[0\]\?\.code/, "roller filter must reset a stale fabric selection");
+assert.match(rollerSource, /grouped\.flatMap\(\(\[, group\]\) => group\.items\)/, "roller swatches must use the filtered dropdown groups");
+assert.match(rollerSource, /group\.items\.map\(\(f\)/, "roller dropdown must use the same filtered groups as swatches");
+assert.match(rollerSource, /code: "TSD2262-4", shade: "Chrome",\s+pricePerSqmUSD: 33\.48/, "light-filtering roller source rate changed");
+assert.match(rollerSource, /code: "BO-0101", shade: "White",\s+pricePerSqmUSD: 36\.28/, "blackout roller source rate changed");
+
+for (const name of ["HoneycombCalculator", "Honeycomb25Calculator", "TDBUCalculator", "VerticalCalculator", "ZebraBlindCalculator"]) {
+  const code = await source(name);
+  assert.match(code, /fabricType/, `${name} must expose a real fabric type selector`);
+  assert.match(code, /grouped\[fabricType\]/, `${name} swatches must be limited to the selected fabric type`);
+  assert.match(code, /setFabricCode\(grouped\[fabricType\]\[0\]\?\.code/, `${name} must reset a stale fabric identity after type changes`);
+}
+assert.match(await source("HoneycombCalculator"), /KT401: \{ type: "translucent", usdPerSqm: 12\.50 \}/, "honeycomb light-filtering source rate changed");
+assert.match(await source("HoneycombCalculator"), /KB401: \{ type: "blackout", usdPerSqm: 14\.26 \}/, "honeycomb blackout source rate changed");
+assert.match(await source("VerticalCalculator"), /KT401: \{ type: "translucent", usdPerSqm: 36\.41 \}/, "vertical light-filtering source rate changed");
+assert.match(await source("VerticalCalculator"), /KB401: \{ type: "blackout", usdPerSqm: 42\.48 \}/, "vertical blackout source rate changed");
+for (const name of ["DayNightCalculator", "DualRollerCalculator"]) {
+  const code = await source(name);
+  assert.match(code, /setFrontCode\(\(prev\) =>/, `${name} must reset the front layer when its real fabric family changes`);
+  assert.match(code, /setBackCode\(\(prev\) =>/, `${name} must reset the back layer when its real fabric family changes`);
+  assert.match(code, /frontCode:/, `${name} cart payload must preserve the selected front fabric code`);
+  assert.match(code, /backCode:/, `${name} cart payload must preserve the selected back fabric code`);
+}
+const sharedFabricSource = await readFile(join(root, "src", "pages", "storefront", "_shared", "fabrics.ts"), "utf8");
+assert.match(sharedFabricSource, /new Set\(\["roller", "screen"\]\)/, "light-filtering roller collections must preserve roller/screen support");
+assert.match(sharedFabricSource, /new Set\(\["blackout"\]\)/, "blackout roller collection must remain distinct from light filtering");
 const honeycomb25Source = await source("Honeycomb25Calculator");
 assert.match(honeycomb25Source, /resolveRailColor/, "25 mm honeycomb must reset invalid finish colours");
 assert.match(honeycomb25Source, /operation === "motor" \? MOTORIZED_RAIL_COLORS : CASSETTE_RAIL_COLORS/, "25 mm honeycomb must switch finish options with operation");

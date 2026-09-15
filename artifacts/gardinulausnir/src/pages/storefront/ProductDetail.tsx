@@ -214,10 +214,10 @@ export function ProductDetail() {
                 </div>
 
                 {isCustomizer && <div className="border-b border-[#ccd9df] py-6">
-                  <div className="mb-4 flex justify-between text-[10px] uppercase tracking-[.18em]"><span>Dúkagerð</span><span className="text-[#667984]">{opacity === "blackout" ? "100% myrkvun" : "Hálfgegnsætt"}</span></div>
+                  <div className="mb-4 flex justify-between text-[10px] uppercase tracking-[.18em]"><span>Dúkagerð</span><span className="text-[#667984]">{opacity === "blackout" ? "Myrkvun / Blackout" : "Ljós síað / Light filtering"}</span></div>
                   <div className="grid grid-cols-2 gap-2">
-                    <button onClick={() => { setOpacity("blackout"); setFabricIndex(0); setImageView("primary"); }} className={`border px-3 py-3 text-left text-[11px] ${opacity === "blackout" ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>100% myrkvun<span className="mt-1 block text-[9px] text-[#667984]">Blackout</span></button>
-                    <button onClick={() => { setOpacity("light-filtering"); setFabricIndex(0); setImageView("secondary"); }} className={`border px-3 py-3 text-left text-[11px] ${opacity === "light-filtering" ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>Hálfgegnsætt<span className="mt-1 block text-[9px] text-[#667984]">Ljósdempað</span></button>
+                    <button data-testid="opacity-blackout" onClick={() => { setOpacity("blackout"); setFabricIndex(0); setImageView("primary"); }} className={`border px-3 py-3 text-left text-[11px] ${opacity === "blackout" ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>Myrkvun<span className="mt-1 block text-[9px] text-[#667984]">Blackout · 100%</span></button>
+                    <button data-testid="opacity-light-filtering" onClick={() => { setOpacity("light-filtering"); setFabricIndex(0); setImageView("secondary"); }} className={`border px-3 py-3 text-left text-[11px] ${opacity === "light-filtering" ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>Ljós síað<span className="mt-1 block text-[9px] text-[#667984]">Light filtering</span></button>
                   </div>
                 </div>}
 

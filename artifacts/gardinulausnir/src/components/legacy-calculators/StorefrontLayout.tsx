@@ -118,7 +118,14 @@ export function StorefrontLayout({
                 <span className="mt-1 block text-sm text-[#24313b]">{activeFabric.name}</span>
               </span>
             </div>
-          ) : null}
+          ) : (
+            <div className="mt-3 flex items-center gap-3 border border-[#ccd9df] bg-[#f7f9fa] p-3">
+              <span>
+                <span className="block text-[9px] uppercase tracking-[.16em] text-[#667984]">Valið efni</span>
+                <span className="mt-1 block text-sm text-[#24313b]">{activeFabric.name}</span>
+              </span>
+            </div>
+          )}
         </div>
       </div>
 

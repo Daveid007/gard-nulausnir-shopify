@@ -1,8 +1,14 @@
+import { categoryLabel, resolveProductCategory } from "./collectionCategories";
+
 export type Product = {
   id: string;
   title: string;
   subtitle: string;
   category: string;
+  productType?: string;
+  tags?: string[];
+  collectionHandles?: string[];
+  collectionTitles?: string[];
   price: string;
   image: string;
   secondary: string;
@@ -49,10 +55,12 @@ const catalogProducts: Product[] = [
 
 export const products = catalogProducts
   .filter(product => product.category !== "Thedoûr - Baðlausnir")
-  .map(product => ({
-    ...product,
-    category: product.id.startsWith("windour-single-") ? "WINdoûr Single"
-      : product.id.startsWith("windour-duo-") ? "WINdoûr Duo" : product.category,
-  }));
+  .map(product => {
+    const resolvedCategory = resolveProductCategory(product);
+    return {
+      ...product,
+      category: resolvedCategory ? categoryLabel(resolvedCategory) : product.category,
+    };
+  });
 
 export const categories = ["Allt", "Hunangskambsgardínur", "Rúllugardínur", "WINdoûr Single", "WINdoûr Duo", "Thedoûr - Hurðir & Net"];

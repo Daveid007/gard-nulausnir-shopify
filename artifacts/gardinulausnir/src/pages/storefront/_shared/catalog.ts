@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
 import { products as verifiedProducts, type Product } from "./data";
+import {
+  categoryLabel,
+  resolveProductCategory,
+  type CollectionCategoryKey,
+} from "./collectionCategories";
 
 type ShopifyImage = { url: string; altText: string | null };
 type ShopifyMoney = { amount: string; currencyCode: string };
@@ -8,6 +13,8 @@ type ShopifyProduct = {
   title: string;
   handle: string;
   description: string;
+  productType?: string;
+  tags?: string[];
   featuredImage: ShopifyImage | null;
   images?: { nodes: ShopifyImage[] };
   priceRange: { minVariantPrice: ShopifyMoney };
@@ -39,16 +46,15 @@ function formatPrice(money: ShopifyMoney | undefined, fallback: string) {
 }
 
 function collectionCategory(collection: ShopifyCollection): string | null {
-  const value = `${collection.handle} ${collection.title}`.toLocaleLowerCase("is");
-  if (/honeycomb|hunangskamb|cellular/.test(value)) return "Hunangskambsgardínur";
-  if (/roller|rúllu|rullu/.test(value)) return "Rúllugardínur";
-  if (/windour|gluggalausn/.test(value)) return "Thedoûr - Gluggalausnir";
-  if (/bath|bað|badlausn|flexdour/.test(value)) return "Thedoûr - Baðlausnir";
-  if (/blinddour|netdour|roldour|hurð|hurd|insect|screen/.test(value)) return "Thedoûr - Hurðir & Net";
-  return null;
+  const category = resolveProductCategory({
+    id: "",
+    collectionHandles: [collection.handle],
+    collectionTitles: [collection.title],
+  });
+  return category ? categoryLabel(category) : null;
 }
 
-function mergeLiveProduct(live: ShopifyProduct, fallback: Product, category = fallback.category): Product {
+function mergeLiveProduct(live: ShopifyProduct, fallback: Product, category: CollectionCategoryKey, collection?: ShopifyCollection): Product {
   const images = live.images?.nodes ?? [];
   return {
     ...fallback,
@@ -56,7 +62,11 @@ function mergeLiveProduct(live: ShopifyProduct, fallback: Product, category = fa
     shopifyHandle: live.handle,
     title: live.title || fallback.title,
     subtitle: live.description?.trim() || fallback.subtitle,
-    category: fallback.id.startsWith("windour-") ? fallback.category : category,
+    category: categoryLabel(category),
+    productType: live.productType,
+    tags: live.tags,
+    collectionHandles: collection ? [collection.handle] : fallback.collectionHandles,
+    collectionTitles: collection ? [collection.title] : fallback.collectionTitles,
     price: formatPrice(live.priceRange?.minVariantPrice, fallback.price),
     image: live.featuredImage?.url || images[0]?.url || fallback.image,
     secondary: images[1]?.url || fallback.secondary,
@@ -72,18 +82,28 @@ function mergeCatalog(catalog: ShopifyCatalogResponse): { products: Product[]; l
   );
   let liveCount = 0;
 
-  const merge = (live: ShopifyProduct, category?: string) => {
+  const merge = (live: ShopifyProduct, collection?: ShopifyCollection) => {
     const fallback = byHandle.get(live.handle);
-    if (!fallback || category === "Thedoûr - Baðlausnir") return;
-    result.set(fallback.id, mergeLiveProduct(live, fallback, category));
+    if (!fallback) return;
+
+    const category = resolveProductCategory({
+      id: fallback.id,
+      category: collection ? collectionCategory(collection) ?? undefined : fallback.category,
+      productType: live.productType,
+      tags: live.tags,
+      collectionHandles: collection ? [collection.handle] : undefined,
+      collectionTitles: collection ? [collection.title] : undefined,
+    });
+    if (!category) return;
+
+    result.set(fallback.id, mergeLiveProduct(live, fallback, category, collection));
     liveCount += 1;
   };
 
   for (const live of catalog.products?.nodes ?? []) merge(live);
   for (const collection of catalog.collections?.nodes ?? []) {
-    const category = collectionCategory(collection);
-    if (!category) continue;
-    for (const live of collection.products.nodes) merge(live, category);
+    if (!collectionCategory(collection)) continue;
+    for (const live of collection.products.nodes) merge(live, collection);
   }
 
   return { products: [...result.values()], liveCount };

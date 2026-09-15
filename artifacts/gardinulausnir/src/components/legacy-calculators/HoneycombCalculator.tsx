@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRailColor } from "@/lib/railColor";
 import { AnimatePresence, motion } from "framer-motion";
 import { Calculator, Check, Info, Layers, Moon, ShoppingBag, Sun, SunMedium } from "lucide-react";
@@ -99,10 +99,10 @@ const STANDARD_FABRICS: StandardFabric[] = Object.keys(STANDARD_PRICING).map((co
 });
 
 const TYPE_LABELS: Record<FabricType, { is: string; en: string }> = {
-  sheer:       { is: "Slæðu",            en: "Sheer" },
-  translucent: { is: "Hálfgegnsætt",     en: "Translucent" },
-  blackout:    { is: "Myrkrið",          en: "Blackout" },
-  dualdeck:    { is: "Tvöfalt myrkrið",  en: "Dual-Deck Blackout" },
+  sheer:       { is: "Gegnsætt / Sheer",             en: "Sheer" },
+  translucent: { is: "Ljós síað / Light filtering",   en: "Translucent" },
+  blackout:    { is: "Myrkvun / Blackout",           en: "Blackout" },
+  dualdeck:    { is: "Tvöföld myrkvun / Dual",       en: "Dual-Deck Blackout" },
 };
 
 
@@ -177,6 +177,7 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
   const [height, setHeight] = useState<number>(1500);
   const [quantity, setQuantity] = useState<number>(1);
   const [fabricCode, setFabricCode] = useState<string>("KT401");
+  const [fabricType, setFabricType] = useState<FabricType>("translucent");
   const [operation, setOperation] = useState<Operation>("manual");
   const [sideTrack, setSideTrack] = useState<boolean>(false);
   const { railColor, setRailColor } = useRailColor();
@@ -199,16 +200,22 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
     setOperation(next);
   }
 
-  const fabric = useMemo(
-    () => STANDARD_FABRICS.find((f) => f.code === fabricCode) ?? STANDARD_FABRICS[0],
-    [fabricCode],
-  );
-
   const grouped = useMemo(() => {
     const groups: Record<FabricType, StandardFabric[]> = { sheer: [], translucent: [], blackout: [], dualdeck: [] };
     for (const f of STANDARD_FABRICS) groups[f.type].push(f);
     return groups;
   }, []);
+
+  const fabric = useMemo(
+    () => grouped[fabricType].find((f) => f.code === fabricCode) ?? grouped[fabricType][0] ?? STANDARD_FABRICS[0],
+    [fabricCode, fabricType, grouped],
+  );
+
+  useEffect(() => {
+    if (!grouped[fabricType].some((f) => f.code === fabricCode)) {
+      setFabricCode(grouped[fabricType][0]?.code ?? STANDARD_FABRICS[0].code);
+    }
+  }, [fabricCode, fabricType, grouped]);
 
   const calc = useMemo(() => {
     const w = Math.max(0.3, width / 1000);
@@ -278,7 +285,24 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
           </div>
           {!validSize && <p className="text-xs text-red-600">Stærð er utan framleiðslumarka (80–275 × 50–300 cm, hámark 5,6 m²).</p>}
           <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Stýring</span><div className="grid grid-cols-3 gap-2">{(["manual", "cordless", "motor"] as Operation[]).map((item) => <button type="button" key={item} onClick={() => handleOperationChange(item)} className={`border px-2 py-3 text-[10px] uppercase ${operation === item ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{item === "manual" ? "Handvirk" : item === "cordless" ? "Þráðlaus" : "Mótor"}</button>)}</div></div>
-          <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Ljós og efni</span><div className="flex flex-wrap gap-2">{(["sheer", "translucent", "blackout", "dualdeck"] as FabricType[]).map((type) => <div key={type} className="contents">{grouped[type].map((item) => <button type="button" key={item.code} onClick={() => setFabricCode(item.code)} className={`relative h-11 w-11 overflow-hidden rounded-full border ${fabricCode === item.code ? "border-[#24313b]" : "border-transparent"}`} aria-label={`Velja ${item.name}`}><img src={item.image} alt="" className="h-full w-full object-contain" />{fabricCode === item.code && <Check size={13} className="absolute inset-0 m-auto" />}</button>)}</div>)}</div></div>
+          <div>
+            <span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Ljós og efni</span>
+            <div className="mb-3 grid grid-cols-2 gap-2" data-testid="honeycomb-fabric-types">
+              {(["sheer", "translucent", "blackout", "dualdeck"] as FabricType[]).map((type) => (
+                <button type="button" key={type} onClick={() => setFabricType(type)} aria-pressed={fabricType === type} data-testid={`honeycomb-fabric-type-${type}`} className={`border px-2 py-2 text-[10px] uppercase tracking-[.06em] ${fabricType === type ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>
+                  {TYPE_LABELS[type].is}
+                </button>
+              ))}
+            </div>
+            <div data-testid="honeycomb-fabrics" className="flex flex-wrap gap-2">
+              {grouped[fabricType].map((item) => (
+                <button type="button" key={item.code} onClick={() => setFabricCode(item.code)} className={`relative h-11 w-11 overflow-hidden rounded-full border ${fabric.code === item.code ? "border-[#24313b]" : "border-transparent"}`} aria-label={`Velja ${item.is} · ${item.name} (${item.code})`} aria-pressed={fabric.code === item.code}>
+                  <img src={item.image} alt={item.is} className="h-full w-full object-contain" />
+                  {fabric.code === item.code && <Check size={13} className="absolute inset-0 m-auto" />}
+                </button>
+              ))}
+            </div>
+          </div>
           <label className="flex items-center justify-between border border-[#ccd9df] px-3 py-3 text-[10px] uppercase"><span>Hliðarspor</span><input type="checkbox" checked={sideTrack} onChange={(e) => setSideTrack(e.target.checked)} /></label>
           <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Litur á botnlistum</span><div className="flex flex-wrap gap-2">{HONEYCOMB_BOTTOM_RAIL_COLORS.map((item) => <button type="button" key={item.value} onClick={() => setBottomRailColor(item.value)} className={`border px-3 py-2 text-[10px] ${bottomRailColor === item.value ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{item.value}</button>)}</div></div>
           <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Finish · litur á braut</span><div className="flex flex-wrap gap-2">{(operation === "motor" ? MOTORIZED_RAIL_COLORS : CASSETTE_RAIL_COLORS).map((item) => <button type="button" key={item.value} onClick={() => setRailColor(item.value)} className={`border px-3 py-2 text-[10px] ${railColor === item.value ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{item.value}</button>)}</div></div>
