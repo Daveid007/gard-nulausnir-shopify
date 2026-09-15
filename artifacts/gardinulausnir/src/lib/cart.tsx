@@ -5,6 +5,13 @@ import {
   DUAL_ROLLER_RETAIL_ISK,
 } from "./dualRollerPricing";
 import { normalizeQuantity } from "./quantity";
+import {
+  calculateWindourQuote,
+  isWindourProductId,
+  WINDOUR_QUOTE_VALID_DAYS,
+  type WindourMaterial,
+  type WindourProductId,
+} from "./windourPricing";
 
 const USD_TO_ISK_RETAIL = 461;
 // Aukahlutir (motor, hliðarspor, snærislaust, lásahaldari): frakt 20% → $1 × 1.2 × 124 × 1.5 × 1.24 ≈ 276.
@@ -155,6 +162,24 @@ export type ZebraCartItem = {
   railColor: string;
 };
 
+export type WindourCartItem = {
+  id: string;
+  type: "windour";
+  qty: number;
+  productId: WindourProductId;
+  widthCm: number;
+  heightCm: number;
+  material: WindourMaterial;
+  materialLabel: string;
+  supplierUsdPerSqm: number;
+  chargeableSqm: number;
+  unitIsk: number;
+  quoteStatus: "provisional";
+  supplierConfirmationPending: true;
+  quoteExpiresInDays: number;
+  quoteExpiryLabel: string;
+};
+
 export type CartItem =
   | RollerCartItem
   | DaynightCartItem
@@ -163,7 +188,8 @@ export type CartItem =
   | TdbuCartItem
   | VerticalCartItem
   | DualRollerCartItem
-  | ZebraCartItem;
+  | ZebraCartItem
+  | WindourCartItem;
 
 export type NewCartItem =
   | Omit<RollerCartItem, "id">
@@ -173,7 +199,8 @@ export type NewCartItem =
   | Omit<TdbuCartItem, "id">
   | Omit<VerticalCartItem, "id">
   | Omit<DualRollerCartItem, "id">
-  | Omit<ZebraCartItem, "id">;
+  | Omit<ZebraCartItem, "id">
+  | Omit<WindourCartItem, "id">;
 
 type CartContextValue = {
   items: CartItem[];
@@ -192,9 +219,20 @@ const CartContext = createContext<CartContextValue | null>(null);
 
 const STORAGE_KEY = "solmyrkvun.cart.v1";
 
-// ISK is effectively zero-decimal in Stripe and must be divisible by 100.
-// Match the server: ceil each unit price to nearest 100 ISK before quantity.
+// Legacy blind items match the server by ceiling each unit price to the
+// nearest 100 ISK before quantity. WINdoûr estimates use their approved
+// whole-ISK per-unit quote rounding instead.
 export function priceLineIsk(item: CartItem): number {
+  if (item.type === "windour") {
+    const quote = calculateWindourQuote({
+      productId: item.productId,
+      widthCm: item.widthCm,
+      heightCm: item.heightCm,
+      quantity: item.qty,
+      material: item.material,
+    });
+    return quote ? quote.unitIsk * item.qty : 0;
+  }
   if (item.type === "dualroller") {
     return calculateDualRollerCartTotal({
       width: item.width,
@@ -211,6 +249,16 @@ export function priceLineIsk(item: CartItem): number {
 }
 
 export function priceCartItem(item: CartItem): number {
+  if (item.type === "windour") {
+    const quote = calculateWindourQuote({
+      productId: item.productId,
+      widthCm: item.widthCm,
+      heightCm: item.heightCm,
+      quantity: 1,
+      material: item.material,
+    });
+    return quote?.totalUsd ?? 0;
+  }
   const w = item.width / 1000;
   const h = item.height / 1000;
   if (item.type === "roller") {
@@ -261,6 +309,14 @@ export function priceCartItem(item: CartItem): number {
 
 export function describeCartItem(item: CartItem): { title: string; sub: string } {
   const HOLDER_LABEL: Record<string, string> = { white: "Hvítur", navy: "Marínublár", black: "Svartur" };
+  if (item.type === "windour") {
+    const tier = item.productId.endsWith("-999") ? "999" : "2000";
+    const kind = item.productId.includes("-duo-") ? "Duo" : "Single";
+    return {
+      title: `WINdoûr ${kind} ${tier} · ÁÆTLUN`,
+      sub: `${item.widthCm}×${item.heightCm} cm · ${item.materialLabel} · ${item.chargeableSqm.toFixed(2)} m² · ${item.quoteExpiresInDays} daga provisional quote (${item.quoteExpiryLabel}) · staðfesting birgis vantar`,
+    };
+  }
   if (item.type === "roller") {
     const opLabel =
       item.operation === "motor"
@@ -331,6 +387,34 @@ function isFiniteNumber(v: unknown): v is number {
 function migrateCartItem(raw: unknown): CartItem | null {
   if (!raw || typeof raw !== "object") return null;
   const item = raw as Record<string, unknown>;
+  if (item.type === "windour") {
+    if (
+      typeof item.id !== "string" ||
+      !isFiniteNumber(item.qty) || item.qty < 1 ||
+      typeof item.productId !== "string" || !isWindourProductId(item.productId) ||
+      !isFiniteNumber(item.widthCm) || item.widthCm <= 0 ||
+      !isFiniteNumber(item.heightCm) || item.heightCm <= 0 ||
+      (item.material !== "honeycomb" && item.material !== "polyester-net" && item.material !== "taiwan-pet-net") ||
+      typeof item.materialLabel !== "string" ||
+      !isFiniteNumber(item.supplierUsdPerSqm) ||
+      !isFiniteNumber(item.chargeableSqm) ||
+      !isFiniteNumber(item.unitIsk) ||
+      item.quoteStatus !== "provisional" ||
+      item.supplierConfirmationPending !== true ||
+      item.quoteExpiresInDays !== WINDOUR_QUOTE_VALID_DAYS ||
+      typeof item.quoteExpiryLabel !== "string"
+    ) return null;
+    const quote = calculateWindourQuote({
+      productId: item.productId,
+      widthCm: item.widthCm,
+      heightCm: item.heightCm,
+      quantity: normalizeQuantity(item.qty),
+      material: item.material,
+    });
+    if (!quote || quote.unitIsk !== item.unitIsk) return null;
+    item.qty = normalizeQuantity(item.qty);
+    return item as unknown as WindourCartItem;
+  }
   // Common shape: id + qty + width + height must be sane numbers/strings.
   if (
     typeof item.id !== "string" ||

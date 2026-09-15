@@ -9,7 +9,8 @@
     "serve": "vite preview --config vite.config.ts --host 0.0.0.0",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test:calculators": "node --experimental-strip-types scripts/test-legacy-calculators.mjs",
-    "test:collection": "node --experimental-strip-types scripts/test-collection-filter.mjs"
+    "test:collection": "node --experimental-strip-types scripts/test-collection-filter.mjs",
+    "test:windour": "node --experimental-strip-types scripts/test-windour-pricing.mjs"
   },
   "devDependencies": {
     "@hookform/resolvers": "^3.10.0",

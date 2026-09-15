@@ -13,6 +13,9 @@ export function StorefrontLayout({
   setQuantity,
   canAddToCart = true,
   roundPricePerUnit = true,
+   priceRounding = "hundred-ceil",
+   priceText,
+   priceLabel,
 }: {
   product: any;
   priceISK: number;
@@ -23,6 +26,9 @@ export function StorefrontLayout({
   setQuantity: (q: number) => void;
   canAddToCart?: boolean;
   roundPricePerUnit?: boolean;
+   priceRounding?: "hundred-ceil" | "exact";
+   priceText?: string;
+   priceLabel?: string;
 }) {
   const [imageView, setImageView] = useState<"primary" | "secondary">("primary");
   const [openDetail, setOpenDetail] = useState<string | null>("Efni & ljós");
@@ -45,9 +51,11 @@ export function StorefrontLayout({
   // Cart totals are charged in whole hundreds of ISK. All calculators except
   // dual roller round each unit before multiplying; dual roller's existing
   // cart helper rounds its complete line total.
-  const displayPriceISK = roundPricePerUnit
-    ? Math.ceil((priceISK / safeQuantity) / 100) * 100 * safeQuantity
-    : Math.ceil(priceISK / 100) * 100;
+  const displayPriceISK = priceRounding === "exact"
+    ? Math.round(priceISK)
+    : roundPricePerUnit
+      ? Math.ceil((priceISK / safeQuantity) / 100) * 100 * safeQuantity
+      : Math.ceil(priceISK / 100) * 100;
 
   return (
     <div data-testid="product-box" className="grid min-w-0 gap-8 md:grid-cols-[minmax(0,1.12fr)_minmax(370px,.88fr)] md:gap-14">
@@ -135,7 +143,10 @@ export function StorefrontLayout({
         <h1 className="font-serif text-[clamp(2.7rem,4.8vw,5.2rem)] leading-[.9] tracking-[-.06em]">{product.title}</h1>
         <div className="mt-7 flex items-end justify-between gap-5 border-b border-[#ccd9df] pb-5">
           <p className="text-sm text-[#5a6b74]">{product.subtitle}</p>
-          <p data-testid="live-price" aria-live="polite" className="whitespace-nowrap font-serif text-2xl tracking-tight">{displayPriceISK.toLocaleString("is-IS")} kr.</p>
+           <div className="text-right">
+             {priceLabel && <p className="mb-1 text-[9px] uppercase tracking-[.14em] text-[#6892b8]">{priceLabel}</p>}
+             <p data-testid="live-price" aria-live="polite" className="whitespace-nowrap font-serif text-2xl tracking-tight">{priceText ?? `${displayPriceISK.toLocaleString("is-IS")} kr.`}</p>
+           </div>
         </div>
 
         <div data-testid="config-card">{controls}</div>

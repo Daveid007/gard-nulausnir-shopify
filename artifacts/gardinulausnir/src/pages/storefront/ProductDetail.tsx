@@ -8,7 +8,9 @@ import { LEGACY_CART_OPEN_EVENT, LegacyCalculator, type LegacyCalculatorKind } f
 import { ProductInfoFooter } from "@/components/ProductInfoFooter";
 import { MeasurementGuideTrigger } from "@/components/MeasurementGuide";
 import { ResponsiveImage } from "@/components/ResponsiveImage";
+import WindourCalculator, { WINDOUR_CART_OPEN_EVENT } from "@/components/WindourCalculator";
 import type { RollerProductIdentity } from "@/components/legacy-calculators/PriceCalculator";
+import { isWindourProductId } from "@/lib/windourPricing";
 import NotFound from "@/pages/not-found";
 
 import {
@@ -44,6 +46,7 @@ export function ProductDetail() {
   if (!product) return <NotFound />;
   const isRoller = product.category === "Rúllugardínur";
   const isHoneycomb = product.category === "Hunangskambsgardínur";
+  const isWindour = isWindourProductId(product.id);
   const isCustomizer = isRoller || isHoneycomb;
   const rollerProduct: RollerProductIdentity | undefined =
     product.id === "square-cassette" || product.id === "arc-cassette" || product.id === "open-roll"
@@ -137,11 +140,15 @@ export function ProductDetail() {
           <nav className="hidden gap-8 text-[10px] uppercase tracking-[.18em] md:flex"><a href="#vörulýsing">{product.category}</a><a href="#upplýsingar">Leiðbeiningar</a><Link href="/maelingar">Mælingar</Link></nav>
           <div className="flex items-center gap-4">
             <button
-              aria-label={legacyCalculator ? "Opna reiknivélarkörfu" : "Opna körfu"}
-              onClick={() => legacyCalculator ? window.dispatchEvent(new Event(LEGACY_CART_OPEN_EVENT)) : setCartOpen(true)}
+              aria-label={legacyCalculator ? "Opna reiknivélarkörfu" : isWindour ? "Opna áætlunarkörfu" : "Opna körfu"}
+              onClick={() => {
+                if (legacyCalculator) window.dispatchEvent(new Event(LEGACY_CART_OPEN_EVENT));
+                else if (isWindour) window.dispatchEvent(new Event(WINDOUR_CART_OPEN_EVENT));
+                else setCartOpen(true);
+              }}
               className="flex items-center gap-2 text-[10px] uppercase tracking-[.18em]"
             >
-              <ShoppingBag size={16} /> <span className="hidden sm:inline">Karfa</span> {!legacyCalculator && <span className="grid h-5 w-5 place-items-center rounded-full bg-[#24313b] text-[9px] text-[#f7f9fa]">{cart}</span>}
+              <ShoppingBag size={16} /> <span className="hidden sm:inline">{isWindour ? "Áætlun" : "Karfa"}</span> {!legacyCalculator && !isWindour && <span className="grid h-5 w-5 place-items-center rounded-full bg-[#24313b] text-[9px] text-[#f7f9fa]">{cart}</span>}
             </button>
             <button type="button" onClick={() => setMobileNavOpen((open) => !open)} className="grid h-9 w-9 place-items-center md:hidden" aria-label={mobileNavOpen ? "Loka valmynd" : "Opna valmynd"}>
               {mobileNavOpen ? <X size={20} /> : <Menu size={20} />}
@@ -162,6 +169,8 @@ export function ProductDetail() {
         <section id="vörulýsing" className="mx-auto max-w-[1510px] px-5 pb-16 md:px-10 md:pb-28">
           {legacyCalculator ? (
             <LegacyCalculator kind={legacyCalculator} rollerProduct={rollerProduct} product={product} />
+          ) : isWindour ? (
+            <WindourCalculator key={product.id} product={product} />
           ) : (
              <div data-testid="product-box" className="grid min-w-0 md:grid-cols-[minmax(0,1.12fr)_minmax(370px,.88fr)] gap-8 md:gap-14">
                <div data-testid="gallery" className="grid min-w-0 grid-cols-[minmax(0,.27fr)_minmax(0,.73fr)] gap-3 md:gap-5 h-fit">
