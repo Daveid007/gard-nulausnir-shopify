@@ -5,6 +5,7 @@ import "./_group.css";
 import { BrandLogo } from "./_shared/BrandLogo";
 import { HelpDrawer } from "./_shared/HelpDrawer";
 import { ResponsiveImage } from "@/components/ResponsiveImage";
+import homepageFamily from "@/assets/homepage-family.jpg";
 
 const collectionHref = "/collection";
 
@@ -53,7 +54,7 @@ function HeroBanner() {
           <a href="#collections" className="sol-action mt-8 inline-flex w-fit items-center gap-3 px-5 py-3.5 text-[10px] uppercase tracking-[.17em]">Skoða gardínur <ArrowRight size={14} /></a>
         </div>
         <div className="relative flex min-h-[330px] items-center justify-center bg-[#edf2f4] p-5 md:min-h-[520px] md:p-10">
-          <ResponsiveImage src="https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-honeycomb-45mm.png?v=1787921250" alt="Hunangskambsgardína í ljósu rými" fetchPriority="high" sizes="(min-width: 768px) 55vw, 100vw" className="max-h-[460px] max-w-full object-contain" />
+          <ResponsiveImage src={homepageFamily} alt="Fjölskylda við glugga með hunangskambsgardínu" fetchPriority="high" sizes="(min-width: 768px) 55vw, 100vw" className="max-h-[460px] max-w-full object-contain" />
           <p className="absolute bottom-5 left-5 bg-[#f7f9fa]/90 px-3 py-2 text-[9px] uppercase tracking-[.17em] text-[#24313b] md:bottom-7 md:left-7">Ráðgjöf heima hjá þér</p>
         </div>
       </div>
