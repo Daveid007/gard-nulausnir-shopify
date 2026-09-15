@@ -1,3 +1,5 @@
+import { Link } from "wouter";
+
 export function ProductInfoFooter() {
   return (
     <footer data-testid="footer" className="border-t border-[#d8e1e5] bg-[#eaf1f5] px-5 py-12 md:px-10">
@@ -15,6 +17,7 @@ export function ProductInfoFooter() {
         <section>
           <h2 className="mb-4 text-sm font-semibold">Um okkur</h2>
           <p className="text-sm leading-6 text-[#5a6b74]">Gardínulausnir hjálpar þér að velja gardínur eftir málum, birtu og þörfum rýmisins.</p>
+          <Link className="mt-3 inline-block text-sm underline underline-offset-4" href="/um-okkur">Lestu söguna okkar</Link>
         </section>
         <section>
           <h2 className="mb-4 text-sm font-semibold">Algengar spurningar</h2>

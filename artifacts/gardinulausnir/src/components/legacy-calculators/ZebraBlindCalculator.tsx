@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRailColor } from "@/lib/railColor";
 import { motion } from "framer-motion";
 import { Calculator, Check, Info, ShoppingBag, Sun, SunMedium, Moon } from "lucide-react";
@@ -99,6 +99,7 @@ export default function ZebraBlindCalculator({ product }: { product?: any }) {
   const [height, setHeight]     = useState<number>(1500);
   const [quantity, setQuantity] = useState<number>(1);
   const [fabricCode, setFabricCode] = useState<string>("ZT-BL52");
+  const [fabricType, setFabricType] = useState<ZebraFabricType>("translucent");
   const [operation, setOperation]   = useState<Operation>("chain");
   const { railColor, setRailColor } = useRailColor();
   const [lastCassetteColor, setLastCassetteColor] = useState<string>(railColor);
@@ -122,11 +123,6 @@ export default function ZebraBlindCalculator({ product }: { product?: any }) {
     setHeight(h => Math.min(Math.max(h,  lim.minH), lim.maxH));
   }
 
-  const fabric = useMemo(
-    () => ZEBRA_FABRICS.find(f => f.code === fabricCode) ?? ZEBRA_FABRICS[0],
-    [fabricCode],
-  );
-
   const grouped = useMemo(() => {
     const g: Record<ZebraFabricType, ZebraFabric[]> = {
       "translucent": [], "room-darkening": [], "blackout": [],
@@ -134,6 +130,17 @@ export default function ZebraBlindCalculator({ product }: { product?: any }) {
     for (const f of ZEBRA_FABRICS) g[f.type].push(f);
     return g;
   }, []);
+
+  const fabric = useMemo(
+    () => grouped[fabricType].find((f) => f.code === fabricCode) ?? grouped[fabricType][0] ?? ZEBRA_FABRICS[0],
+    [fabricCode, fabricType, grouped],
+  );
+
+  useEffect(() => {
+    if (!grouped[fabricType].some((f) => f.code === fabricCode)) {
+      setFabricCode(grouped[fabricType][0]?.code ?? ZEBRA_FABRICS[0].code);
+    }
+  }, [fabricCode, fabricType, grouped]);
 
   const lim = SIZE_LIMITS[operation];
 
@@ -180,7 +187,26 @@ export default function ZebraBlindCalculator({ product }: { product?: any }) {
       onAddToCart={addToCart}
       controls={
         <div className="space-y-5 border-b border-[#ccd9df] py-6">
-          <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Ljós og efni</span><div className="flex flex-wrap gap-2">{(Object.keys(grouped) as ZebraFabricType[]).flatMap((type) => grouped[type]).map((item) => <button type="button" key={item.code} onClick={() => setFabricCode(item.code)} className={`border px-3 py-2 text-left text-[10px] ${fabric.code === item.code ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}><span className="mr-2 inline-block h-4 w-4 align-middle rounded-sm" style={{ backgroundColor: item.swatch }} />{item.series}</button>)}</div></div>
+          <div>
+            <span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Ljós og efni</span>
+            <div className="mb-3 grid grid-cols-3 gap-2" data-testid="zebra-fabric-types">
+              {(["translucent", "room-darkening", "blackout"] as ZebraFabricType[]).map((type) => {
+                const Icon = TYPE_ICONS[type];
+                return (
+                  <button type="button" key={type} onClick={() => setFabricType(type)} aria-pressed={fabricType === type} data-testid={`zebra-fabric-type-${type}`} className={`border px-2 py-2 text-[10px] uppercase tracking-[.04em] ${fabricType === type ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>
+                    <Icon size={13} className="mx-auto mb-1" />{TYPE_LABELS[type].is}
+                  </button>
+                );
+              })}
+            </div>
+            <div data-testid="zebra-fabrics" className="flex flex-wrap gap-2">
+              {grouped[fabricType].map((item) => (
+                <button type="button" key={item.code} onClick={() => setFabricCode(item.code)} aria-pressed={fabric.code === item.code} aria-label={`Velja ${item.is} · ${item.series}`} className={`border px-3 py-2 text-left text-[10px] ${fabric.code === item.code ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>
+                  <span className="mr-2 inline-block h-4 w-4 align-middle rounded-sm" style={{ backgroundColor: item.swatch }} />{item.series}
+                </button>
+              ))}
+            </div>
+          </div>
           <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Stýring</span><div className="grid grid-cols-3 gap-2">{(["chain", "cordless", "motor"] as Operation[]).map((item) => <button type="button" key={item} onClick={() => handleOperationChange(item)} className={`border px-2 py-3 text-[10px] uppercase ${operation === item ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{item === "chain" ? "Keðja" : item === "cordless" ? "Þráðlaus" : "Mótor"}</button>)}</div></div>
           <div className="mb-2 flex items-center justify-between gap-3">
             <span className="text-[10px] uppercase tracking-[.18em]">Mál</span>

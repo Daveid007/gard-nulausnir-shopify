@@ -8,6 +8,7 @@ import Homepage from '@/pages/storefront/Homepage';
 import Collection from '@/pages/storefront/Collection';
 import ProductDetail from '@/pages/storefront/ProductDetail';
 import MeasurementPage from '@/pages/storefront/MeasurementPage';
+import AboutPage from '@/pages/storefront/AboutPage';
 import {
   Route,
   Switch,
@@ -26,6 +27,7 @@ function Router() {
         <Route path="/" component={Homepage} />
         <Route path="/maelingar" component={MeasurementPage} />
         <Route path="/collection" component={Collection} />
+        <Route path="/um-okkur" component={AboutPage} />
         <Route path="/products/:id" component={ProductDetail} />
         <Route component={NotFound} />
       </Switch>

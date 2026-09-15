@@ -245,12 +245,20 @@ export function PriceCalculator({ productIdentity = "square-cassette", product }
   );
 
   const fabric = useMemo(
-    () => FABRICS.find((f) => f.code === fabricCode) ?? FABRICS[0],
-    [fabricCode],
+    () => {
+      const eligible = FABRICS.filter((f) =>
+        fabricFilter === "all" ||
+        (fabricFilter === "light-filtering" && f.category === "Hálfgegnsætt / Translucent") ||
+        (fabricFilter === "screen" && f.category === "Screen") ||
+        (fabricFilter === "blackout" && f.category === "Myrkvun / Blackout"),
+      );
+      return eligible.find((f) => f.code === fabricCode) ?? eligible[0] ?? FABRICS[0];
+    },
+    [fabricCode, fabricFilter],
   );
 
   const grouped = useMemo(() => {
-    const map = new Map<string, Fabric[]>();
+    const map = new Map<string, { category: string; series: string; items: Fabric[] }>();
     for (const f of FABRICS) {
       const matchesFilter =
         fabricFilter === "all" ||
@@ -258,12 +266,20 @@ export function PriceCalculator({ productIdentity = "square-cassette", product }
         (fabricFilter === "screen" && f.category === "Screen") ||
         (fabricFilter === "blackout" && f.category === "Myrkvun / Blackout");
       if (!matchesFilter) continue;
-      const arr = map.get(f.category) ?? [];
-      arr.push(f);
-      map.set(f.category, arr);
+      const key = `${f.category}::${f.series}`;
+      const group = map.get(key) ?? { category: f.category, series: f.series, items: [] };
+      group.items.push(f);
+      map.set(key, group);
     }
     return Array.from(map.entries());
   }, [fabricFilter]);
+
+  useEffect(() => {
+    const eligible = grouped.flatMap(([, group]) => group.items);
+    if (!eligible.some((item) => item.code === fabricCode)) {
+      setFabricCode(eligible[0]?.code ?? FABRICS[0].code);
+    }
+  }, [fabricCode, grouped]);
 
   const calc = useMemo(() => {
     const w = width / 1000;
@@ -360,33 +376,38 @@ export function PriceCalculator({ productIdentity = "square-cassette", product }
             <div data-testid="fabric-filters" className="mb-3 flex flex-wrap gap-2" role="group" aria-label="Sía eftir ljósstýringu">
               {([
                 ["all", "Allt"],
-                ["light-filtering", "Ljós síað"],
-                ["screen", "Skjáefni"],
-                ["blackout", "Myrkvun"],
+                ["light-filtering", "Ljós síað / Light filtering"],
+                ["screen", "Screen / Skúggarnet"],
+                ["blackout", "Myrkvun / Blackout"],
               ] as const).map(([value, label]) => (
                 <button type="button" key={value} onClick={() => setFabricFilter(value)} aria-pressed={fabricFilter === value} className={`border px-3 py-2 text-[10px] uppercase tracking-[.08em] ${fabricFilter === value ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{label}</button>
               ))}
             </div>
             <div data-testid="fabric-swatches" className="mb-4 grid max-h-64 grid-cols-5 gap-2 overflow-y-auto pr-1 sm:grid-cols-7">
-              {grouped.flatMap(([, items]) => items).map((item) => {
-                const image = ROLLER_SWATCH_IMAGES.get(item.code);
-                return (
-                  <button type="button" key={item.code} onClick={() => setFabricCode(item.code)} aria-label={`Velja ${item.series} ${item.shade}`} aria-pressed={fabric.code === item.code} className={`group relative aspect-square overflow-hidden border bg-[#eef3f5] ${fabric.code === item.code ? "border-2 border-[#24313b]" : "border-[#ccd9df]"}`}>
-                    {image ? <img src={image} alt="" className="h-full w-full object-contain" /> : <span className="grid h-full place-items-center p-1 text-center text-[8px] leading-tight text-[#43515a]">{item.shade}</span>}
-                    <span className="absolute inset-x-0 bottom-0 truncate bg-[#24313b]/75 px-1 py-1 text-[8px] text-white">{item.code}</span>
-                  </button>
-                );
-              })}
+              {grouped.map(([key, group]) => (
+                <div key={key} className="contents">
+                  <p className="col-span-full mt-1 text-[9px] uppercase tracking-[.12em] text-[#667984]">{group.series}</p>
+                  {group.items.map((item) => {
+                    const image = ROLLER_SWATCH_IMAGES.get(item.code);
+                    return (
+                      <button type="button" key={item.code} onClick={() => setFabricCode(item.code)} aria-label={`Velja ${item.series} ${item.shade}`} aria-pressed={fabric.code === item.code} className={`group relative aspect-square overflow-hidden border bg-[#eef3f5] ${fabric.code === item.code ? "border-2 border-[#24313b]" : "border-[#ccd9df]"}`}>
+                        {image ? <img src={image} alt="" className="h-full w-full object-contain" /> : <span className="grid h-full place-items-center p-1 text-center text-[8px] leading-tight text-[#43515a]">{item.shade}</span>}
+                        <span className="absolute inset-x-0 bottom-0 truncate bg-[#24313b]/75 px-1 py-1 text-[8px] text-white">{item.code}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              ))}
             </div>
             <Select value={fabricCode} onValueChange={setFabricCode}>
               <SelectTrigger className="w-full rounded-none border-[#ccd9df] h-12 text-sm focus:ring-0 focus:border-[#24313b]">
                 <SelectValue placeholder="Veldu efni" />
               </SelectTrigger>
               <SelectContent className="max-h-80 rounded-none border-[#ccd9df]">
-                {grouped.map(([cat, items]) => (
-                  <SelectGroup key={cat}>
-                    <SelectLabel className="text-[10px] uppercase tracking-[.1em] text-[#667984]">{cat}</SelectLabel>
-                    {items.map((f) => (
+                {grouped.map(([key, group]) => (
+                  <SelectGroup key={key}>
+                    <SelectLabel className="text-[10px] uppercase tracking-[.1em] text-[#667984]">{group.series} · {group.category}</SelectLabel>
+                    {group.items.map((f) => (
                       <SelectItem key={f.code} value={f.code} className="text-sm">
                         <span className="font-medium">{f.series}</span> — {f.code} {f.shade}
                       </SelectItem>

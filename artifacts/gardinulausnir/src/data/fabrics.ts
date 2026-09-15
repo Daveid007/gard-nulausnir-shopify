@@ -18,11 +18,11 @@ export interface Collection {
 }
 
 export const CATEGORY_LABELS: Record<FabricCategory, { is: string; en: string }> = {
-  roller:   { is: "Rúlluefni",   en: "Roller Fabric" },
-  screen:   { is: "Skúggarnet",  en: "Screen Fabric" },
-  blackout: { is: "Myrkvaefni",  en: "Blackout Fabric" },
-  sheer:    { is: "Gegnsætt",    en: "Sheer / Light-Filtering" },
-  mesh:     { is: "Fínnet",      en: "Fine Mesh" },
+  roller:   { is: "Ljós síað · Rúlluefni", en: "Light-filtering Roller Fabric" },
+  screen:   { is: "Screen · Skúggarnet",  en: "Screen Fabric" },
+  blackout: { is: "Myrkvun",              en: "Blackout Fabric" },
+  sheer:    { is: "Gegnsætt · Sheer",     en: "Sheer Fabric" },
+  mesh:     { is: "Fínnet · Mesh",         en: "Fine Mesh" },
 };
 
 export const COLLECTIONS: Collection[] = [

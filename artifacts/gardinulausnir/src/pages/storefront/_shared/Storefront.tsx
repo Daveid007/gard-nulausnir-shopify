@@ -4,6 +4,16 @@ import { Link } from "wouter";
 import type { Product } from "./data";
 import { BrandLogo } from "./BrandLogo";
 import { ResponsiveImage } from "@/components/ResponsiveImage";
+import { HelpDrawer } from "./HelpDrawer";
+import { collectionHref } from "./collectionCategories";
+
+const categoryLinks = [
+  ["Hunangskambur", collectionHref("honeycomb")],
+  ["Rúllugardínur", collectionHref("roller")],
+  ["WINdoûr Single", collectionHref("windour-single")],
+  ["WINdoûr Duo", collectionHref("windour-duo")],
+  ["Thedoûr Hurðir & Net", collectionHref("thedour-doors")],
+] as const;
 
 export function Header({ cartCount = 0, categoryNav = false, onCartClick }: { cartCount?: number; categoryNav?: boolean; onCartClick?: () => void }) {
   const [open, setOpen] = useState(false);
@@ -12,9 +22,10 @@ export function Header({ cartCount = 0, categoryNav = false, onCartClick }: { ca
       <div className="mx-auto flex h-[72px] max-w-[1480px] items-center justify-between px-5 md:px-10">
         <BrandLogo className="h-9 w-[182px] sm:h-10 sm:w-[202px]" />
         <nav className="hidden flex-1 justify-center gap-8 text-[10px] uppercase tracking-[.2em] text-[#43515a] md:flex">
-          {categoryNav ? <><a href="#honeycomb" className="transition-colors hover:text-[#6892b8]">Hunangskambur</a><a href="#roller" className="transition-colors hover:text-[#6892b8]">Rúllugardínur</a><a href="#windour-single" className="transition-colors hover:text-[#6892b8]">WINdoûr Single</a><a href="#windour-duo" className="transition-colors hover:text-[#6892b8]">WINdoûr Duo</a><a href="#thedour-doors" className="transition-colors hover:text-[#6892b8]">Thedoûr Hurðir & Net</a><Link href="/maelingar" className="transition-colors hover:text-[#6892b8]">Mælingar</Link></> : <><a href="#collection" className="transition-colors hover:text-[#6892b8]">Safnið</a><a href="#honeycomb" className="transition-colors hover:text-[#6892b8]">Myrkvun</a><a href="#specialist" className="transition-colors hover:text-[#6892b8]">Sérlausnir</a><Link href="/maelingar" className="transition-colors hover:text-[#6892b8]">Mælingar</Link></>}
+          {categoryNav ? <>{categoryLinks.map(([label, href]) => <Link key={label} href={href} className="transition-colors hover:text-[#6892b8]">{label}</Link>)}<Link href="/maelingar" className="transition-colors hover:text-[#6892b8]">Mælingar</Link></> : <><Link href="/collection" className="transition-colors hover:text-[#6892b8]">Safnið</Link><Link href={collectionHref("honeycomb")} className="transition-colors hover:text-[#6892b8]">Myrkvun</Link><Link href={collectionHref("thedour-doors")} className="transition-colors hover:text-[#6892b8]">Sérlausnir</Link><Link href="/maelingar" className="transition-colors hover:text-[#6892b8]">Mælingar</Link></>}
         </nav>
         <div className="flex items-center justify-end gap-4 md:min-w-[202px]">
+          <HelpDrawer />
           <button onClick={onCartClick} className="relative flex items-center gap-2 text-[10px] uppercase tracking-[.16em]" aria-label="Opna körfu">
             <ShoppingBag size={18} strokeWidth={1.25} /><span className="hidden sm:inline">Karfa</span>
             <span className="grid h-4 min-w-4 place-items-center rounded-full bg-[#a2c2e2] px-1 text-[9px]">{cartCount}</span>
@@ -23,7 +34,7 @@ export function Header({ cartCount = 0, categoryNav = false, onCartClick }: { ca
         </div>
       </div>
       {open && <nav className="border-t border-[#24313b]/10 px-5 py-5 md:hidden">
-        {(categoryNav ? [["Hunangskambur", "#honeycomb"], ["Rúllugardínur", "#roller"], ["WINdoûr Single", "#windour-single"], ["WINdoûr Duo", "#windour-duo"], ["Thedoûr Hurðir & Net", "#thedour-doors"], ["Mælingar", "/maelingar"]] : [["Safnið", "#collection"], ["Myrkvun", "#honeycomb"], ["Sérlausnir", "#specialist"], ["Mælingar", "/maelingar"]]).map(([label, href]) => href === "/maelingar" ? <Link key={label} href={href} onClick={() => setOpen(false)} className="block py-2 text-[11px] uppercase tracking-[.18em]">{label}</Link> : <a key={label} href={href} onClick={() => setOpen(false)} className="block py-2 text-[11px] uppercase tracking-[.18em]">{label}</a>)}
+        {(categoryNav ? [...categoryLinks, ["Mælingar", "/maelingar"] as const] : [["Safnið", "/collection"], ["Myrkvun", collectionHref("honeycomb")], ["Sérlausnir", collectionHref("thedour-doors")], ["Mælingar", "/maelingar"]] as const).map(([label, href]) => <Link key={label} href={href} onClick={() => setOpen(false)} className="block py-2 text-[11px] uppercase tracking-[.18em]">{label}</Link>)}
       </nav>}
     </header>
   );
@@ -57,10 +68,10 @@ export function ProductCard({ product, accentBadge = false }: { product: Product
   </article>;
 }
 
-export function ProductGrid({ items, accentBadges = false }: { items: Product[]; accentBadges?: boolean }) {
-  return <div className="grid grid-cols-2 gap-x-3 gap-y-12 md:grid-cols-3 md:gap-x-5 lg:grid-cols-4 lg:gap-x-6 lg:gap-y-16">{items.map(p => <ProductCard key={p.id} product={p} accentBadge={accentBadges} />)}</div>;
+export function ProductGrid({ items, accentBadges = false, testId }: { items: Product[]; accentBadges?: boolean; testId?: string }) {
+  return <div data-testid={testId} className="grid grid-cols-2 gap-x-3 gap-y-12 md:grid-cols-3 md:gap-x-5 lg:grid-cols-4 lg:gap-x-6 lg:gap-y-16">{items.map(p => <ProductCard key={p.id} product={p} accentBadge={accentBadges} />)}</div>;
 }
 
 export function Footer() {
-  return <footer className="mt-16 border-t border-[#24313b]/10 bg-[#eaf1f5] px-5 py-12 md:px-10"><div className="mx-auto flex max-w-[1480px] flex-col justify-between gap-10 md:flex-row"><div><p className="font-serif text-2xl">Gardínulausnir.is</p><p className="mt-3 max-w-xs text-xs leading-relaxed text-[#596872]">Gæða gardínur í þinn glugga. Vandaðar gardínur eftir máli og ráðgjöf við val, mælingar og uppsetningu.</p></div><div className="grid grid-cols-2 gap-x-16 gap-y-3 text-[10px] uppercase tracking-[.15em] text-[#43515a]"><a href="#collection">Gardínur</a><a href="mailto:hallo@gardinulausnir.is">Hafa samband</a><a href="#top">Upp á topp</a></div></div></footer>;
+  return <footer className="mt-16 border-t border-[#24313b]/10 bg-[#eaf1f5] px-5 py-12 md:px-10"><div className="mx-auto flex max-w-[1480px] flex-col justify-between gap-10 md:flex-row"><div><p className="font-serif text-2xl">Gardínulausnir.is</p><p className="mt-3 max-w-xs text-xs leading-relaxed text-[#596872]">Gæða gardínur í þinn glugga. Vandaðar gardínur eftir máli og ráðgjöf við val, mælingar og uppsetningu.</p></div><div className="grid grid-cols-2 gap-x-16 gap-y-3 text-[10px] uppercase tracking-[.15em] text-[#43515a]"><Link href="/collection">Gardínur</Link><Link href="/um-okkur">Um okkur</Link><a href="mailto:hallo@gardinulausnir.is">Hafa samband</a><a href="#top">Upp á topp</a></div></div></footer>;
 }

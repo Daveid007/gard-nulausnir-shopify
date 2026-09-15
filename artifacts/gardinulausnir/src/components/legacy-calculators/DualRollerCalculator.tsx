@@ -55,19 +55,19 @@ export const DUAL_ROLLER_COMBOS: Record<DualRollerComboKey, {
   usdPerSqm: number;
 }> = {
   "KS+KB": {
-    is: "Slæðu + Myrkrið",
+    is: "Gegnsætt + Myrkvun",
     en: "Sheer + Blackout",
     description: "Gegnsætt lag á daginn, fullkomið myrkur á nóttunni — í einu kerfi.",
     front: "KS", back: "KB", usdPerSqm: 64.48,
   },
   "KT+KB": {
-    is: "Hálfgegnsætt + Myrkrið",
+    is: "Ljós síað + Myrkvun",
     en: "Translucent + Blackout",
     description: "Mjúkt ljós á daginn, fullkomið myrkur á nóttunni.",
     front: "KT", back: "KB", usdPerSqm: 61.20,
   },
   "KS+KT": {
-    is: "Slæðu + Hálfgegnsætt",
+    is: "Gegnsætt + Ljós síað",
     en: "Sheer + Translucent",
     description: "Tvö lög af mjúku ljósi — einstaklega björt rými.",
     front: "KS", back: "KT", usdPerSqm: 62.50,
@@ -156,10 +156,10 @@ export default function DualRollerCalculator({ product }: { product?: any }) {
       onAddToCart={addToCart}
       controls={
         <div className="space-y-5 border-b border-[#ccd9df] py-6">
-          <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Samsetning tveggja laga</span><div className="grid grid-cols-3 gap-2">{DUAL_ROLLER_COMBO_KEYS.map((key) => <button type="button" key={key} onClick={() => selectCombo(key)} className={`border px-2 py-3 text-left text-[10px] ${comboKey === key ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{DUAL_ROLLER_COMBOS[key].is}</button>)}</div></div>
-          <div className="grid grid-cols-2 gap-3">
-             <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Fremra lag · {front.is}</span><div className="flex flex-wrap gap-2">{frontFabrics.map((item) => <button type="button" key={item.code} onClick={() => setFrontCode(item.code)} className={`h-11 w-11 overflow-hidden rounded-full border ${front.code === item.code ? "border-[#24313b]" : "border-transparent"}`} aria-label={`Velja ${item.name}`}><img src={item.image} alt="" className="h-full w-full object-contain" /></button>)}</div></div>
-             <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Aftara lag · {back.is}</span><div className="flex flex-wrap gap-2">{backFabrics.map((item) => <button type="button" key={item.code} onClick={() => setBackCode(item.code)} className={`h-11 w-11 overflow-hidden rounded-full border ${back.code === item.code ? "border-[#24313b]" : "border-transparent"}`} aria-label={`Velja ${item.name}`}><img src={item.image} alt="" className="h-full w-full object-contain" /></button>)}</div></div>
+           <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Samsetning tveggja laga</span><div className="grid grid-cols-3 gap-2">{DUAL_ROLLER_COMBO_KEYS.map((key) => <button type="button" key={key} data-testid={`dualroller-combo-${key}`} onClick={() => selectCombo(key)} aria-pressed={comboKey === key} className={`border px-2 py-3 text-left text-[10px] ${comboKey === key ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{DUAL_ROLLER_COMBOS[key].is}</button>)}</div></div>
+             <div className="grid grid-cols-2 gap-3">
+              <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Fremra lag · {front.is}</span><div data-testid="dualroller-front-fabrics" className="flex flex-wrap gap-2">{frontFabrics.map((item) => <button type="button" key={item.code} data-testid={`dualroller-front-${item.code}`} onClick={() => setFrontCode(item.code)} className={`h-11 w-11 overflow-hidden rounded-full border ${front.code === item.code ? "border-[#24313b]" : "border-transparent"}`} aria-label={`Velja ${item.is} · ${item.name} (${item.code})`} aria-pressed={front.code === item.code}><img src={item.image} alt={item.is} className="h-full w-full object-contain" /></button>)}</div></div>
+              <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Aftara lag · {back.is}</span><div data-testid="dualroller-back-fabrics" className="flex flex-wrap gap-2">{backFabrics.map((item) => <button type="button" key={item.code} data-testid={`dualroller-back-${item.code}`} onClick={() => setBackCode(item.code)} className={`h-11 w-11 overflow-hidden rounded-full border ${back.code === item.code ? "border-[#24313b]" : "border-transparent"}`} aria-label={`Velja ${item.is} · ${item.name} (${item.code})`} aria-pressed={back.code === item.code}><img src={item.image} alt={item.is} className="h-full w-full object-contain" /></button>)}</div></div>
           </div>
            <div className="mb-2 flex items-center justify-between gap-3">
              <span className="text-[10px] uppercase tracking-[.18em]">Mál</span>
