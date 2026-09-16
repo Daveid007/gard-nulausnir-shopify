@@ -25,7 +25,7 @@ export function AboutPage() {
             <div className="relative aspect-[4/5] bg-[#eaf1f5] overflow-hidden">
               <ResponsiveImage
                 src="https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-honeycomb-45mm.png?v=1787921250"
-                alt="Hunangskambsgardína með fíngerðum fellingum"
+                alt="Myrkvunargardína með fíngerðum fellingum"
                 className="absolute inset-0 w-full h-full object-contain p-6"
                 sizes="(min-width: 768px) 50vw, 100vw"
               />

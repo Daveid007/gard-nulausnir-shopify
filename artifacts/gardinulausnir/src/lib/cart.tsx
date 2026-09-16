@@ -2,8 +2,16 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import {
   calculateDualRollerCartTotal,
   calculateDualRollerPrice,
-  DUAL_ROLLER_RETAIL_ISK,
 } from "./dualRollerPricing";
+import {
+  blindSupplierUsd,
+  dayNightSupplierRate,
+  assertHoneycombSize,
+  honeycombSupplierRate,
+  retailPriceFromSupplierUsd,
+  tdbuSupplierRate,
+  type MountPosition,
+} from "./pricing";
 import { normalizeQuantity } from "./quantity";
 import {
   calculateWindourQuote,
@@ -12,11 +20,13 @@ import {
   type WindourMaterial,
   type WindourProductId,
 } from "./windourPricing";
-
-const USD_TO_ISK_RETAIL = 461;
-// Aukahlutir (motor, hliðarspor, snærislaust, lásahaldari): frakt 20% → $1 × 1.2 × 124 × 1.5 × 1.24 ≈ 276.
-// priceCartItem returns USD that is later multiplied by USD_TO_ISK_RETAIL, so accessories are pre-scaled by 276/461.
-const ACCESSORY_FACTOR = 276 / 461;
+import {
+  calculateVerticalSheerQuote,
+  verticalSheerFabricRate,
+  type VerticalSheerFabricType,
+  type VerticalSheerInstallation,
+  type VerticalSheerOperation,
+} from "./verticalSheerPricing";
 
 export const HOLDER_USD = 5.0;
 
@@ -54,6 +64,9 @@ export type DaynightCartItem = {
   comboUsdPerSqm: number;
   operation: "manual" | "cordless" | "motor";
   sideTrack: boolean;
+  sideTrackType?: "u" | "l";
+  mountPosition?: MountPosition;
+  noDrill?: boolean;
   railColor: string;
 };
 
@@ -74,6 +87,27 @@ export type VerticalCartItem = {
   railColor: string;
 };
 
+export type VerticalSheerCartItem = {
+  id: string;
+  type: "vertical-sheer";
+  qty: number;
+  widthCm: number;
+  heightCm: number;
+  fabricCode: string;
+  fabricName: string;
+  fabricType: VerticalSheerFabricType;
+  operation: VerticalSheerOperation;
+  installation: VerticalSheerInstallation;
+  remoteController: boolean;
+  railColor: string;
+  supplierUsdPerSqm: number;
+  productionWidthMm: number;
+  productionHeightMm: number;
+  billedAreaSqm: number;
+  supplierCostUsd: number;
+  unitIsk: number;
+};
+
 export type TdbuFabricType = "translucent" | "blackout";
 
 export type TdbuCartItem = {
@@ -86,8 +120,11 @@ export type TdbuCartItem = {
   fabricName: string;
   fabricType: TdbuFabricType;
   fabricUsdPerSqm: number;
-  operation: "manual" | "motor";
+  operation: "manual" | "cordless";
   sideTrack: boolean;
+  sideTrackType?: "u" | "l";
+  mountPosition?: MountPosition;
+  noDrill?: boolean;
   railColor: string;
 };
 
@@ -105,6 +142,9 @@ export type HoneycombCartItem = {
   fabricUsdPerSqm: number;
   operation: "manual" | "cordless" | "motor";
   sideTrack: boolean;
+  sideTrackType?: "u" | "l";
+  mountPosition?: MountPosition;
+  noDrill?: boolean;
   railColor: string;
   bottomRail?: string;
   holder?: HolderColor | null;
@@ -120,8 +160,11 @@ export type Honeycomb25CartItem = {
   fabricName: string;
   fabricType: HoneycombFabricType;
   fabricUsdPerSqm: number;
-  operation: "manual" | "cordless" | "motor";
+  operation: "manual" | "cordless";
   sideTrack: boolean;
+  sideTrackType?: "u" | "l";
+  mountPosition?: MountPosition;
+  noDrill?: boolean;
   railColor: string;
   bottomRail?: string;
   holder?: HolderColor | null;
@@ -180,16 +223,23 @@ export type WindourCartItem = {
   quoteExpiryLabel: string;
 };
 
-export type CartItem =
+type CartPricingMetadata = {
+  pricingVersion?: 2;
+  needsReconfigure?: boolean;
+};
+
+export type CartItem = (
   | RollerCartItem
   | DaynightCartItem
   | HoneycombCartItem
   | Honeycomb25CartItem
   | TdbuCartItem
   | VerticalCartItem
+  | VerticalSheerCartItem
   | DualRollerCartItem
   | ZebraCartItem
-  | WindourCartItem;
+  | WindourCartItem
+) & CartPricingMetadata;
 
 export type NewCartItem =
   | Omit<RollerCartItem, "id">
@@ -198,6 +248,7 @@ export type NewCartItem =
   | Omit<Honeycomb25CartItem, "id">
   | Omit<TdbuCartItem, "id">
   | Omit<VerticalCartItem, "id">
+  | Omit<VerticalSheerCartItem, "id">
   | Omit<DualRollerCartItem, "id">
   | Omit<ZebraCartItem, "id">
   | Omit<WindourCartItem, "id">;
@@ -217,12 +268,13 @@ type CartContextValue = {
 
 const CartContext = createContext<CartContextValue | null>(null);
 
-const STORAGE_KEY = "solmyrkvun.cart.v1";
+const STORAGE_KEY = "solmyrkvun.cart.v2";
+const LEGACY_STORAGE_KEY = "solmyrkvun.cart.v1";
 
-// Legacy blind items match the server by ceiling each unit price to the
-// nearest 100 ISK before quantity. WINdoûr estimates use their approved
-// whole-ISK per-unit quote rounding instead.
+// Blind lines and WINdoûr estimates both use whole-ISK per-unit rounding
+// before multiplying quantity.
 export function priceLineIsk(item: CartItem): number {
+  if (item.needsReconfigure) return 0;
   if (item.type === "windour") {
     const quote = calculateWindourQuote({
       productId: item.productId,
@@ -243,12 +295,22 @@ export function priceLineIsk(item: CartItem): number {
       sideTrack: item.sideTrack,
     });
   }
-  const usd = priceCartItem(item);
-  const unitIsk = Math.ceil((usd * USD_TO_ISK_RETAIL) / 100) * 100;
-  return unitIsk * item.qty;
+  if (item.type === "vertical-sheer") {
+    return calculateVerticalSheerQuote({
+      widthCm: item.widthCm,
+      heightCm: item.heightCm,
+      fabricCode: item.fabricCode,
+      operation: item.operation,
+      installation: item.installation,
+      remoteController: item.remoteController,
+      quantity: item.qty,
+    }).totalIsk;
+  }
+  return retailPriceFromSupplierUsd(priceCartItem(item)) * item.qty;
 }
 
 export function priceCartItem(item: CartItem): number {
+  if (item.needsReconfigure) return 0;
   if (item.type === "windour") {
     const quote = calculateWindourQuote({
       productId: item.productId,
@@ -259,26 +321,32 @@ export function priceCartItem(item: CartItem): number {
     });
     return quote?.totalUsd ?? 0;
   }
-  const w = item.width / 1000;
-  const h = item.height / 1000;
   if (item.type === "roller") {
-    const area = w * h;
-    const fabric = item.fabricUsdPerSqm * area;
+    const area = (item.width / 1000) * (item.height / 1000);
+    const fabric = area * item.fabricUsdPerSqm;
     const cordless = item.operation === "cordless" ? 6.25 * area : 0;
     const motor = item.operation === "motor" ? 100 + 17.5 : 0;
-    const sideTrack = item.sideTrack ? 21.25 * h : 0;
+    const sideTrack = item.sideTrack ? 21.25 * (item.height / 1000) : 0;
     const holder = item.holder ? HOLDER_USD : 0;
-    return fabric + (cordless + motor + sideTrack + holder) * ACCESSORY_FACTOR;
+    return fabric + cordless + motor + sideTrack + holder;
   }
   if (item.type === "vertical") {
-    const rawArea = w * h;
-    const billedArea = Math.max(1, rawArea);
-    const fabric = billedArea * item.fabricUsdPerSqm;
+    const area = Math.max(1, (item.width / 1000) * (item.height / 1000));
+    const fabric = area * item.fabricUsdPerSqm;
     const motor = item.operation === "motor" ? 142.26 + 14 : 0;
-    return fabric + motor * ACCESSORY_FACTOR;
+    return fabric + motor;
   }
-  const rawArea = w * h;
-  const billedArea = Math.max(1, rawArea);
+  if (item.type === "vertical-sheer") {
+    return calculateVerticalSheerQuote({
+      widthCm: item.widthCm,
+      heightCm: item.heightCm,
+      fabricCode: item.fabricCode,
+      operation: item.operation,
+      installation: item.installation,
+      remoteController: item.remoteController,
+      quantity: 1,
+    }).supplierCostUsd;
+  }
   if (item.type === "dualroller") {
     return calculateDualRollerPrice({
       width: item.width,
@@ -287,33 +355,68 @@ export function priceCartItem(item: CartItem): number {
       comboUsdPerSqm: item.comboUsdPerSqm,
       operation: item.operation,
       sideTrack: item.sideTrack,
-    }).perPieceISK / DUAL_ROLLER_RETAIL_ISK;
+    }).perPieceUSD;
   }
   if (item.type === "zebra") {
-    const area = w * h;
+    const area = (item.width / 1000) * (item.height / 1000);
     const fabric = area * item.fabricUsdPerSqm;
     const motor = item.operation === "motor" ? 142.26 + 14 : 0;
-    return fabric + motor * ACCESSORY_FACTOR;
+    return fabric + motor;
   }
-  // honeycomb, honeycomb-25 & tdbu: per-fabric pricing. daynight: per-combo pricing from Vertical sheet × 2.5.
-  const perSqm =
-    item.type === "honeycomb" || item.type === "honeycomb-25" || item.type === "tdbu" ? item.fabricUsdPerSqm : item.comboUsdPerSqm;
-  const fabric = billedArea * perSqm;
-  // tdbu has no cordless option (dual rails require two cord paths).
-  const cordless = item.type !== "tdbu" && item.operation === "cordless" ? billedArea * 20 : 0;
-  const motor = item.operation === "motor" ? 142.26 + 14 : 0;
-  const sideTrack = item.sideTrack ? w * 20 : 0;
-  const holder = (item.type === "honeycomb" || item.type === "honeycomb-25") && item.holder ? HOLDER_USD : 0;
-  return fabric + (cordless + motor + sideTrack + holder) * ACCESSORY_FACTOR;
+  if (item.type === "daynight") {
+    const perSqm = dayNightSupplierRate(item.frontCode, item.backCode);
+    if (perSqm === undefined || honeycombSupplierRate(item.frontCode, 45) === undefined) {
+      throw new Error(`No workbook rate for Day & Night fabric pair ${item.frontCode}+${item.backCode}`);
+    }
+    assertHoneycombSize({
+      product: "daynight",
+      operation: item.operation,
+      widthMm: item.width,
+      heightMm: item.height,
+      mountPosition: item.mountPosition,
+    });
+    return blindSupplierUsd(item.width, item.height, perSqm, {
+      operation: item.operation,
+      sideTrack: item.sideTrack,
+      sideTrackType: item.sideTrackType,
+      mountPosition: item.mountPosition,
+      noDrill: item.noDrill,
+    });
+  }
+  // honeycomb, honeycomb-25 & tdbu use their distinct workbook tables.
+  const perSqm = item.type === "tdbu"
+    ? tdbuSupplierRate(item.fabricCode)
+    : honeycombSupplierRate(item.fabricCode, item.type === "honeycomb-25" ? 25 : 45);
+  if (perSqm === undefined) {
+    throw new Error(`No workbook rate for ${item.type} fabric ${item.fabricCode}`);
+  }
+  assertHoneycombSize({
+    product: item.type === "tdbu" ? "tdbu" : item.type === "honeycomb-25" ? "honeycomb-25" : "honeycomb-45",
+    operation: item.operation,
+    widthMm: item.width,
+    heightMm: item.height,
+    mountPosition: item.mountPosition,
+  });
+  return blindSupplierUsd(item.width, item.height, perSqm, {
+    operation: item.operation,
+    sideTrack: item.sideTrack,
+    sideTrackType: item.type === "honeycomb-25" ? "l" : item.sideTrackType ?? "u",
+    mountPosition: item.mountPosition,
+    noDrill: item.noDrill,
+    holder: (item.type === "honeycomb" || item.type === "honeycomb-25") && Boolean(item.holder),
+  });
 }
 
 export function describeCartItem(item: CartItem): { title: string; sub: string } {
   const HOLDER_LABEL: Record<string, string> = { white: "Hvítur", navy: "Marínublár", black: "Svartur" };
+  const mountingSuffix = "mountPosition" in item
+    ? ` · ${item.mountPosition === "inside" ? "innfelld" : "utanáliggjandi"}${"noDrill" in item && item.noDrill ? " · án borunar" : ""}`
+    : "";
   if (item.type === "windour") {
     const tier = item.productId.endsWith("-999") ? "999" : "2000";
-    const kind = item.productId.includes("-duo-") ? "Duo" : "Single";
+    const kind = item.productId.includes("-duo-") ? "Tvískiptar Rúllugardínur (Duo)" : "Einfaldar Rúllugardínur";
     return {
-      title: `WINdoûr ${kind} ${tier} · ÁÆTLUN`,
+      title: `${kind} ${tier} · ÁÆTLUN`,
       sub: `${item.widthCm}×${item.heightCm} cm · ${item.materialLabel} · ${item.chargeableSqm.toFixed(2)} m² · ${item.quoteExpiresInDays} daga provisional quote (${item.quoteExpiryLabel}) · staðfesting birgis vantar`,
     };
   }
@@ -336,21 +439,21 @@ export function describeCartItem(item: CartItem): { title: string; sub: string }
   if (item.type === "honeycomb") {
     const holderSuffix = item.holder ? ` · Lásahaldari · ${HOLDER_LABEL[item.holder]}` : "";
     return {
-      title: `Hunangskamb 45 mm · ${item.fabricName}`,
-      sub: `${item.width}×${item.height}mm · ${item.fabricCode} · ${opLabel}${item.sideTrack ? " · hliðarspor" : ""} · ${item.railColor}${holderSuffix}`,
+      title: `Myrkvunargardína 45 mm · ${item.fabricName}`,
+       sub: `${item.width}×${item.height}mm · ${item.fabricCode} · ${opLabel}${item.sideTrack ? " · hliðarspor" : ""} · ${item.railColor}${holderSuffix}${mountingSuffix}`,
     };
   }
   if (item.type === "honeycomb-25") {
     const holderSuffix = item.holder ? ` · Lásahaldari · ${HOLDER_LABEL[item.holder]}` : "";
     return {
-      title: `Hunangskamb 25 mm · ${item.fabricName}`,
-      sub: `${item.width}×${item.height}mm · ${item.fabricCode} · ${opLabel}${item.sideTrack ? " · hliðarspor" : ""} · ${item.railColor}${holderSuffix}`,
+      title: `Myrkvunargardína 25 mm · ${item.fabricName}`,
+       sub: `${item.width}×${item.height}mm · ${item.fabricCode} · ${opLabel}${item.sideTrack ? " · hliðarspor" : ""} · ${item.railColor}${holderSuffix}${mountingSuffix}`,
     };
   }
   if (item.type === "tdbu") {
     return {
       title: `TDBU · ${item.fabricName}`,
-      sub: `${item.width}×${item.height}mm · ${item.fabricCode} · ${opLabel}${item.sideTrack ? " · hliðarspor" : ""} · ${item.railColor}`,
+       sub: `${item.width}×${item.height}mm · ${item.fabricCode} · ${opLabel}${item.sideTrack ? " · hliðarspor" : ""} · ${item.railColor}${mountingSuffix}`,
     };
   }
   if (item.type === "vertical") {
@@ -358,20 +461,34 @@ export function describeCartItem(item: CartItem): { title: string; sub: string }
       item.openingType === "centre" ? "miðopnun" : item.openingType === "left" ? "vinstri" : "hægri";
     return {
       title: `Lóðrétt · ${item.fabricName}`,
-      sub: `${item.width}×${item.height}mm · ${item.fabricCode} · ${opLabel} · ${openLabel} · ${item.railColor}`,
+       sub: `${item.width}×${item.height}mm · ${item.fabricCode} · ${opLabel} · ${openLabel} · ${item.railColor}`,
+    };
+  }
+  if (item.type === "vertical-sheer") {
+    const operationLabel =
+      item.operation === "motor"
+        ? "rafknúið"
+        : item.operation === "manual-wand"
+          ? "handstýrt · WAND"
+          : "handstýrt · keðja";
+    const remoteSuffix = item.remoteController ? " · fjarstýring" : "";
+    const confirmationSuffix = item.needsReconfigure ? " · þarfnast staðfestingar" : "";
+    return {
+      title: `Lóðréttar vefgardínur · ${item.fabricName}`,
+      sub: `${item.widthCm}×${item.heightCm}cm · ${item.fabricCode} · ${operationLabel}${remoteSuffix} · ${item.installation === "inmount" ? "innfelld" : "utanáliggjandi"} · ${item.railColor}${confirmationSuffix}`,
     };
   }
   if (item.type === "dualroller") {
     return {
       title: `Tvöfalt rúll · ${item.frontName} + ${item.backName}`,
-      sub: `${item.width}×${item.height}mm · ${item.frontCode}+${item.backCode} · ${opLabel}${item.sideTrack ? " · hliðarspor" : ""} · ${item.railColor}`,
+       sub: `${item.width}×${item.height}mm · ${item.frontCode}+${item.backCode} · ${opLabel}${item.sideTrack ? " · hliðarspor" : ""} · ${item.railColor}`,
     };
   }
   if (item.type === "zebra") {
     const zebraOpLabel = item.operation === "motor" ? "rafknúið" : item.operation === "cordless" ? "snærislaust" : "keðja";
     return {
       title: `Sebragardína · ${item.fabricName}`,
-      sub: `${item.width}×${item.height}mm · ${item.fabricCode} · ${zebraOpLabel} · ${item.railColor}`,
+       sub: `${item.width}×${item.height}mm · ${item.fabricCode} · ${zebraOpLabel} · ${item.railColor}`,
     };
   }
   return {
@@ -382,6 +499,30 @@ export function describeCartItem(item: CartItem): { title: string; sub: string }
 
 function isFiniteNumber(v: unknown): v is number {
   return typeof v === "number" && Number.isFinite(v);
+}
+
+function hasAuthoritativeRate(item: CartItem): boolean {
+  if (item.type === "honeycomb") {
+    return honeycombSupplierRate(item.fabricCode, 45) === item.fabricUsdPerSqm;
+  }
+  if (item.type === "honeycomb-25") {
+    return honeycombSupplierRate(item.fabricCode, 25) === item.fabricUsdPerSqm;
+  }
+  if (item.type === "tdbu") return tdbuSupplierRate(item.fabricCode) === item.fabricUsdPerSqm;
+  if (item.type === "vertical-sheer") {
+    return verticalSheerFabricRate(item.fabricCode) === item.supplierUsdPerSqm;
+  }
+  if (item.type === "daynight") {
+    return dayNightSupplierRate(item.frontCode, item.backCode) === item.comboUsdPerSqm;
+  }
+  return true;
+}
+
+function finalizeMigratedItem<T extends CartItem>(item: T, raw: Record<string, unknown>): T {
+  const wasCurrentPricingVersion = raw.pricingVersion === 2;
+  item.pricingVersion = 2;
+  if (!wasCurrentPricingVersion || !hasAuthoritativeRate(item)) item.needsReconfigure = true;
+  return item;
 }
 
 function migrateCartItem(raw: unknown): CartItem | null {
@@ -408,12 +549,56 @@ function migrateCartItem(raw: unknown): CartItem | null {
       productId: item.productId,
       widthCm: item.widthCm,
       heightCm: item.heightCm,
-      quantity: normalizeQuantity(item.qty),
+      quantity: normalizeQuantity(item.qty as number),
       material: item.material,
     });
     if (!quote || quote.unitIsk !== item.unitIsk) return null;
-    item.qty = normalizeQuantity(item.qty);
-    return item as unknown as WindourCartItem;
+    item.qty = normalizeQuantity(item.qty as number);
+    return finalizeMigratedItem(item as unknown as WindourCartItem & CartPricingMetadata, item);
+  }
+  if (item.type === "vertical-sheer") {
+    if (
+      typeof item.id !== "string" ||
+      !isFiniteNumber(item.qty) || item.qty < 1 ||
+      !isFiniteNumber(item.widthCm) || item.widthCm <= 0 ||
+      !isFiniteNumber(item.heightCm) || item.heightCm <= 0 ||
+      typeof item.fabricCode !== "string" ||
+      typeof item.fabricName !== "string" ||
+      (item.fabricType !== "translucent" && item.fabricType !== "room-darkening") ||
+      (item.operation !== "manual-chain" && item.operation !== "manual-wand" && item.operation !== "motor") ||
+      (item.installation !== "inmount" && item.installation !== "outmount") ||
+      typeof item.remoteController !== "boolean" ||
+      (item.operation !== "motor" && item.remoteController) ||
+      typeof item.railColor !== "string" ||
+      !isFiniteNumber(item.supplierUsdPerSqm) ||
+      !isFiniteNumber(item.productionWidthMm) ||
+      !isFiniteNumber(item.productionHeightMm) ||
+      !isFiniteNumber(item.billedAreaSqm) ||
+      !isFiniteNumber(item.supplierCostUsd) ||
+      !isFiniteNumber(item.unitIsk)
+    ) return null;
+    const quote = calculateVerticalSheerQuote({
+      widthCm: item.widthCm,
+      heightCm: item.heightCm,
+      fabricCode: item.fabricCode,
+      operation: item.operation,
+      installation: item.installation,
+      remoteController: item.remoteController,
+      quantity: normalizeQuantity(item.qty as number),
+    });
+    if (
+      quote.fabricType !== item.fabricType ||
+      quote.fabricSupplierUsd / quote.billedAreaSqm !== item.supplierUsdPerSqm ||
+      quote.productionWidthMm !== item.productionWidthMm ||
+      quote.productionHeightMm !== item.productionHeightMm ||
+      quote.billedAreaSqm !== item.billedAreaSqm ||
+      quote.supplierCostUsd !== item.supplierCostUsd ||
+      quote.unitIsk !== item.unitIsk
+    ) return null;
+    item.qty = normalizeQuantity(item.qty as number);
+    const migrated = finalizeMigratedItem(item as unknown as VerticalSheerCartItem & CartPricingMetadata, item);
+    if (item.installation === "outmount") migrated.needsReconfigure = true;
+    return migrated;
   }
   // Common shape: id + qty + width + height must be sane numbers/strings.
   if (
@@ -433,7 +618,7 @@ function migrateCartItem(raw: unknown): CartItem | null {
       !isFiniteNumber(item.fabricUsdPerSqm) ||
       (item.operation !== "chain" && item.operation !== "cordless" && item.operation !== "motor")
     ) return null;
-    return item as unknown as RollerCartItem;
+    return finalizeMigratedItem(item as unknown as RollerCartItem & CartPricingMetadata, item);
   }
   if (item.type === "honeycomb") {
     // Legacy 38mm items had no fabricCode; drop them.
@@ -445,7 +630,7 @@ function migrateCartItem(raw: unknown): CartItem | null {
       (item.operation !== "manual" && item.operation !== "cordless" && item.operation !== "motor")
     ) return null;
     if (typeof item.railColor !== "string") item.railColor = "Hvítt";
-    return item as unknown as HoneycombCartItem;
+    return finalizeMigratedItem(item as unknown as HoneycombCartItem & CartPricingMetadata, item);
   }
   if (item.type === "honeycomb-25") {
     if (
@@ -453,10 +638,10 @@ function migrateCartItem(raw: unknown): CartItem | null {
       typeof item.fabricName !== "string" ||
       !isFiniteNumber(item.fabricUsdPerSqm) ||
       (item.fabricType !== "sheer" && item.fabricType !== "translucent" && item.fabricType !== "blackout" && item.fabricType !== "dualdeck") ||
-      (item.operation !== "manual" && item.operation !== "cordless" && item.operation !== "motor")
+       (item.operation !== "manual" && item.operation !== "cordless")
     ) return null;
     if (typeof item.railColor !== "string") item.railColor = "Hvítt";
-    return item as unknown as Honeycomb25CartItem;
+    return finalizeMigratedItem(item as unknown as Honeycomb25CartItem & CartPricingMetadata, item);
   }
   if (item.type === "tdbu") {
     if (
@@ -464,11 +649,11 @@ function migrateCartItem(raw: unknown): CartItem | null {
       typeof item.fabricName !== "string" ||
       !isFiniteNumber(item.fabricUsdPerSqm) ||
       (item.fabricType !== "translucent" && item.fabricType !== "blackout") ||
-      (item.operation !== "manual" && item.operation !== "motor") ||
+       (item.operation !== "manual" && item.operation !== "cordless") ||
       typeof item.sideTrack !== "boolean"
     ) return null;
     if (typeof item.railColor !== "string") item.railColor = "Hvítt";
-    return item as unknown as TdbuCartItem;
+    return finalizeMigratedItem(item as unknown as TdbuCartItem & CartPricingMetadata, item);
   }
   if (item.type === "vertical") {
     if (
@@ -480,7 +665,7 @@ function migrateCartItem(raw: unknown): CartItem | null {
       (item.openingType !== "centre" && item.openingType !== "left" && item.openingType !== "right")
     ) return null;
     if (typeof item.railColor !== "string") item.railColor = "Hvítt";
-    return item as unknown as VerticalCartItem;
+    return finalizeMigratedItem(item as unknown as VerticalCartItem & CartPricingMetadata, item);
   }
   if (item.type === "daynight") {
     // Legacy daynight items (color-swatch schema, pre-45mm) had no comboKey; drop them.
@@ -494,7 +679,7 @@ function migrateCartItem(raw: unknown): CartItem | null {
       (item.operation !== "manual" && item.operation !== "cordless" && item.operation !== "motor")
     ) return null;
     if (typeof item.railColor !== "string") item.railColor = "Hvítt";
-    return item as unknown as DaynightCartItem;
+    return finalizeMigratedItem(item as unknown as DaynightCartItem & CartPricingMetadata, item);
   }
   if (item.type === "dualroller") {
     if (
@@ -508,7 +693,7 @@ function migrateCartItem(raw: unknown): CartItem | null {
       typeof item.sideTrack !== "boolean"
     ) return null;
     if (typeof item.railColor !== "string") item.railColor = "Hvítur";
-    return item as unknown as DualRollerCartItem;
+    return finalizeMigratedItem(item as unknown as DualRollerCartItem & CartPricingMetadata, item);
   }
   if (item.type === "zebra") {
     if (
@@ -519,7 +704,7 @@ function migrateCartItem(raw: unknown): CartItem | null {
       (item.operation !== "chain" && item.operation !== "cordless" && item.operation !== "motor")
     ) return null;
     if (typeof item.railColor !== "string") item.railColor = "Hvítur";
-    return item as unknown as ZebraCartItem;
+    return finalizeMigratedItem(item as unknown as ZebraCartItem & CartPricingMetadata, item);
   }
   return null;
 }
@@ -527,7 +712,7 @@ function migrateCartItem(raw: unknown): CartItem | null {
 function loadFromStorage(): CartItem[] {
   if (typeof window === "undefined") return [];
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
+    const raw = window.localStorage.getItem(STORAGE_KEY) ?? window.localStorage.getItem(LEGACY_STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
@@ -559,7 +744,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
       typeof crypto !== "undefined" && "randomUUID" in crypto
         ? crypto.randomUUID()
         : `item_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
-    setItems((prev) => [...prev, { ...item, qty: normalizeQuantity(item.qty), id } as CartItem]);
+    setItems((prev) => [...prev, {
+      ...item,
+      qty: normalizeQuantity(item.qty),
+      pricingVersion: 2,
+      id,
+    } as CartItem]);
     setOpen(true);
   }, []);
 

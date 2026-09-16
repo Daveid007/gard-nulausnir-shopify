@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { products as verifiedProducts, type Product } from "./data";
+import { products as verifiedProducts, type Product } from "./data.ts";
 import {
   categoryLabel,
   resolveProductCategory,
   type CollectionCategoryKey,
-} from "./collectionCategories";
+} from "./collectionCategories.ts";
+import { isCurtainProductId } from "./curtains.ts";
 
 type ShopifyImage = { url: string; altText: string | null };
 type ShopifyMoney = { amount: string; currencyCode: string };
@@ -31,7 +32,7 @@ type ShopifyCatalogResponse = {
 };
 
 export type CatalogStatus = "loading" | "live" | "fallback";
-const apiOrigin = (import.meta.env.VITE_API_ORIGIN as string | undefined)?.replace(/\/$/, "") ?? "";
+const apiOrigin = (import.meta.env?.VITE_API_ORIGIN as string | undefined)?.replace(/\/$/, "") ?? "";
 
 const isk = new Intl.NumberFormat("is-IS", {
   style: "currency",
@@ -60,14 +61,18 @@ function mergeLiveProduct(live: ShopifyProduct, fallback: Product, category: Col
     ...fallback,
     id: fallback.id,
     shopifyHandle: live.handle,
-    title: live.title || fallback.title,
-    subtitle: live.description?.trim() || fallback.subtitle,
+    title: fallback.title,
+    subtitle: fallback.subtitle,
     category: categoryLabel(category),
     productType: live.productType,
     tags: live.tags,
     collectionHandles: collection ? [collection.handle] : fallback.collectionHandles,
     collectionTitles: collection ? [collection.title] : fallback.collectionTitles,
-    price: formatPrice(live.priceRange?.minVariantPrice, fallback.price),
+    // The curtain showcase has no supplied price. Keep its editorial inquiry
+    // state even if a connected catalogue happens to expose a numeric amount.
+    price: isCurtainProductId(fallback.id)
+      ? fallback.price
+      : formatPrice(live.priceRange?.minVariantPrice, fallback.price),
     image: live.featuredImage?.url || images[0]?.url || fallback.image,
     secondary: images[1]?.url || fallback.secondary,
     fallbackImage: fallback.image,
@@ -75,7 +80,7 @@ function mergeLiveProduct(live: ShopifyProduct, fallback: Product, category: Col
   };
 }
 
-function mergeCatalog(catalog: ShopifyCatalogResponse): { products: Product[]; liveCount: number } {
+export function mergeCatalog(catalog: ShopifyCatalogResponse): { products: Product[]; liveCount: number } {
   const result = new Map(verifiedProducts.map((product) => [product.id, product]));
   const byHandle = new Map(
     verifiedProducts.map((product) => [product.shopifyHandle ?? product.id, product]),

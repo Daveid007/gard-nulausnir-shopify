@@ -174,7 +174,7 @@ function MeasurementGuideBody({ compact = false }: { compact?: boolean }) {
           href="mailto:hallo@gardinulausnir.is"
           className="inline-flex items-center border-b border-[#557b9e] pb-1 text-sm font-medium text-[#557b9e] transition-colors hover:border-[#24313b] hover:text-[#24313b]"
         >
-          Hafa samband ef þú ert í vafa
+          Hafðu samband ef þú ert í vafa
         </a>
       </div>
     </div>

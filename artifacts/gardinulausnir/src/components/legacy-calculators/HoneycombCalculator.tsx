@@ -13,36 +13,33 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { useCart, HOLDER_USD } from "@/lib/cart";
+import { useCart } from "@/lib/cart";
 import { FABRICS, type FabricInfo } from "@/lib/fabrics";
 import { CASSETTE_RAIL_COLORS, MOTORIZED_RAIL_COLORS, HONEYCOMB_BOTTOM_RAIL_COLORS, HOLDER_COLORS, resolveRailColor } from "@/assets/railImages";
 import { normalizeQuantity } from "@/lib/quantity";
 import { StorefrontLayout } from "./StorefrontLayout";
 import { MeasurementGuideTrigger } from "@/components/MeasurementGuide";
+import {
+  retailPriceFromSupplierUsd,
+  SUPPLIER_TO_RETAIL_ISK,
+  HOLDER_USD,
+  HONEYCOMB_45_LIMITS,
+  validateHoneycombSize,
+  type MountPosition,
+} from "@/lib/pricing";
+import { HoneycombOptions } from "./HoneycombOptions";
 
-// Formula: supplier_usd × 2 (freight) × 124 (rate) × 1.5 (markup) × 1.24 (VAT) = × 461
-const USD_TO_ISK_RETAIL = 461;
-// Aukahlutir (motor, hliðarspor o.fl.): frakt 20% í stað 100% → $1 × 1.2 × 124 × 1.5 × 1.24 ≈ 276
-const USD_TO_ISK_ACCESSORY = 276;
-const CORDLESS_USD_PER_SQM = 20;
-const MOTOR_USD = 142.26;
-const REMOTE_USD = 14;
-const SIDETRACK_USD_PER_M = 20;
 const MIN_SQM_PER_PIECE = 1;
-const MAX_SQM_PER_PIECE = 5.6;
-
-const CORDLESS_ISK_PER_SQM = Math.round(CORDLESS_USD_PER_SQM * USD_TO_ISK_ACCESSORY);
-const MOTOR_ISK = Math.round((MOTOR_USD + REMOTE_USD) * USD_TO_ISK_ACCESSORY);
-const SIDETRACK_ISK_PER_M = Math.round(SIDETRACK_USD_PER_M * USD_TO_ISK_ACCESSORY);
+const CORDLESS_ISK_PER_SQM = Math.round(3 * SUPPLIER_TO_RETAIL_ISK);
+const MOTOR_ISK = Math.round(34.5573219076603 * SUPPLIER_TO_RETAIL_ISK);
+const SIDETRACK_ISK_PER_M = Math.round(10 * SUPPLIER_TO_RETAIL_ISK);
 
 type Operation = "manual" | "cordless" | "motor";
 type FabricType = "sheer" | "translucent" | "blackout" | "dualdeck";
 
 type StandardFabric = FabricInfo & { type: FabricType; usdPerSqm: number };
 
-// Raw supplier USD/m² — markup is baked into USD_TO_ISK_RETAIL (× 590).
-// Sheer KS: $18.02, Translucent KT basic: $12.50, KT premium: $24.60
-// Blackout KB: $14.26, Dual-Deck KN: $40.01
+// Supplier USD/m² from the workbook's Standard 45mm sheet.
 const STANDARD_PRICING: Record<string, { type: FabricType; usdPerSqm: number }> = {
   KS401: { type: "sheer", usdPerSqm: 18.02 },
   KS402: { type: "sheer", usdPerSqm: 18.02 },
@@ -66,22 +63,22 @@ const STANDARD_PRICING: Record<string, { type: FabricType; usdPerSqm: number }> 
   KT413: { type: "translucent", usdPerSqm: 24.60 },
   KT414: { type: "translucent", usdPerSqm: 24.60 },
   KT415: { type: "translucent", usdPerSqm: 24.60 },
-  KT428: { type: "translucent", usdPerSqm: 12.50 },
-  KT431: { type: "translucent", usdPerSqm: 12.50 },
-  KT432: { type: "translucent", usdPerSqm: 12.50 },
-  KT433: { type: "translucent", usdPerSqm: 12.50 },
-  KT434: { type: "translucent", usdPerSqm: 12.50 },
-  KT435: { type: "translucent", usdPerSqm: 12.50 },
+  KT428: { type: "translucent", usdPerSqm: 24.60 },
+  KT431: { type: "translucent", usdPerSqm: 13 },
+  KT432: { type: "translucent", usdPerSqm: 13 },
+  KT433: { type: "translucent", usdPerSqm: 13 },
+  KT434: { type: "translucent", usdPerSqm: 13 },
+  KT435: { type: "translucent", usdPerSqm: 13 },
   KB401: { type: "blackout", usdPerSqm: 14.26 },
   KB402: { type: "blackout", usdPerSqm: 14.26 },
   KB403: { type: "blackout", usdPerSqm: 14.26 },
   KB404: { type: "blackout", usdPerSqm: 14.26 },
   KB405: { type: "blackout", usdPerSqm: 14.26 },
   KB406: { type: "blackout", usdPerSqm: 14.26 },
-  KB420: { type: "blackout", usdPerSqm: 14.26 },
-  KB422: { type: "blackout", usdPerSqm: 14.26 },
-  KB426: { type: "blackout", usdPerSqm: 14.26 },
-  KB428: { type: "blackout", usdPerSqm: 14.26 },
+  KB420: { type: "blackout", usdPerSqm: 27.18 },
+  KB422: { type: "blackout", usdPerSqm: 27.18 },
+  KB426: { type: "blackout", usdPerSqm: 27.18 },
+  KB428: { type: "blackout", usdPerSqm: 27.18 },
   KB431: { type: "blackout", usdPerSqm: 14.26 },
   KB432: { type: "blackout", usdPerSqm: 14.26 },
   KB433: { type: "blackout", usdPerSqm: 14.26 },
@@ -180,6 +177,9 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
   const [fabricType, setFabricType] = useState<FabricType>("translucent");
   const [operation, setOperation] = useState<Operation>("manual");
   const [sideTrack, setSideTrack] = useState<boolean>(false);
+  const [sideTrackType, setSideTrackType] = useState<"u" | "l">("u");
+  const [mountPosition, setMountPosition] = useState<MountPosition>("outside");
+  const [noDrill, setNoDrill] = useState<boolean>(false);
   const { railColor, setRailColor } = useRailColor();
   const [lastCassetteColor, setLastCassetteColor] = useState<string>(railColor);
   const [bottomRailColor, setBottomRailColor] = useState<string>("Hvítur");
@@ -218,34 +218,47 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
   }, [fabricCode, fabricType, grouped]);
 
   const calc = useMemo(() => {
-    const w = Math.max(0.3, width / 1000);
+    const w = Math.max(0.3, (mountPosition === "inside" ? width - 5 : width) / 1000);
     const h = Math.max(0.3, height / 1000);
     const rawArea = w * h;
     const billedArea = Math.max(MIN_SQM_PER_PIECE, rawArea);
 
     const fabricUSD = billedArea * fabric.usdPerSqm;
-    const cordlessUSD = operation === "cordless" ? billedArea * CORDLESS_USD_PER_SQM : 0;
-    const motorUSD = operation === "motor" ? MOTOR_USD : 0;
-    const remoteUSD = operation === "motor" ? REMOTE_USD : 0;
-    const sidetrackUSD = sideTrack ? w * SIDETRACK_USD_PER_M : 0;
+    const cordlessUSD = operation === "cordless" ? billedArea * 3 : 0;
+    const noDrillUSD = noDrill ? billedArea * 3 : 0;
+    const motorUSD = operation === "motor" ? (billedArea > 4 ? 71.1311073101807 : 34.5573219076603) : 0;
+    const remoteUSD = 0;
+    const sidetrackUSD = sideTrack ? h * (sideTrackType === "l" ? 5 : 10) : 0;
     const holderUSD = holder ? HOLDER_USD : 0;
 
-    const perPieceUSD = fabricUSD + cordlessUSD + motorUSD + remoteUSD + sidetrackUSD + holderUSD;
+    const perPieceUSD = fabricUSD + cordlessUSD + noDrillUSD + motorUSD + remoteUSD + sidetrackUSD + holderUSD;
     const totalUSD = perPieceUSD * quantity;
-    const accessoriesUSD = cordlessUSD + motorUSD + remoteUSD + sidetrackUSD + holderUSD;
-    const perPieceISK = fabricUSD * USD_TO_ISK_RETAIL + accessoriesUSD * USD_TO_ISK_ACCESSORY;
+    const perPieceISK = retailPriceFromSupplierUsd(perPieceUSD);
     const totalISK = perPieceISK * quantity;
 
-    const widthOK = width >= 800 && width <= 2750;
-    const heightOK = height >= 500 && height <= 3000;
-    const areaOK = rawArea <= MAX_SQM_PER_PIECE;
+    const size = validateHoneycombSize({
+      product: "honeycomb-45",
+      operation,
+      widthMm: width,
+      heightMm: height,
+      mountPosition,
+    });
+    const widthOK = size.ok
+      || (Boolean(size.limits) &&
+        size.effectiveWidthMm >= size.limits!.minWidthMm &&
+        size.effectiveWidthMm <= size.limits!.maxWidthMm);
+    const heightOK = size.ok
+      || (Boolean(size.limits) &&
+        height >= size.limits!.minHeightMm &&
+        height <= size.limits!.maxHeightMm);
+    const areaOK = size.ok || (Boolean(size.limits) && rawArea <= size.limits!.maxAreaSqm);
 
     return {
       rawArea, billedArea, perPieceUSD, totalUSD, totalISK, perPieceISK,
-      fabricUSD, cordlessUSD, motorUSD, remoteUSD, sidetrackUSD, holderUSD,
+      fabricUSD, cordlessUSD, noDrillUSD, motorUSD, remoteUSD, sidetrackUSD, holderUSD,
       widthOK, heightOK, areaOK, w, h,
     };
-  }, [width, height, quantity, operation, sideTrack, fabric, holder]);
+  }, [width, height, quantity, operation, sideTrack, sideTrackType, mountPosition, noDrill, fabric, holder]);
 
   const validSize = calc.widthOK && calc.heightOK && calc.areaOK;
   const addToCart = () => addItem({
@@ -259,6 +272,9 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
     fabricUsdPerSqm: fabric.usdPerSqm,
     operation,
     sideTrack,
+    sideTrackType,
+    mountPosition,
+    noDrill,
     railColor,
     bottomRail: bottomRailColor,
     holder,
@@ -280,10 +296,10 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
             <MeasurementGuideTrigger />
           </div>
           <div className="grid grid-cols-2 gap-3" data-testid="dimensions">
-            <label><span className="mb-2 block text-[9px] uppercase tracking-[.14em] text-[#667984]">Breidd · cm</span><input data-testid="hc-width" aria-label="Breidd í sentímetrum" type="number" min="80" max="275" step="0.1" value={width / 10} onChange={(e) => setWidth((Number(e.target.value) || 0) * 10)} className="w-full border border-[#ccd9df] bg-transparent px-3 py-3 text-sm" /></label>
-            <label><span className="mb-2 block text-[9px] uppercase tracking-[.14em] text-[#667984]">Hæð · cm</span><input data-testid="hc-height" aria-label="Hæð í sentímetrum" type="number" min="50" max="300" step="0.1" value={height / 10} onChange={(e) => setHeight((Number(e.target.value) || 0) * 10)} className="w-full border border-[#ccd9df] bg-transparent px-3 py-3 text-sm" /></label>
+           <label><span className="mb-2 block text-[9px] uppercase tracking-[.14em] text-[#667984]">Breidd · cm</span><input data-testid="hc-width" aria-label="Breidd í sentímetrum" type="number" min="50" max="275" step="0.1" value={width / 10} onChange={(e) => setWidth((Number(e.target.value) || 0) * 10)} className="w-full border border-[#ccd9df] bg-transparent px-3 py-3 text-sm" /></label>
+             <label><span className="mb-2 block text-[9px] uppercase tracking-[.14em] text-[#667984]">Hæð · cm</span><input data-testid="hc-height" aria-label="Hæð í sentímetrum" type="number" min="50" max="300" step="0.1" value={height / 10} onChange={(e) => setHeight((Number(e.target.value) || 0) * 10)} className="w-full border border-[#ccd9df] bg-transparent px-3 py-3 text-sm" /></label>
           </div>
-          {!validSize && <p className="text-xs text-red-600">Stærð er utan framleiðslumarka (80–275 × 50–300 cm, hámark 5,6 m²).</p>}
+           {!validSize && <p className="text-xs text-red-600">Stærð er utan marka fyrir valda stýringu ({HONEYCOMB_45_LIMITS[operation].minWidthMm}–{HONEYCOMB_45_LIMITS[operation].maxWidthMm} × {HONEYCOMB_45_LIMITS[operation].minHeightMm}–{HONEYCOMB_45_LIMITS[operation].maxHeightMm} mm, hám. {HONEYCOMB_45_LIMITS[operation].maxAreaSqm} m²).</p>}
           <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Stýring</span><div className="grid grid-cols-3 gap-2">{(["manual", "cordless", "motor"] as Operation[]).map((item) => <button type="button" key={item} onClick={() => handleOperationChange(item)} className={`border px-2 py-3 text-[10px] uppercase ${operation === item ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{item === "manual" ? "Handvirk" : item === "cordless" ? "Þráðlaus" : "Mótor"}</button>)}</div></div>
           <div>
             <span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Ljós og efni</span>
@@ -304,6 +320,7 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
             </div>
           </div>
           <label className="flex items-center justify-between border border-[#ccd9df] px-3 py-3 text-[10px] uppercase"><span>Hliðarspor</span><input type="checkbox" checked={sideTrack} onChange={(e) => setSideTrack(e.target.checked)} /></label>
+          <HoneycombOptions idPrefix="hc" sideTrack={sideTrack} sideTrackType={sideTrackType} setSideTrackType={setSideTrackType} mountPosition={mountPosition} setMountPosition={setMountPosition} noDrill={noDrill} setNoDrill={setNoDrill} />
           <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Litur á botnlistum</span><div className="flex flex-wrap gap-2">{HONEYCOMB_BOTTOM_RAIL_COLORS.map((item) => <button type="button" key={item.value} onClick={() => setBottomRailColor(item.value)} className={`border px-3 py-2 text-[10px] ${bottomRailColor === item.value ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{item.value}</button>)}</div></div>
           <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Finish · litur á braut</span><div className="flex flex-wrap gap-2">{(operation === "motor" ? MOTORIZED_RAIL_COLORS : CASSETTE_RAIL_COLORS).map((item) => <button type="button" key={item.value} onClick={() => setRailColor(item.value)} className={`border px-3 py-2 text-[10px] ${railColor === item.value ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{item.value}</button>)}</div></div>
           <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Lásahaldari</span><div className="flex flex-wrap gap-2"><button type="button" onClick={() => setHolder(null)} className={`border px-3 py-2 text-[10px] ${holder === null ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>Enginn</button>{HOLDER_COLORS.map((item) => <button type="button" key={item.value} onClick={() => setHolder(item.value)} className={`border px-3 py-2 text-[10px] ${holder === item.value ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{item.is}</button>)}</div></div>
@@ -323,7 +340,7 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
           className="text-center mb-6 md:mb-10 max-w-2xl mx-auto"
         >
           <p className="text-xs uppercase tracking-[0.25em] text-primary/70 font-semibold mb-2">Verðreikningur · Pricing</p>
-          <h2 className="font-serif text-3xl md:text-5xl font-bold mb-2">Reiknivél — Hunangskamb 45 mm</h2>
+          <h2 className="font-serif text-3xl md:text-5xl font-bold mb-2">Reiknivél — Myrkvunargardína 45 mm</h2>
           <p className="text-sm md:text-base text-muted-foreground">Veldu efni, stærð og stjórnun</p>
         </motion.div>
 
@@ -354,7 +371,7 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
                           {TYPE_LABELS[t].is}
                         </p>
                         <span className={`text-[10px] ml-auto opacity-75 ${theme.headerTextClass}`}>
-                          {fmtISK((grouped[t][0]?.usdPerSqm ?? 0) * USD_TO_ISK_RETAIL)}/m²
+                          {fmtISK((grouped[t][0]?.usdPerSqm ?? 0) * SUPPLIER_TO_RETAIL_ISK)}/m²
                         </span>
                       </div>
                       <div className="grid grid-cols-6 gap-1.5">
@@ -391,7 +408,7 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
               </div>
               <div className="mt-2 flex items-center justify-center gap-2 text-[11px] text-muted-foreground bg-secondary/40 rounded-md py-1.5 px-3">
                 <Check className="w-3 h-3 text-primary" strokeWidth={3} />
-                <span>Valið: <strong className="text-foreground">{fabric.is}</strong> · {TYPE_LABELS[fabric.type].is} · {fmtISK(fabric.usdPerSqm * USD_TO_ISK_RETAIL)}/m²</span>
+                <span>Valið: <strong className="text-foreground">{fabric.is}</strong> · {TYPE_LABELS[fabric.type].is} · {fmtISK(fabric.usdPerSqm * SUPPLIER_TO_RETAIL_ISK)}/m²</span>
               </div>
             </div>
 
@@ -404,11 +421,11 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
               <div className="grid grid-cols-3 gap-2">
                 <div>
                   <Label htmlFor="hc-width" className="text-[10px] text-muted-foreground">Breidd</Label>
-                  <Input id="hc-width" type="number" value={width} onChange={(e) => setWidth(Number(e.target.value) || 0)} min={800} max={2750} step={10} className={!calc.widthOK ? "border-destructive" : ""} />
+                   <Input id="hc-width" type="number" value={width} onChange={(e) => setWidth(Number(e.target.value) || 0)} min={HONEYCOMB_45_LIMITS[operation].minWidthMm} max={HONEYCOMB_45_LIMITS[operation].maxWidthMm} step={10} className={!calc.widthOK ? "border-destructive" : ""} />
                 </div>
                 <div>
                   <Label htmlFor="hc-height" className="text-[10px] text-muted-foreground">Hæð</Label>
-                  <Input id="hc-height" type="number" value={height} onChange={(e) => setHeight(Number(e.target.value) || 0)} min={500} max={3000} step={10} className={!calc.heightOK ? "border-destructive" : ""} />
+                   <Input id="hc-height" type="number" value={height} onChange={(e) => setHeight(Number(e.target.value) || 0)} min={HONEYCOMB_45_LIMITS[operation].minHeightMm} max={HONEYCOMB_45_LIMITS[operation].maxHeightMm} step={10} className={!calc.heightOK ? "border-destructive" : ""} />
                 </div>
                 <div>
                   <Label htmlFor="hc-qty" className="text-[10px] text-muted-foreground">Fjöldi</Label>
@@ -418,7 +435,7 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
               {(!calc.widthOK || !calc.heightOK || !calc.areaOK) && (
                 <p className="text-xs text-destructive mt-2 flex items-start gap-1.5">
                   <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
-                  Stærð er utan marka (800–2750 × 500–3000 mm, hám. 5.6 m²).
+                   Stærð er utan marka fyrir valda stýringu ({HONEYCOMB_45_LIMITS[operation].minWidthMm}–{HONEYCOMB_45_LIMITS[operation].maxWidthMm} × {HONEYCOMB_45_LIMITS[operation].minHeightMm}–{HONEYCOMB_45_LIMITS[operation].maxHeightMm} mm, hám. {HONEYCOMB_45_LIMITS[operation].maxAreaSqm} m²).
                 </p>
               )}
             </div>
@@ -443,6 +460,30 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
                 </div>
                 <Switch id="hc-sidetrack" checked={sideTrack} onCheckedChange={setSideTrack} />
               </div>
+              <div>
+                <Label htmlFor="hc-track-type" className="text-xs font-semibold mb-1.5 block">Hliðarspor / Track</Label>
+                <Select value={sideTrackType} onValueChange={(v) => setSideTrackType(v as "u" | "l")}>
+                  <SelectTrigger id="hc-track-type"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="u">U-spor (+10 USD/m)</SelectItem>
+                    <SelectItem value="l">L-spor (+5 USD/m)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="hc-mount-position" className="text-xs font-semibold mb-1.5 block">Festing / Mount</Label>
+                <Select value={mountPosition} onValueChange={(v) => setMountPosition(v as MountPosition)}>
+                  <SelectTrigger id="hc-mount-position"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="outside">Utanáliggjandi / Outside</SelectItem>
+                    <SelectItem value="inside">Innfelld / Inside (−5 mm breidd)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <label className="flex items-center justify-between rounded-lg border border-border/40 px-3 py-2 text-xs">
+                <span>Án borunar / No-drill (+3 USD/m²)</span>
+                <Switch checked={noDrill} onCheckedChange={setNoDrill} />
+              </label>
             </div>
 
             {/* STEP 4 — Head rail colour */}
@@ -504,7 +545,7 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
             <div>
               <div className="flex items-baseline gap-2 mb-2">
                 <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary text-primary-foreground text-[11px] font-bold">6</span>
-                <Label className="text-sm font-semibold">Lásahaldari <span className="text-muted-foreground font-normal text-xs">/ Pull holder (+{fmtISK(HOLDER_USD * USD_TO_ISK_ACCESSORY)} stk)</span></Label>
+                <Label className="text-sm font-semibold">Lásahaldari <span className="text-muted-foreground font-normal text-xs">/ Pull holder (+{fmtISK(HOLDER_USD * SUPPLIER_TO_RETAIL_ISK)} stk)</span></Label>
               </div>
               <div className="grid grid-cols-4 gap-1.5">
                 <button type="button" onClick={() => setHolder(null)}
@@ -552,12 +593,12 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
               <div className="flex justify-between"><span>Litur á botnstöng</span><span className="font-medium">{bottomRailColor}</span></div>
               <div className="flex justify-between pt-3 border-t border-primary-foreground/20">
                 <span>Efni · {TYPE_LABELS[fabric.type].is}</span>
-                <span>{fmtISK(calc.fabricUSD * USD_TO_ISK_RETAIL)}</span>
+                <span>{fmtISK(calc.fabricUSD * SUPPLIER_TO_RETAIL_ISK)}</span>
               </div>
-              {calc.cordlessUSD > 0 && <div className="flex justify-between"><span>Snærislaust</span><span>{fmtISK(calc.cordlessUSD * USD_TO_ISK_ACCESSORY)}</span></div>}
-              {calc.motorUSD > 0 && <div className="flex justify-between"><span>Mótor + fjarstýring</span><span>{fmtISK((calc.motorUSD + calc.remoteUSD) * USD_TO_ISK_ACCESSORY)}</span></div>}
-              {calc.sidetrackUSD > 0 && <div className="flex justify-between"><span>Hliðarspor</span><span>{fmtISK(calc.sidetrackUSD * USD_TO_ISK_ACCESSORY)}</span></div>}
-              {calc.holderUSD > 0 && <div className="flex justify-between"><span>Lásahaldari</span><span>{fmtISK(calc.holderUSD * USD_TO_ISK_ACCESSORY)}</span></div>}
+              {calc.cordlessUSD > 0 && <div className="flex justify-between"><span>Snærislaust</span><span>{fmtISK(calc.cordlessUSD * SUPPLIER_TO_RETAIL_ISK)}</span></div>}
+              {calc.motorUSD > 0 && <div className="flex justify-between"><span>Mótor + fjarstýring</span><span>{fmtISK((calc.motorUSD + calc.remoteUSD) * SUPPLIER_TO_RETAIL_ISK)}</span></div>}
+              {calc.sidetrackUSD > 0 && <div className="flex justify-between"><span>Hliðarspor</span><span>{fmtISK(calc.sidetrackUSD * SUPPLIER_TO_RETAIL_ISK)}</span></div>}
+              {calc.holderUSD > 0 && <div className="flex justify-between"><span>Lásahaldari</span><span>{fmtISK(calc.holderUSD * SUPPLIER_TO_RETAIL_ISK)}</span></div>}
               <div className="flex justify-between pt-3 border-t border-primary-foreground/20"><span>Verð per stk</span><span className="font-medium">{fmtISK(calc.perPieceISK)}</span></div>
               {quantity > 1 && <div className="flex justify-between"><span>× {quantity} stk</span><span className="font-medium">{fmtISK(calc.totalISK)}</span></div>}
             </div>
@@ -579,6 +620,9 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
                     fabricUsdPerSqm: fabric.usdPerSqm,
                     operation,
                     sideTrack,
+                    sideTrackType,
+                    mountPosition,
+                    noDrill,
                     railColor,
                     bottomRail: bottomRailColor,
                     holder,
@@ -619,6 +663,9 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
                 fabricUsdPerSqm: fabric.usdPerSqm,
                 operation,
                 sideTrack,
+                sideTrackType,
+                mountPosition,
+                noDrill,
                 railColor,
                 bottomRail: bottomRailColor,
                 holder,

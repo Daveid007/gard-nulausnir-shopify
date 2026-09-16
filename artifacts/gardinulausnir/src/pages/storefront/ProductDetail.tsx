@@ -9,9 +9,12 @@ import { ProductInfoFooter } from "@/components/ProductInfoFooter";
 import { MeasurementGuideTrigger } from "@/components/MeasurementGuide";
 import { ResponsiveImage } from "@/components/ResponsiveImage";
 import WindourCalculator, { WINDOUR_CART_OPEN_EVENT } from "@/components/WindourCalculator";
+import VerticalSheerCalculator, { VERTICAL_SHEER_CART_OPEN_EVENT } from "@/components/VerticalSheerCalculator";
 import type { RollerProductIdentity } from "@/components/legacy-calculators/PriceCalculator";
 import { isWindourProductId } from "@/lib/windourPricing";
 import NotFound from "@/pages/not-found";
+import CurtainsProductDetail from "./CurtainsProductDetail";
+import { isCurtainProductId } from "./_shared/curtains";
 
 import {
   accessories,
@@ -44,9 +47,13 @@ export function ProductDetail() {
   const { products } = useStorefrontCatalog();
   const product = products.find((item) => item.id === params.id) ?? fallbackProducts.find((item) => item.id === params.id);
   if (!product) return <NotFound />;
+  if (isCurtainProductId(product.id)) {
+    return <CurtainsProductDetail key={product.id} productId={product.id} />;
+  }
   const isRoller = product.category === "Rúllugardínur";
-  const isHoneycomb = product.category === "Hunangskambsgardínur";
+  const isHoneycomb = product.category === "Myrkvunargardínur";
   const isWindour = isWindourProductId(product.id);
+  const isVerticalSheer = product.id === "vertical-sheer-shades";
   const isCustomizer = isRoller || isHoneycomb;
   const rollerProduct: RollerProductIdentity | undefined =
     product.id === "square-cassette" || product.id === "arc-cassette" || product.id === "open-roll"
@@ -139,16 +146,17 @@ export function ProductDetail() {
         <BrandLogo className="h-9 w-[182px] sm:h-10 sm:w-[202px]" />
           <nav className="hidden gap-8 text-[10px] uppercase tracking-[.18em] md:flex"><a href="#vörulýsing">{product.category}</a><a href="#upplýsingar">Leiðbeiningar</a><Link href="/maelingar">Mælingar</Link></nav>
           <div className="flex items-center gap-4">
-            <button
-              aria-label={legacyCalculator ? "Opna reiknivélarkörfu" : isWindour ? "Opna áætlunarkörfu" : "Opna körfu"}
+              <button
+               aria-label={legacyCalculator ? "Opna reiknivélarkörfu" : isWindour ? "Opna áætlunarkörfu" : isVerticalSheer ? "Opna körfu lóðréttra vefgardína" : "Opna körfu"}
               onClick={() => {
                 if (legacyCalculator) window.dispatchEvent(new Event(LEGACY_CART_OPEN_EVENT));
-                else if (isWindour) window.dispatchEvent(new Event(WINDOUR_CART_OPEN_EVENT));
+                 else if (isWindour) window.dispatchEvent(new Event(WINDOUR_CART_OPEN_EVENT));
+                 else if (isVerticalSheer) window.dispatchEvent(new Event(VERTICAL_SHEER_CART_OPEN_EVENT));
                 else setCartOpen(true);
               }}
               className="flex items-center gap-2 text-[10px] uppercase tracking-[.18em]"
             >
-              <ShoppingBag size={16} /> <span className="hidden sm:inline">{isWindour ? "Áætlun" : "Karfa"}</span> {!legacyCalculator && !isWindour && <span className="grid h-5 w-5 place-items-center rounded-full bg-[#24313b] text-[9px] text-[#f7f9fa]">{cart}</span>}
+              <ShoppingBag size={16} /> <span className="hidden sm:inline">{isWindour ? "Áætlun" : "Karfa"}</span> {!legacyCalculator && !isWindour && !isVerticalSheer && <span className="grid h-5 w-5 place-items-center rounded-full bg-[#24313b] text-[9px] text-[#f7f9fa]">{cart}</span>}
             </button>
             <button type="button" onClick={() => setMobileNavOpen((open) => !open)} className="grid h-9 w-9 place-items-center md:hidden" aria-label={mobileNavOpen ? "Loka valmynd" : "Opna valmynd"}>
               {mobileNavOpen ? <X size={20} /> : <Menu size={20} />}
@@ -169,8 +177,10 @@ export function ProductDetail() {
         <section id="vörulýsing" className="mx-auto max-w-[1510px] px-5 pb-16 md:px-10 md:pb-28">
           {legacyCalculator ? (
             <LegacyCalculator kind={legacyCalculator} rollerProduct={rollerProduct} product={product} />
-          ) : isWindour ? (
+           ) : isWindour ? (
             <WindourCalculator key={product.id} product={product} />
+           ) : isVerticalSheer ? (
+             <VerticalSheerCalculator key={product.id} product={product} />
           ) : (
              <div data-testid="product-box" className="grid min-w-0 md:grid-cols-[minmax(0,1.12fr)_minmax(370px,.88fr)] gap-8 md:gap-14">
                <div data-testid="gallery" className="grid min-w-0 grid-cols-[minmax(0,.27fr)_minmax(0,.73fr)] gap-3 md:gap-5 h-fit">
@@ -200,7 +210,7 @@ export function ProductDetail() {
               </div>
 
                <div data-testid="config-card" className="pt-2 md:sticky md:top-5 md:h-[calc(100vh-40px)] md:overflow-y-auto pr-2 custom-scrollbar pb-10">
-                <p className="mb-4 text-[10px] uppercase tracking-[.26em] text-[#6892b8]">{product.category} / THEdoûr</p>
+                <p className="mb-4 text-[10px] uppercase tracking-[.26em] text-[#6892b8]">{product.category}</p>
                 <h1 className="font-serif text-[clamp(2.7rem,4.8vw,5.2rem)] leading-[.9] tracking-[-.06em]">{product.title}</h1>
                 <div className="mt-7 flex items-end justify-between gap-5 border-b border-[#ccd9df] pb-5"><p className="text-sm text-[#5a6b74]">{product.subtitle}</p><p data-testid="live-price" aria-live="polite" className="whitespace-nowrap font-serif text-2xl tracking-tight">{product.price}</p></div>
 
@@ -284,7 +294,7 @@ export function ProductDetail() {
                    <button onClick={addToCart} disabled={!hasLivePrice || !validDimensions} className="flex h-[51px] flex-1 items-center justify-center gap-3 bg-[#a2c2e2] text-[10px] uppercase tracking-[.2em] transition hover:bg-[#89b0d5] disabled:cursor-not-allowed disabled:opacity-45">Bæta í körfu <Plus size={15} /></button>
                 </div>
                 
-                 <div id="upplýsingar" className="mt-4">{["Efni & ljós", "Mæling & uppsetning"].map((detail) => <div key={detail} className="border-b border-[#ccd9df]"><button onClick={() => setOpenDetail(openDetail === detail ? null : detail)} className="flex w-full items-center justify-between py-5 text-left text-[10px] uppercase tracking-[.18em]">{detail}<ChevronDown size={16} className={`transition ${openDetail === detail ? "rotate-180" : ""}`} /></button>{openDetail === detail && <p className="max-w-md pb-5 text-sm leading-6 text-[#5a6b74]">{detail === "Efni & ljós" ? `${product.title} er sérsmíðað kerfi frá THEdoûr. Veldu lit og uppsetningu sem hentar birtu, næði og loftflæði rýmisins.` : "Sláðu inn breidd og hæð hér að ofan til að senda inn rétta grunnstillingu fyrir tilboðið."}</p>}</div>)}</div>
+                 <div id="upplýsingar" className="mt-4">{["Efni & ljós", "Mæling & uppsetning"].map((detail) => <div key={detail} className="border-b border-[#ccd9df]"><button onClick={() => setOpenDetail(openDetail === detail ? null : detail)} className="flex w-full items-center justify-between py-5 text-left text-[10px] uppercase tracking-[.18em]">{detail}<ChevronDown size={16} className={`transition ${openDetail === detail ? "rotate-180" : ""}`} /></button>{openDetail === detail && <p className="max-w-md pb-5 text-sm leading-6 text-[#5a6b74]">{detail === "Efni & ljós" ? `${product.title} er sérsmíðað kerfi. Veldu lit og uppsetningu sem hentar birtu, næði og loftflæði rýmisins.` : "Sláðu inn breidd og hæð hér að ofan til að senda inn rétta grunnstillingu fyrir tilboðið."}</p>}</div>)}</div>
               </div>
             </div>
           )}

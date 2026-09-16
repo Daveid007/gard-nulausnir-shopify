@@ -20,17 +20,17 @@ import { CASSETTE_RAIL_COLORS, MOTORIZED_RAIL_COLORS, resolveRailColor } from "@
 import { normalizeQuantity } from "@/lib/quantity";
 import { StorefrontLayout } from "./StorefrontLayout";
 import { MeasurementGuideTrigger } from "@/components/MeasurementGuide";
+import { DAYNIGHT_45_LIMITS, dayNightSupplierRate, retailPriceFromSupplierUsd, SUPPLIER_TO_RETAIL_ISK, validateHoneycombSize, type MountPosition } from "@/lib/pricing";
+import { HoneycombOptions } from "./HoneycombOptions";
 
-// Formula: supplier_usd × 2 (freight) × 124 (rate) × 1.5 (markup) × 1.24 (VAT) = × 461
-// Day & Night pricing: fabric × 461 (full markup), accessories × 308 (cost price, no margin)
-const USD_TO_ISK_RETAIL = 461;
-const USD_TO_ISK_COST = 276; // aukahlutir: 1.2 (frakt 20%) × 124 × 1.5 × 1.24 ≈ 276
-const CORDLESS_USD_PER_SQM = 20;
-const MOTOR_USD = 142.26;
-const REMOTE_USD = 14;
-const SIDETRACK_USD_PER_M = 20;
+// Supplier cost, equal shipping, margin, FX and VAT are applied in pricing.ts.
+const USD_TO_ISK_RETAIL = SUPPLIER_TO_RETAIL_ISK;
+const USD_TO_ISK_COST = SUPPLIER_TO_RETAIL_ISK;
+const CORDLESS_USD_PER_SQM = 3;
+const MOTOR_USD = 34.5573219076603;
+const REMOTE_USD = 0;
+const SIDETRACK_USD_PER_M = 10;
 const MIN_SQM_PER_PIECE = 1;
-const MAX_SQM_PER_PIECE = 5.6;
 
 const CORDLESS_ISK_PER_SQM = Math.round(CORDLESS_USD_PER_SQM * USD_TO_ISK_COST);
 const MOTOR_ISK = Math.round((MOTOR_USD + REMOTE_USD) * USD_TO_ISK_COST);
@@ -38,8 +38,7 @@ const SIDETRACK_ISK_PER_M = Math.round(SIDETRACK_USD_PER_M * USD_TO_ISK_COST);
 
 type Operation = "manual" | "cordless" | "motor";
 
-// Raw supplier USD/m² — markup is baked into USD_TO_ISK_RETAIL (× 590).
-// Day & Night "Middle Open" sheet: KS+KB $64.48, KT+KB $61.20, KS+KT $62.50
+// Raw supplier USD/m² from the workbook's separate Day & Night combination sheet.
 export const DAYNIGHT_COMBO_KEYS = ["KS+KB", "KT+KB", "KS+KT"] as const;
 export type DayNightComboKey = (typeof DAYNIGHT_COMBO_KEYS)[number];
 
@@ -55,19 +54,19 @@ export const DAYNIGHT_COMBOS: Record<DayNightComboKey, {
     is: "Gegnsætt + Myrkvun",
     en: "Sheer + Blackout",
     description: "Hámarks andstaða — sjá út á daginn, fullkomið myrkur á nóttunni.",
-    front: "KS", back: "KB", usdPerSqm: 64.48,
+    front: "KS", back: "KB", usdPerSqm: 28.6931231792052,
   },
   "KT+KB": {
     is: "Ljós síað + Myrkvun",
     en: "Translucent + Blackout",
     description: "Mjúkt ljós á daginn, fullkomið myrkur á nóttunni.",
-    front: "KT", back: "KB", usdPerSqm: 61.20,
+    front: "KT", back: "KB", usdPerSqm: 28.6931231792052,
   },
   "KS+KT": {
     is: "Gegnsætt + Ljós síað",
     en: "Sheer + Translucent",
     description: "Tvö lög af mjúku ljósi — fyrir björt rými.",
-    front: "KS", back: "KT", usdPerSqm: 62.50,
+    front: "KS", back: "KT", usdPerSqm: 26.3427429770029,
   },
 };
 
@@ -85,6 +84,9 @@ export default function DayNightCalculator({ product }: { product?: any }) {
   const [backCode, setBackCode] = useState<string>("KB401");
   const [operation, setOperation] = useState<Operation>("manual");
   const [sideTrack, setSideTrack] = useState<boolean>(false);
+  const [sideTrackType, setSideTrackType] = useState<"u" | "l">("u");
+  const [mountPosition, setMountPosition] = useState<MountPosition>("outside");
+  const [noDrill, setNoDrill] = useState<boolean>(false);
   const { railColor, setRailColor } = useRailColor();
   const [lastCassetteColor, setLastCassetteColor] = useState<string>(railColor);
   const { addItem } = useCart();
@@ -132,32 +134,44 @@ export default function DayNightCalculator({ product }: { product?: any }) {
   }
 
   const calc = useMemo(() => {
-    const w = Math.max(0.3, width / 1000);
+    const w = Math.max(0.3, (mountPosition === "inside" ? width - 5 : width) / 1000);
     const h = Math.max(0.3, height / 1000);
     const rawArea = w * h;
     const billedArea = Math.max(MIN_SQM_PER_PIECE, rawArea);
 
-    const fabricUSD = billedArea * combo.usdPerSqm;
+    const selectedComboRate = dayNightSupplierRate(front.code, back.code) ?? combo.usdPerSqm;
+    const fabricUSD = billedArea * selectedComboRate;
     const cordlessUSD = operation === "cordless" ? billedArea * CORDLESS_USD_PER_SQM : 0;
-    const motorUSD = operation === "motor" ? MOTOR_USD : 0;
+    const noDrillUSD = noDrill ? billedArea * 3 : 0;
+    const motorUSD = operation === "motor" ? (billedArea > 4 ? 71.1311073101807 : MOTOR_USD) : 0;
     const remoteUSD = operation === "motor" ? REMOTE_USD : 0;
-    const sidetrackUSD = sideTrack ? w * SIDETRACK_USD_PER_M : 0;
+    const sidetrackUSD = sideTrack ? h * (sideTrackType === "l" ? 5 : SIDETRACK_USD_PER_M) : 0;
 
-    const perPieceUSD = fabricUSD + cordlessUSD + motorUSD + remoteUSD + sidetrackUSD;
+    const perPieceUSD = fabricUSD + cordlessUSD + noDrillUSD + motorUSD + remoteUSD + sidetrackUSD;
     const totalUSD = perPieceUSD * quantity;
 
-    // Fabric at full retail (×1042), accessories at cost (×695)
-    const fabricISK = fabricUSD * USD_TO_ISK_RETAIL;
-    const accessoriesISK = (cordlessUSD + motorUSD + remoteUSD + sidetrackUSD) * USD_TO_ISK_COST;
-    const perPieceISK = fabricISK + accessoriesISK;
+    const perPieceISK = retailPriceFromSupplierUsd(perPieceUSD);
     const totalISK = perPieceISK * quantity;
 
-    const widthOK = width >= 800 && width <= 2750;
-    const heightOK = height >= 500 && height <= 3000;
-    const areaOK = rawArea <= MAX_SQM_PER_PIECE;
+    const size = validateHoneycombSize({
+      product: "daynight",
+      operation,
+      widthMm: width,
+      heightMm: height,
+      mountPosition,
+    });
+    const widthOK = size.ok
+      || (Boolean(size.limits) &&
+        size.effectiveWidthMm >= size.limits!.minWidthMm &&
+        size.effectiveWidthMm <= size.limits!.maxWidthMm);
+    const heightOK = size.ok
+      || (Boolean(size.limits) &&
+        height >= size.limits!.minHeightMm &&
+        height <= size.limits!.maxHeightMm);
+    const areaOK = size.ok || (Boolean(size.limits) && rawArea <= size.limits!.maxAreaSqm);
 
     return { rawArea, billedArea, perPieceUSD, totalUSD, totalISK, perPieceISK, fabricUSD, cordlessUSD, motorUSD, remoteUSD, sidetrackUSD, widthOK, heightOK, areaOK, w, h };
-  }, [width, height, quantity, operation, sideTrack, combo]);
+  }, [width, height, quantity, operation, sideTrack, sideTrackType, mountPosition, noDrill, combo, front.code, back.code]);
 
   const validSize = calc.widthOK && calc.heightOK && calc.areaOK;
   const addToCart = () => addItem({
@@ -170,9 +184,12 @@ export default function DayNightCalculator({ product }: { product?: any }) {
     backCode: back.code,
     frontName: `${front.is} (${front.name})`,
     backName: `${back.is} (${back.name})`,
-    comboUsdPerSqm: combo.usdPerSqm,
+    comboUsdPerSqm: dayNightSupplierRate(front.code, back.code) ?? combo.usdPerSqm,
     operation,
     sideTrack,
+    sideTrackType,
+    mountPosition,
+    noDrill,
     railColor,
   });
 
@@ -196,13 +213,14 @@ export default function DayNightCalculator({ product }: { product?: any }) {
              <span className="text-[10px] uppercase tracking-[.18em]">Mál</span>
              <MeasurementGuideTrigger />
            </div>
-           <div className="grid grid-cols-2 gap-3" data-testid="dimensions">
-            <label><span className="mb-2 block text-[9px] uppercase tracking-[.14em] text-[#667984]">Breidd · cm</span><input data-testid="dn-width" aria-label="Breidd í sentímetrum" type="number" min="80" max="275" step="0.1" value={width / 10} onChange={(e) => setWidth((Number(e.target.value) || 0) * 10)} className="w-full border border-[#ccd9df] bg-transparent px-3 py-3 text-sm" /></label>
-            <label><span className="mb-2 block text-[9px] uppercase tracking-[.14em] text-[#667984]">Hæð · cm</span><input data-testid="dn-height" aria-label="Hæð í sentímetrum" type="number" min="50" max="300" step="0.1" value={height / 10} onChange={(e) => setHeight((Number(e.target.value) || 0) * 10)} className="w-full border border-[#ccd9df] bg-transparent px-3 py-3 text-sm" /></label>
-          </div>
-          {!validSize && <p className="text-xs text-red-600">Stærð er utan framleiðslumarka (80–275 × 50–300 cm, hámark 5,6 m²).</p>}
+              <div className="grid grid-cols-2 gap-3">
+              <label><span className="mb-2 block text-[9px] uppercase tracking-[.14em] text-[#667984]">Breidd · cm</span><input data-testid="dn-width" aria-label="Breidd í sentímetrum" type="number" min={DAYNIGHT_45_LIMITS[operation].minWidthMm / 10} max={DAYNIGHT_45_LIMITS[operation].maxWidthMm / 10} step="0.1" value={width / 10} onChange={(e) => setWidth((Number(e.target.value) || 0) * 10)} className="w-full border border-[#ccd9df] bg-transparent px-3 py-3 text-sm" /></label>
+             <label><span className="mb-2 block text-[9px] uppercase tracking-[.14em] text-[#667984]">Hæð · cm</span><input data-testid="dn-height" aria-label="Hæð í sentímetrum" type="number" min={DAYNIGHT_45_LIMITS[operation].minHeightMm / 10} max={DAYNIGHT_45_LIMITS[operation].maxHeightMm / 10} step="0.1" value={height / 10} onChange={(e) => setHeight((Number(e.target.value) || 0) * 10)} className="w-full border border-[#ccd9df] bg-transparent px-3 py-3 text-sm" /></label>
+              </div>
+            {!validSize && <p className="text-xs text-red-600">Stærð er utan marka fyrir valda stýringu ({DAYNIGHT_45_LIMITS[operation].minWidthMm}–{DAYNIGHT_45_LIMITS[operation].maxWidthMm} × {DAYNIGHT_45_LIMITS[operation].minHeightMm}–{DAYNIGHT_45_LIMITS[operation].maxHeightMm} mm, hám. {DAYNIGHT_45_LIMITS[operation].maxAreaSqm} m²).</p>}
           <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Stýring</span><div className="grid grid-cols-3 gap-2">{(["manual", "cordless", "motor"] as Operation[]).map((item) => <button type="button" key={item} onClick={() => handleOperationChange(item)} className={`border px-2 py-3 text-[10px] uppercase ${operation === item ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{item === "manual" ? "Handvirk" : item === "cordless" ? "Þráðlaus" : "Mótor"}</button>)}</div></div>
           <label className="flex items-center justify-between border border-[#ccd9df] px-3 py-3 text-[10px] uppercase"><span>Hliðarspor</span><input type="checkbox" checked={sideTrack} onChange={(e) => setSideTrack(e.target.checked)} /></label>
+          <HoneycombOptions idPrefix="dn" sideTrack={sideTrack} sideTrackType={sideTrackType} setSideTrackType={setSideTrackType} mountPosition={mountPosition} setMountPosition={setMountPosition} noDrill={noDrill} setNoDrill={setNoDrill} />
            <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Finish · litur á brautum</span><div className="flex flex-wrap gap-2">{(operation === "motor" ? MOTORIZED_RAIL_COLORS : CASSETTE_RAIL_COLORS).map((item) => <button type="button" key={item.value} onClick={() => setRailColor(item.value)} className={`border px-3 py-2 text-[10px] ${railColor === item.value ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{item.value}</button>)}</div></div>
         </div>
       }
@@ -343,11 +361,11 @@ export default function DayNightCalculator({ product }: { product?: any }) {
               <div className="grid grid-cols-3 gap-2">
                 <div>
                   <Label htmlFor="dn-width" className="text-[10px] text-muted-foreground">Breidd</Label>
-                  <Input id="dn-width" type="number" value={width} onChange={(e) => setWidth(Number(e.target.value) || 0)} min={800} max={2750} step={10} className={!calc.widthOK ? "border-destructive" : ""} />
+                   <Input id="dn-width" type="number" value={width} onChange={(e) => setWidth(Number(e.target.value) || 0)} min={DAYNIGHT_45_LIMITS[operation].minWidthMm} max={DAYNIGHT_45_LIMITS[operation].maxWidthMm} step={10} className={!calc.widthOK ? "border-destructive" : ""} />
                 </div>
                 <div>
                   <Label htmlFor="dn-height" className="text-[10px] text-muted-foreground">Hæð</Label>
-                  <Input id="dn-height" type="number" value={height} onChange={(e) => setHeight(Number(e.target.value) || 0)} min={500} max={3000} step={10} className={!calc.heightOK ? "border-destructive" : ""} />
+                   <Input id="dn-height" type="number" value={height} onChange={(e) => setHeight(Number(e.target.value) || 0)} min={DAYNIGHT_45_LIMITS[operation].minHeightMm} max={DAYNIGHT_45_LIMITS[operation].maxHeightMm} step={10} className={!calc.heightOK ? "border-destructive" : ""} />
                 </div>
                 <div>
                   <Label htmlFor="dn-qty" className="text-[10px] text-muted-foreground">Fjöldi</Label>
@@ -357,7 +375,7 @@ export default function DayNightCalculator({ product }: { product?: any }) {
               {(!calc.widthOK || !calc.heightOK || !calc.areaOK) && (
                 <p className="text-xs text-destructive mt-2 flex items-start gap-1.5">
                   <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
-                  Stærð er utan marka (800–2750 × 500–3000 mm, hám. 5.6 m²).
+                   Stærð er utan marka fyrir valda stýringu ({DAYNIGHT_45_LIMITS[operation].minWidthMm}–{DAYNIGHT_45_LIMITS[operation].maxWidthMm} × {DAYNIGHT_45_LIMITS[operation].minHeightMm}–{DAYNIGHT_45_LIMITS[operation].maxHeightMm} mm, hám. {DAYNIGHT_45_LIMITS[operation].maxAreaSqm} m²).
                 </p>
               )}
             </div>
@@ -382,6 +400,30 @@ export default function DayNightCalculator({ product }: { product?: any }) {
                 </div>
                 <Switch id="dn-sidetrack" checked={sideTrack} onCheckedChange={setSideTrack} />
               </div>
+              <div>
+                <Label htmlFor="dn-track-type" className="text-xs font-semibold mb-1.5 block">Hliðarspor / Track</Label>
+                <Select value={sideTrackType} onValueChange={(v) => setSideTrackType(v as "u" | "l")}>
+                  <SelectTrigger id="dn-track-type"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="u">U-spor (+10 USD/m)</SelectItem>
+                    <SelectItem value="l">L-spor (+5 USD/m)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="dn-mount-position" className="text-xs font-semibold mb-1.5 block">Festing / Mount</Label>
+                <Select value={mountPosition} onValueChange={(v) => setMountPosition(v as MountPosition)}>
+                  <SelectTrigger id="dn-mount-position"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="outside">Utanáliggjandi / Outside</SelectItem>
+                    <SelectItem value="inside">Innfelld / Inside (−5 mm breidd)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <label className="flex items-center justify-between rounded-lg border border-border/40 px-3 py-2 text-xs">
+                <span>Án borunar / No-drill (+3 USD/m²)</span>
+                <Switch checked={noDrill} onCheckedChange={setNoDrill} />
+              </label>
             </div>
 
             {/* STEP 5 — Rail colour */}
@@ -464,9 +506,12 @@ export default function DayNightCalculator({ product }: { product?: any }) {
                     backCode: back.code,
                     frontName: `${front.is} (${front.name})`,
                     backName: `${back.is} (${back.name})`,
-                    comboUsdPerSqm: combo.usdPerSqm,
+                    comboUsdPerSqm: dayNightSupplierRate(front.code, back.code) ?? combo.usdPerSqm,
                     operation,
                     sideTrack,
+                    sideTrackType,
+                    mountPosition,
+                    noDrill,
                     railColor,
                   })
                 }
@@ -504,9 +549,12 @@ export default function DayNightCalculator({ product }: { product?: any }) {
                   backCode: back.code,
                   frontName: `${front.is} (${front.name})`,
                   backName: `${back.is} (${back.name})`,
-                  comboUsdPerSqm: combo.usdPerSqm,
+                  comboUsdPerSqm: dayNightSupplierRate(front.code, back.code) ?? combo.usdPerSqm,
                   operation,
                   sideTrack,
+                  sideTrackType,
+                  mountPosition,
+                  noDrill,
                   railColor,
                 })
               }

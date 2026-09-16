@@ -9,8 +9,12 @@
     "serve": "vite preview --config vite.config.ts --host 0.0.0.0",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test:calculators": "node --experimental-strip-types scripts/test-legacy-calculators.mjs",
+    "test:honeycomb": "node --experimental-strip-types scripts/test-honeycomb-constraints.mjs",
+    "test:catalog": "node --experimental-strip-types scripts/test-catalog-merge.mjs",
     "test:collection": "node --experimental-strip-types scripts/test-collection-filter.mjs",
-    "test:windour": "node --experimental-strip-types scripts/test-windour-pricing.mjs"
+    "test:curtains": "node --experimental-strip-types scripts/test-curtains.mjs",
+    "test:windour": "node --experimental-strip-types scripts/test-windour-pricing.mjs",
+    "test:vertical-sheer": "node --experimental-strip-types scripts/test-vertical-sheer.mjs"
   },
   "devDependencies": {
     "@hookform/resolvers": "^3.10.0",

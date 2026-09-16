@@ -189,7 +189,7 @@ function WindourCalculatorBody({ product }: { product: WindourProduct; }) {
 
             {config.kind === "single" && (
               <div>
-                <span className="mb-3 block text-[10px] uppercase tracking-[.18em]">Efni · val fyrir Single</span>
+                 <span className="mb-3 block text-[10px] uppercase tracking-[.18em]">Efni · val fyrir einfaldar rúllugardínur</span>
                 <div className="space-y-2">
                   {WINDOUR_MATERIAL_OPTIONS.map((option) => (
                     <button
@@ -213,7 +213,7 @@ function WindourCalculatorBody({ product }: { product: WindourProduct; }) {
 
             {config.kind === "duo" && (
               <div className="border border-[#ccd9df] bg-[#f4f7f8] p-3 text-xs leading-5 text-[#526772]">
-                <strong>Integrated Duo · 37 USD/m².</strong> Þetta er eitt samþætt
+                 <strong>Tvískiptar Rúllugardínur (Duo) · 37 USD/m².</strong> Þetta er eitt samþætt
                 kerfi (myrkvun + net). Viðbótargjald fyrir tvöfalda opnun er
                 ekki innifalið; sú útfærsla er ekki valin hér.
               </div>
@@ -240,7 +240,7 @@ function WindourCalculatorBody({ product }: { product: WindourProduct; }) {
               <p className="mt-3 text-xs leading-5 text-[#667984]">
                 Raunflatarmál er {quote?.rawSqm.toFixed(2) ?? "—"} m². Lágmarks
                 gjaldflötur er aðeins bráðabirgðaforsenda: {config.minimumChargeableSqm} m²
-                fyrir {config.kind === "single" ? "Single" : "Duo"}.
+                 fyrir {config.kind === "single" ? "einfaldar rúllugardínur" : "tvískiptar rúllugardínur (Duo)"}.
               </p>
             </div>
 

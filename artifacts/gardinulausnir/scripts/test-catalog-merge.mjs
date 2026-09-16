@@ -1,0 +1,118 @@
+import assert from "node:assert/strict";
+import { mergeCatalog } from "../src/pages/storefront/_shared/catalog.ts";
+
+const currency = new Intl.NumberFormat("is-IS", {
+  style: "currency",
+  currency: "ISK",
+  maximumFractionDigits: 0,
+});
+
+const image = (url, altText = null) => ({ url, altText });
+const product = (overrides) => ({
+  id: `gid://shopify/Product/${overrides.handle}`,
+  title: "Shopify title must not replace the curated title",
+  handle: overrides.handle,
+  description: "Shopify description must not replace the curated subtitle",
+  productType: overrides.productType,
+  tags: overrides.tags ?? [],
+  featuredImage: overrides.featuredImage ?? null,
+  images: { nodes: overrides.images ?? [] },
+  priceRange: {
+    minVariantPrice: {
+      amount: String(overrides.amount),
+      currencyCode: "ISK",
+    },
+  },
+});
+
+const catalog = mergeCatalog({
+  connected: true,
+  products: {
+    nodes: [
+      product({
+        handle: "honeycomb-45mm",
+        productType: "Cellular",
+        amount: 123450,
+        featuredImage: image("https://shopify.test/direct-featured.jpg"),
+        images: [
+          image("https://shopify.test/direct-featured.jpg"),
+          image("https://shopify.test/direct-secondary.jpg"),
+        ],
+      }),
+      product({
+        handle: "curtains-2828",
+        title: "Uncurated live curtain title",
+        productType: "Roller",
+        amount: 999999,
+        images: [
+          image("https://shopify.test/curtain-live-primary.jpg"),
+          image("https://shopify.test/curtain-live-secondary.jpg"),
+        ],
+      }),
+      product({
+        handle: "curtains-2883",
+        productType: "Roller",
+        amount: 777777,
+        images: [
+          image("https://shopify.test/curtain-2883-primary.jpg"),
+          image("https://shopify.test/curtain-2883-secondary.jpg"),
+        ],
+      }),
+    ],
+  },
+  collections: {
+    nodes: [
+      {
+        title: "Shopify collection title",
+        handle: "windour-single",
+        products: {
+          nodes: [
+            product({
+              handle: "windour-single-999",
+              productType: "Windour",
+              amount: 98765,
+              images: [
+                image("https://shopify.test/collection-primary.jpg"),
+                image("https://shopify.test/collection-secondary.jpg"),
+              ],
+            }),
+          ],
+        },
+      },
+    ],
+  },
+});
+
+assert.equal(catalog.liveCount, 4);
+
+const direct = catalog.products.find(({ id }) => id === "honeycomb-45mm");
+assert.ok(direct);
+assert.equal(direct.title, "Myrkvunargardína 45 mm");
+assert.equal(direct.subtitle, "Álfilma · algjör myrkvun");
+assert.equal(direct.price, currency.format(123450));
+assert.equal(direct.image, "https://shopify.test/direct-featured.jpg");
+assert.equal(direct.secondary, "https://shopify.test/direct-secondary.jpg");
+
+const collectionProduct = catalog.products.find(({ id }) => id === "windour-single-999");
+assert.ok(collectionProduct);
+assert.equal(collectionProduct.title, "Einfaldar Rúllugardínur 999");
+assert.equal(collectionProduct.subtitle, "Álfilmu-einangruð myrkvun eða net");
+assert.equal(collectionProduct.price, currency.format(98765));
+assert.equal(collectionProduct.image, "https://shopify.test/collection-primary.jpg");
+assert.equal(collectionProduct.secondary, "https://shopify.test/collection-secondary.jpg");
+
+const curtainProduct = catalog.products.find(({ id }) => id === "curtains-2828");
+assert.ok(curtainProduct);
+assert.equal(curtainProduct.title, "Gluggatjöld — 2828");
+assert.equal(curtainProduct.subtitle, "17 litakóðar · 85% myrkvun · sýnishorn til skoðunar");
+assert.equal(curtainProduct.category, "Gluggatjöld");
+assert.equal(curtainProduct.price, "Verð eftir fyrirspurn");
+
+const thirdCurtainProduct = catalog.products.find(({ id }) => id === "curtains-2883");
+assert.ok(thirdCurtainProduct);
+assert.equal(thirdCurtainProduct.title, "Gluggatjöld — 2883");
+assert.equal(thirdCurtainProduct.subtitle, "6 litakóðar · sýnishorn til skoðunar");
+assert.equal(thirdCurtainProduct.category, "Gluggatjöld");
+assert.equal(thirdCurtainProduct.price, "Verð eftir fyrirspurn");
+
+console.log("Catalog merge passed.");

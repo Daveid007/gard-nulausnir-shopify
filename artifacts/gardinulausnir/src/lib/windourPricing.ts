@@ -8,7 +8,8 @@
 
 export const WINDOUR_USD_TO_ISK = 121.16;
 export const WINDOUR_SHIPPING_MULTIPLIER = 2;
-export const WINDOUR_MARKUP_MULTIPLIER = 1.5;
+// 40% margin on landed cost (not a 40% markup).
+export const WINDOUR_MARKUP_MULTIPLIER = 1 / 0.6;
 export const WINDOUR_VAT_MULTIPLIER = 1.24;
 export const WINDOUR_QUOTE_VALID_DAYS = 30;
 export const WINDOUR_QUOTE_EXPIRY_LABEL = "4. júlí — fyrra tilboð útrunnið";
@@ -41,7 +42,7 @@ export type WindourMaterialOption = {
 export const WINDOUR_MATERIAL_OPTIONS: readonly WindourMaterialOption[] = [
   {
     value: "honeycomb",
-    label: "Honeycomb / hunangskambur",
+     label: "Myrkvunargardína",
     supplierUsdPerSqm: 29.5,
   },
   {
@@ -157,7 +158,7 @@ export function validateWindourInput(input: WindourQuoteInput): WindourInputErro
   if (config.kind === "single") {
     const selectedMaterial = input.material;
     if (!selectedMaterial || !WINDOUR_MATERIAL_OPTIONS.some((option) => option.value === selectedMaterial)) {
-      errors.material = "Veldu eitt efni fyrir Single.";
+       errors.material = "Veldu eitt efni fyrir einfaldar rúllugardínur.";
     }
   }
 
@@ -172,7 +173,7 @@ export function calculateWindourQuote(input: WindourQuoteInput): WindourQuote | 
   // Duo is one integrated system.  It is deliberately not multiplied by two
   // and does not receive the separate dual-opening surcharge.
   const material = config.kind === "duo"
-    ? { value: "honeycomb" as const, label: "Integrated Duo · myrkvun + net", supplierUsdPerSqm: 37 }
+     ? { value: "honeycomb" as const, label: "Tvískiptar Rúllugardínur (Duo) · myrkvun + net", supplierUsdPerSqm: 37 }
     : materialOption(input.material as WindourMaterial);
   const rawSqm = (input.widthCm * input.heightCm) / 10000;
   const chargeableSqm = Math.max(rawSqm, config.minimumChargeableSqm);

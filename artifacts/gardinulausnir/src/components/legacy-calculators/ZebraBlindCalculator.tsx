@@ -17,11 +17,11 @@ import { CASSETTE_RAIL_COLORS, MOTORIZED_RAIL_COLORS, resolveRailColor } from "@
 import { normalizeQuantity } from "@/lib/quantity";
 import { StorefrontLayout } from "./StorefrontLayout";
 import { MeasurementGuideTrigger } from "@/components/MeasurementGuide";
+import { retailPriceFromSupplierUsd, SUPPLIER_TO_RETAIL_ISK } from "@/lib/pricing";
 
-// Formula: supplier_usd × 2 (freight) × 124 (rate) × 1.5 (markup) × 1.24 (VAT) = × 461
-const USD_TO_ISK_RETAIL = 461;
-// Aukahlutir (motor o.fl.): frakt 20% í stað 100% → $1 × 1.2 × 124 × 1.5 × 1.24 ≈ 276
-const USD_TO_ISK_ACCESSORY = 276;
+// Supplier cost, equal shipping, margin, FX and VAT are applied in pricing.ts.
+const USD_TO_ISK_RETAIL = SUPPLIER_TO_RETAIL_ISK;
+const USD_TO_ISK_ACCESSORY = SUPPLIER_TO_RETAIL_ISK;
 const MOTOR_USD = 142.26;
 const REMOTE_USD = 14;
 
@@ -145,17 +145,17 @@ export default function ZebraBlindCalculator({ product }: { product?: any }) {
   const lim = SIZE_LIMITS[operation];
 
   const calc = useMemo(() => {
-    const w = Math.max(0.3, width  / 1000);
+    const w = Math.max(0.3, width / 1000);
     const h = Math.max(0.3, height / 1000);
     const area    = w * h;
     const fabricUSD = area * fabric.usdPerSqm;
     const motorUSD  = operation === "motor" ? MOTOR_USD + REMOTE_USD : 0;
     const perPieceUSD = fabricUSD + motorUSD;
     const totalUSD    = perPieceUSD * quantity;
-    const perPieceISK = fabricUSD * USD_TO_ISK_RETAIL + motorUSD * USD_TO_ISK_ACCESSORY;
+    const perPieceISK = retailPriceFromSupplierUsd(perPieceUSD);
     const totalISK    = perPieceISK * quantity;
 
-    const widthOK  = width  >= lim.minW && width  <= lim.maxW;
+    const widthOK  = width >= lim.minW && width <= lim.maxW;
     const heightOK = height >= lim.minH && height <= lim.maxH;
     const areaOK   = area   <= lim.maxArea;
 

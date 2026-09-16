@@ -21,11 +21,11 @@ import { CASSETTE_RAIL_COLORS, MOTORIZED_RAIL_COLORS, resolveRailColor } from "@
 import { normalizeQuantity } from "@/lib/quantity";
 import { StorefrontLayout } from "./StorefrontLayout";
 import { MeasurementGuideTrigger } from "@/components/MeasurementGuide";
+import { retailPriceFromSupplierUsd, SUPPLIER_TO_RETAIL_ISK } from "@/lib/pricing";
 
-// Formula: supplier_usd × 2 (freight) × 124 (rate) × 1.5 (markup) × 1.24 (VAT) = × 461
-const USD_TO_ISK_RETAIL = 461;
-// Aukahlutir (motor o.fl.): frakt 20% í stað 100% → $1 × 1.2 × 124 × 1.5 × 1.24 ≈ 276
-const USD_TO_ISK_ACCESSORY = 276;
+// Supplier cost, equal shipping, margin, FX and VAT are applied in pricing.ts.
+const USD_TO_ISK_RETAIL = SUPPLIER_TO_RETAIL_ISK;
+const USD_TO_ISK_ACCESSORY = SUPPLIER_TO_RETAIL_ISK;
 const MOTOR_USD = 142.26;
 const REMOTE_USD = 14;
 const MIN_SQM_PER_PIECE = 1;
@@ -39,7 +39,7 @@ type FabricType = "translucent" | "blackout";
 
 type VerticalFabric = FabricInfo & { type: FabricType; usdPerSqm: number };
 
-// Raw supplier USD/m² — markup is baked into USD_TO_ISK_RETAIL (× 590).
+// Raw supplier USD/m² — converted by the shared margin formula at display time.
 // Vertical sheet: KT $36.41, KB $42.48
 const VERTICAL_PRICING: Record<string, { type: FabricType; usdPerSqm: number }> = {
   KT401: { type: "translucent", usdPerSqm: 36.41 },
@@ -145,7 +145,7 @@ export default function VerticalCalculator({ product }: { product?: any }) {
 
     const perPieceUSD = fabricUSD + motorUSD + remoteUSD;
     const totalUSD = perPieceUSD * quantity;
-    const perPieceISK = fabricUSD * USD_TO_ISK_RETAIL + (motorUSD + remoteUSD) * USD_TO_ISK_ACCESSORY;
+    const perPieceISK = retailPriceFromSupplierUsd(perPieceUSD);
     const totalISK = perPieceISK * quantity;
 
     const widthOK = width >= 800 && width <= 4000;
@@ -249,7 +249,7 @@ export default function VerticalCalculator({ product }: { product?: any }) {
         >
           {[vertImg1, vertImg2, vertImg3].map((src, i) => (
             <div key={i} className="aspect-[4/3] max-h-[500px] overflow-hidden rounded-xl bg-muted">
-              <img src={src} alt={`Lóðrétt honeycomb ${i + 1}`} className="w-full h-full object-contain" />
+               <img src={src} alt={`Lóðrétt myrkvunargardína ${i + 1}`} className="w-full h-full object-contain" />
             </div>
           ))}
         </motion.div>

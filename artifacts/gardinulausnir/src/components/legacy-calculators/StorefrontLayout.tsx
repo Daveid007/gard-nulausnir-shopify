@@ -13,7 +13,7 @@ export function StorefrontLayout({
   setQuantity,
   canAddToCart = true,
   roundPricePerUnit = true,
-   priceRounding = "hundred-ceil",
+    priceRounding = "exact",
    priceText,
    priceLabel,
 }: {
@@ -48,9 +48,7 @@ export function StorefrontLayout({
 
   const safeQuantity = normalizeQuantity(quantity);
   const changeQuantity = (next: number) => setQuantity(normalizeQuantity(next));
-  // Cart totals are charged in whole hundreds of ISK. All calculators except
-  // dual roller round each unit before multiplying; dual roller's existing
-  // cart helper rounds its complete line total.
+  // The supplier-cost formula rounds once per unit, then multiplies quantity.
   const displayPriceISK = priceRounding === "exact"
     ? Math.round(priceISK)
     : roundPricePerUnit
@@ -139,7 +137,7 @@ export function StorefrontLayout({
 
       {/* RIGHT COLUMN */}
       <div className="pt-2 md:sticky md:top-5 md:h-[calc(100vh-40px)] md:overflow-y-auto pr-2 custom-scrollbar pb-10">
-        <p className="mb-4 text-[10px] uppercase tracking-[.26em] text-[#6892b8]">{product.category} / THEdoûr</p>
+         <p className="mb-4 text-[10px] uppercase tracking-[.26em] text-[#6892b8]">{product.category}</p>
         <h1 className="font-serif text-[clamp(2.7rem,4.8vw,5.2rem)] leading-[.9] tracking-[-.06em]">{product.title}</h1>
         <div className="mt-7 flex items-end justify-between gap-5 border-b border-[#ccd9df] pb-5">
           <p className="text-sm text-[#5a6b74]">{product.subtitle}</p>
@@ -168,7 +166,7 @@ export function StorefrontLayout({
               </button>
               {openDetail === detail && (
                 <p className="max-w-md pb-5 text-sm leading-6 text-[#5a6b74]">
-                  {detail === "Efni & ljós" ? `${product.title} er sérsmíðað kerfi frá THEdoûr. Veldu lit og uppsetningu sem hentar birtu, næði og loftflæði rýmisins.` : "Sláðu inn breidd og hæð hér að ofan til að senda inn rétta grunnstillingu fyrir tilboðið."}
+                  {detail === "Efni & ljós" ? `${product.title} er sérsmíðað kerfi. Veldu lit og uppsetningu sem hentar birtu, næði og loftflæði rýmisins.` : "Sláðu inn breidd og hæð hér að ofan til að senda inn rétta grunnstillingu fyrir tilboðið."}
                 </p>
               )}
             </div>
