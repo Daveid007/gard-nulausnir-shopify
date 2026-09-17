@@ -8,9 +8,11 @@ import { LEGACY_CART_OPEN_EVENT, LegacyCalculator, type LegacyCalculatorKind } f
 import { ProductInfoFooter } from "@/components/ProductInfoFooter";
 import { MeasurementGuideTrigger } from "@/components/MeasurementGuide";
 import { ResponsiveImage } from "@/components/ResponsiveImage";
+import { WarrantyButton } from "@/components/WarrantyButton";
 import WindourCalculator, { WINDOUR_CART_OPEN_EVENT } from "@/components/WindourCalculator";
 import VerticalSheerCalculator, { VERTICAL_SHEER_CART_OPEN_EVENT } from "@/components/VerticalSheerCalculator";
 import type { RollerProductIdentity } from "@/components/legacy-calculators/PriceCalculator";
+import type { RollerWorkbookProductIdentity } from "@/components/legacy-calculators/RollerWorkbookCalculator";
 import { isWindourProductId } from "@/lib/windourPricing";
 import NotFound from "@/pages/not-found";
 import CurtainsProductDetail from "./CurtainsProductDetail";
@@ -59,6 +61,11 @@ export function ProductDetail() {
     product.id === "square-cassette" || product.id === "arc-cassette" || product.id === "open-roll"
       ? product.id
       : undefined;
+  const workbookProduct: RollerWorkbookProductIdentity | undefined =
+    product.id === "square-cassette" || product.id === "arc-cassette" || product.id === "open-roll" ||
+    product.id === "zebra-blind" || product.id === "sheer-shades" || product.id === "butterfly-blinds"
+      ? product.id
+      : undefined;
   const legacyCalculator: LegacyCalculatorKind | null =
     product.id === "honeycomb-45mm" ? "honeycomb-45"
       : product.id === "honeycomb-25mm" ? "honeycomb-25"
@@ -66,8 +73,8 @@ export function ProductDetail() {
           : product.id === "top-down-bottom-up" ? "tdbu"
             : product.id === "vertical-45mm" ? "vertical"
               : product.id === "dual-roller" ? "dual-roller"
-                : product.id === "zebra-blind" ? "zebra"
-                  : rollerProduct ? "roller"
+                 : workbookProduct ? "roller-workbook"
+                   : rollerProduct ? "roller"
                     : null;
 
   const [opacity, setOpacity] = useState<"blackout" | "light-filtering">("blackout");
@@ -173,10 +180,11 @@ export function ProductDetail() {
       <main id="top">
         <div className="mx-auto flex max-w-[1510px] items-center justify-between gap-4 px-5 pt-5 md:px-10 md:pt-8 mb-5">
           <Link href="/collection" className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[.18em] text-[#667984]"><ArrowLeft size={14} /> Allar gardínur</Link>
+          <WarrantyButton />
         </div>
         <section id="vörulýsing" className="mx-auto max-w-[1510px] px-5 pb-16 md:px-10 md:pb-28">
           {legacyCalculator ? (
-            <LegacyCalculator kind={legacyCalculator} rollerProduct={rollerProduct} product={product} />
+            <LegacyCalculator key={product.id} kind={legacyCalculator} rollerProduct={rollerProduct} workbookProduct={workbookProduct} product={product} />
            ) : isWindour ? (
             <WindourCalculator key={product.id} product={product} />
            ) : isVerticalSheer ? (

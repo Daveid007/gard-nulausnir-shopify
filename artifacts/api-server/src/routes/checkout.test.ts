@@ -1,26 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { quoteRollerWorkbookBlind } from "../lib/rollerWorkbookPricing";
 import { buildShopifyDraftOrderLines, checkoutRequestSchema } from "./checkout";
 
 const railColor = "Hvítur" as const;
 
 const cartItems = [
-  {
-    type: "roller" as const,
-    qty: 2,
-    width: 1000,
-    height: 1200,
-    cassette: "C5 — Opin rúlla með yfirhlíf",
-    rail: "Ferningsstöng (32 mm) · Hvítur",
-    fabricCode: "TSD2261-1",
-    fabricColor: "Pure White",
-    fabricType: "light-filtering" as const,
-    bottomRailType: "Álbotnlisti" as const,
-    bottomRailColor: "Hvítur" as const,
-    mountType: "Smellifesting" as const,
-    operation: "chain" as const,
-    sideTrack: false,
-  },
   {
     type: "daynight" as const,
     qty: 1,
@@ -61,7 +46,7 @@ const cartItems = [
     qty: 1,
     width: 1000,
     height: 1200,
-    fabricCode: "KB401",
+    fabricCode: "KB801",
     operation: "manual" as const,
     sideTrack: false,
     railColor,
@@ -87,22 +72,13 @@ const cartItems = [
     openingType: "centre" as const,
     railColor,
   },
-  {
-    type: "zebra" as const,
-    qty: 1,
-    width: 1000,
-    height: 1200,
-    fabricCode: "ZT-B1",
-    operation: "chain" as const,
-    railColor,
-  },
 ];
 
 test("all calculator cart types validate for Shopify checkout", () => {
   const parsed = checkoutRequestSchema.parse({
     items: cartItems,
   });
-  assert.equal(parsed.items.length, 8);
+  assert.equal(parsed.items.length, 6);
 });
 
 test("Shopify Draft Order lines keep product links, exact prices, and configuration", () => {
@@ -111,48 +87,110 @@ test("Shopify Draft Order lines keep product links, exact prices, and configurat
   });
   const lines = buildShopifyDraftOrderLines(parsed.items);
 
-  assert.equal(lines.length, 9);
+  assert.equal(lines.length, 7);
   assert.deepEqual(
     lines.slice(0, -1).map((line) => line.productHandle),
     [
-      "open-roll",
       "day-night",
       "dual-roller",
       "honeycomb-45mm",
       "honeycomb-25mm",
       "top-down-bottom-up",
       "vertical-45mm",
-      "zebra-blind",
     ],
   );
-  assert.equal(lines[0]?.quantity, 2);
-  assert.equal(lines[0]?.unitPriceIsk, 20120);
-  assert.equal(lines[0]?.attributes.find((attribute) => attribute.key === "Breidd (mm)")?.value, "1000");
-  assert.equal(lines[0]?.attributes.find((attribute) => attribute.key === "Hæð (mm)")?.value, "1200");
-  assert.equal(lines[0]?.attributes.find((attribute) => attribute.key === "Botnlisti")?.value, "Álbotnlisti");
-  assert.equal(lines[0]?.attributes.find((attribute) => attribute.key === "Litur botnlista")?.value, "Hvítur");
-  assert.equal(lines[0]?.attributes.find((attribute) => attribute.key === "Litur")?.value, "Pure White");
-  assert.equal(lines[0]?.attributes.find((attribute) => attribute.key === "Dúkagerð")?.value, "light-filtering");
-  assert.equal(lines[0]?.attributes.find((attribute) => attribute.key === "Festing")?.value, "Smellifesting");
-  assert.equal(lines[7]?.unitPriceIsk, 8546);
-  assert.equal(lines[7]?.attributes.find((attribute) => attribute.key === "Litur brautar")?.value, "Hvítur");
+  assert.equal(lines[0]?.attributes.find((attribute) => attribute.key === "Litur brautar")?.value, "Hvítur");
   assert.equal(lines.at(-1)?.title, "Uppsetning / Professional installation");
   assert.equal(lines.at(-1)?.unitPriceIsk, 15000);
   assert.equal(lines.at(-1)?.requiresShipping, false);
 });
 
-test("unknown Zebra fabrics and unsupported operation sizes are rejected", () => {
-  const unknownFabric = { ...cartItems[7], fabricCode: "ZT-NOT-REAL" };
-  const parsedUnknown = checkoutRequestSchema.safeParse({
-    items: [unknownFabric],
+test("legacy roller and zebra requests are rejected instead of receiving stale rates", () => {
+  const parsedLegacy = checkoutRequestSchema.safeParse({
+    items: [{
+      type: "zebra",
+      qty: 1,
+      width: 1000,
+      height: 1200,
+      fabricCode: "ZT-B1",
+      operation: "chain",
+      railColor,
+    }],
   });
-  assert.equal(parsedUnknown.success, false);
+  assert.equal(parsedLegacy.success, false);
+});
 
-  const oversizedCordless = checkoutRequestSchema.parse({
-    items: [{ ...cartItems[7], operation: "cordless", width: 2000 }],
-  });
-  assert.throws(
-    () => buildShopifyDraftOrderLines(oversizedCordless.items),
-    /exceeds supported limits/,
+test("Roller Blinds workbook validates product family and prices server-side custom lines", () => {
+  const workbookItem = {
+    type: "roller-workbook" as const,
+    qty: 2,
+    productId: "butterfly-blinds" as const,
+    configuration: {
+      family: "butterfly" as const,
+      fabricCode: "BFHLA2501-1",
+      widthCm: 100,
+      heightCm: 120,
+      operation: "motor" as const,
+      motorType: "wired" as const,
+      remote: true,
+      hub: true,
+      mountPosition: "outside" as const,
+      cassette: "Arc with fabric inserted" as const,
+    },
+    fabricName: "forged client display name",
+  };
+  const parsed = checkoutRequestSchema.parse({ items: [workbookItem] });
+  const lines = buildShopifyDraftOrderLines(parsed.items);
+  assert.equal(lines[0]?.productHandle, null);
+  assert.equal(lines[0]?.unitPriceIsk, 40326);
+  assert.equal(lines[0]?.attributes.find((attribute) => attribute.key === "Efni")?.value, "BFHLA2501-1");
+  assert.equal(lines[0]?.attributes.find((attribute) => attribute.key === "Miðstöð")?.value, "Já");
+  assert.equal(
+    checkoutRequestSchema.safeParse({
+      items: [{ ...workbookItem, productId: "sheer-shades" }],
+    }).success,
+    false,
   );
+  assert.equal(
+    checkoutRequestSchema.safeParse({
+      items: [{ ...workbookItem, configuration: { ...workbookItem.configuration, remote: false, hub: false, fabricCode: "NOT-IN-WORKBOOK" } }],
+    }).success,
+    false,
+  );
+  assert.equal(
+    checkoutRequestSchema.safeParse({
+      items: [{ ...workbookItem, configuration: { ...workbookItem.configuration, fabricCode: "SS-TR-75-110" } }],
+    }).success,
+    false,
+  );
+});
+
+test("server workbook fixtures preserve all four family totals and option validation", () => {
+  const fixtures = [
+    [{ family: "roller", fabricCode: "RSMA0-M01", widthCm: 100, heightCm: 120, quantity: 2, operation: "manual", manualControl: "cord", mountPosition: "outside", cassette: "Square with fabric inserted" }, 14.3538691625538, 14376],
+    [{ family: "zebra", fabricCode: "DS-TR-G31-001", widthCm: 100, heightCm: 120, quantity: 2, operation: "manual", manualControl: "cord", mountPosition: "outside", cassette: "Arc with fabric inserted" }, 19.349408790064683, 19380],
+    [{ family: "sheer", fabricCode: "SS-TR-75-110", widthCm: 100, heightCm: 120, quantity: 2, operation: "manual", manualControl: "cord", mountPosition: "outside", cassette: "Square with fabric inserted" }, 18.98371732222932, 19014],
+    [{ family: "butterfly", fabricCode: "BFHLA2501-1", widthCm: 100, heightCm: 120, quantity: 2, operation: "motor", motorType: "wired", remote: true, hub: true, mountPosition: "outside", cassette: "Arc with fabric inserted" }, 80.52501692978863, 80652],
+  ] as const;
+  for (const [input, unitUsd, totalIsk] of fixtures) {
+    const quote = quoteRollerWorkbookBlind(input);
+    assert.equal(quote.ok, true);
+    if (quote.ok) {
+      assert.equal(quote.supplier.unitUsd, unitUsd);
+      assert.equal(quote.retail.totalIsk, totalIsk);
+    }
+  }
+  const invalidTrack = quoteRollerWorkbookBlind({
+    family: "butterfly",
+    fabricCode: "BFHLA2501-1",
+    widthCm: 100,
+    heightCm: 120,
+    quantity: 1,
+    operation: "manual",
+    manualControl: "cord",
+    mountPosition: "outside",
+    track: "u-white",
+    cassette: "Arc with fabric inserted",
+  });
+  assert.equal(invalidTrack.ok, false);
 });

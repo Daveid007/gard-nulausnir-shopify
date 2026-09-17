@@ -27,6 +27,10 @@ import {
   type VerticalSheerInstallation,
   type VerticalSheerOperation,
 } from "./verticalSheerPricing";
+import {
+  quoteRollerWorkbookBlind,
+  type RollerWorkbookQuoteInput,
+} from "./rollerWorkbookPricing";
 
 export const HOLDER_USD = 5.0;
 
@@ -223,6 +227,28 @@ export type WindourCartItem = {
   quoteExpiryLabel: string;
 };
 
+/**
+ * This is deliberately separate from the legacy roller pricing version.  The
+ * Roller Blinds workbook has a different fabric catalogue and option model.
+ */
+export const ROLLER_WORKBOOK_REVISION = 1;
+export type RollerWorkbookProductId =
+  | "square-cassette"
+  | "arc-cassette"
+  | "zebra-blind"
+  | "sheer-shades"
+  | "butterfly-blinds";
+
+export type RollerWorkbookCartItem = {
+  id: string;
+  type: "roller-workbook";
+  qty: number;
+  productId: RollerWorkbookProductId;
+  configuration: Omit<RollerWorkbookQuoteInput, "quantity">;
+  fabricName: string;
+  workbookRevision: typeof ROLLER_WORKBOOK_REVISION;
+};
+
 type CartPricingMetadata = {
   pricingVersion?: 2;
   needsReconfigure?: boolean;
@@ -239,6 +265,7 @@ export type CartItem = (
   | DualRollerCartItem
   | ZebraCartItem
   | WindourCartItem
+  | RollerWorkbookCartItem
 ) & CartPricingMetadata;
 
 export type NewCartItem =
@@ -251,7 +278,14 @@ export type NewCartItem =
   | Omit<VerticalSheerCartItem, "id">
   | Omit<DualRollerCartItem, "id">
   | Omit<ZebraCartItem, "id">
-  | Omit<WindourCartItem, "id">;
+  | Omit<WindourCartItem, "id">
+  | {
+    type: "roller-workbook";
+    qty: number;
+    productId: RollerWorkbookProductId;
+    configuration: Omit<RollerWorkbookQuoteInput, "quantity">;
+    fabricName: string;
+  };
 
 type CartContextValue = {
   items: CartItem[];
@@ -275,6 +309,10 @@ const LEGACY_STORAGE_KEY = "solmyrkvun.cart.v1";
 // before multiplying quantity.
 export function priceLineIsk(item: CartItem): number {
   if (item.needsReconfigure) return 0;
+  if (item.type === "roller-workbook") {
+    const quote = quoteRollerWorkbookBlind({ ...item.configuration, quantity: item.qty });
+    return quote.ok ? quote.retail.totalIsk : 0;
+  }
   if (item.type === "windour") {
     const quote = calculateWindourQuote({
       productId: item.productId,
@@ -311,6 +349,10 @@ export function priceLineIsk(item: CartItem): number {
 
 export function priceCartItem(item: CartItem): number {
   if (item.needsReconfigure) return 0;
+  if (item.type === "roller-workbook") {
+    const quote = quoteRollerWorkbookBlind({ ...item.configuration, quantity: item.qty });
+    return quote.ok ? quote.supplier.unitUsd : 0;
+  }
   if (item.type === "windour") {
     const quote = calculateWindourQuote({
       productId: item.productId,
@@ -420,6 +462,21 @@ export function describeCartItem(item: CartItem): { title: string; sub: string }
       sub: `${item.widthCm}×${item.heightCm} cm · ${item.materialLabel} · ${item.chargeableSqm.toFixed(2)} m² · ${item.quoteExpiresInDays} daga provisional quote (${item.quoteExpiryLabel}) · staðfesting birgis vantar`,
     };
   }
+  if (item.type === "roller-workbook") {
+    const quote = quoteRollerWorkbookBlind({ ...item.configuration, quantity: item.qty });
+    if (!quote.ok) {
+      return {
+        title: "Rúllugardína úr verðbók · þarfnast endurstillingar",
+        sub: "Ógildar stillingar úr verðbók.",
+      };
+    }
+    const manual = quote.manualControl ? ` · handstýring: ${quote.manualControl}` : "";
+    const motor = quote.motorType ? ` · mótor: ${quote.motorType}` : "";
+    return {
+      title: `${quote.fabric.family} · ${quote.fabric.name}`,
+      sub: `${quote.enteredWidthMm / 10}×${quote.heightMm / 10} cm · litur: ${quote.fabric.color} · ${quote.operation}${manual}${motor} · fjarstýring: ${quote.remote ? "já" : "nei"} · miðstöð: ${quote.hub ? "já" : "nei"} · ${quote.mountPosition === "inside" ? "innfelld" : "utanáliggjandi"} · án borunar: ${quote.noDrill ? "já" : "nei"} · spor: ${quote.track} · kassetta: ${quote.cassette}`,
+    };
+  }
   if (item.type === "roller") {
     const opLabel =
       item.operation === "motor"
@@ -525,9 +582,72 @@ function finalizeMigratedItem<T extends CartItem>(item: T, raw: Record<string, u
   return item;
 }
 
+function isRollerWorkbookProductFamily(
+  productId: unknown,
+  configuration: Pick<RollerWorkbookQuoteInput, "family" | "cassette">,
+): productId is RollerWorkbookProductId {
+  return (productId === "square-cassette" &&
+      configuration.family === "roller" &&
+      configuration.cassette === "Square with fabric inserted") ||
+    (productId === "arc-cassette" &&
+      configuration.family === "roller" &&
+      configuration.cassette === "Arc with fabric inserted") ||
+    (productId === "zebra-blind" && configuration.family === "zebra") ||
+    (productId === "sheer-shades" && configuration.family === "sheer") ||
+    (productId === "butterfly-blinds" && configuration.family === "butterfly");
+}
+
+function isRollerWorkbookConfiguration(
+  value: unknown,
+): value is Omit<RollerWorkbookQuoteInput, "quantity"> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const configuration = value as Record<string, unknown>;
+  const allowed = new Set([
+    "family", "fabricCode", "widthCm", "heightCm", "operation", "manualControl",
+    "motorType", "remote", "hub", "noDrill", "mountPosition", "track", "cassette",
+  ]);
+  if (Object.keys(configuration).some((key) => !allowed.has(key))) return false;
+  return typeof configuration.family === "string" &&
+    typeof configuration.fabricCode === "string" &&
+    isFiniteNumber(configuration.widthCm) &&
+    isFiniteNumber(configuration.heightCm) &&
+    typeof configuration.operation === "string" &&
+    typeof configuration.mountPosition === "string" &&
+    typeof configuration.cassette === "string" &&
+    (configuration.manualControl === undefined || typeof configuration.manualControl === "string") &&
+    (configuration.motorType === undefined || typeof configuration.motorType === "string") &&
+    (configuration.remote === undefined || typeof configuration.remote === "boolean") &&
+    (configuration.hub === undefined || typeof configuration.hub === "boolean") &&
+    (configuration.noDrill === undefined || typeof configuration.noDrill === "boolean") &&
+    (configuration.track === undefined || typeof configuration.track === "string");
+}
+
 function migrateCartItem(raw: unknown): CartItem | null {
   if (!raw || typeof raw !== "object") return null;
   const item = raw as Record<string, unknown>;
+  if (item.type === "roller-workbook") {
+    if (
+      typeof item.id !== "string" ||
+      !isFiniteNumber(item.qty) || !Number.isInteger(item.qty) || item.qty < 1 || item.qty > 99 ||
+      !isRollerWorkbookConfiguration(item.configuration) ||
+      !isRollerWorkbookProductFamily(item.productId, item.configuration) ||
+      typeof item.fabricName !== "string" ||
+      item.workbookRevision !== ROLLER_WORKBOOK_REVISION
+    ) return null;
+    const qty = normalizeQuantity(item.qty);
+    const quote = quoteRollerWorkbookBlind({ ...item.configuration, quantity: qty });
+    if (!quote.ok || quote.fabric.name !== item.fabricName) return null;
+    return {
+      id: item.id,
+      type: "roller-workbook",
+      qty,
+      productId: item.productId,
+      configuration: item.configuration,
+      fabricName: quote.fabric.name,
+      workbookRevision: ROLLER_WORKBOOK_REVISION,
+      pricingVersion: 2,
+    };
+  }
   if (item.type === "windour") {
     if (
       typeof item.id !== "string" ||
@@ -618,7 +738,11 @@ function migrateCartItem(raw: unknown): CartItem | null {
       !isFiniteNumber(item.fabricUsdPerSqm) ||
       (item.operation !== "chain" && item.operation !== "cordless" && item.operation !== "motor")
     ) return null;
-    return finalizeMigratedItem(item as unknown as RollerCartItem & CartPricingMetadata, item);
+    return {
+      ...finalizeMigratedItem(item as unknown as RollerCartItem & CartPricingMetadata, item),
+      // Legacy roller rates are not derived from the Roller Blinds workbook.
+      needsReconfigure: true,
+    };
   }
   if (item.type === "honeycomb") {
     // Legacy 38mm items had no fabricCode; drop them.
@@ -704,7 +828,11 @@ function migrateCartItem(raw: unknown): CartItem | null {
       (item.operation !== "chain" && item.operation !== "cordless" && item.operation !== "motor")
     ) return null;
     if (typeof item.railColor !== "string") item.railColor = "Hvítur";
-    return finalizeMigratedItem(item as unknown as ZebraCartItem & CartPricingMetadata, item);
+    return {
+      ...finalizeMigratedItem(item as unknown as ZebraCartItem & CartPricingMetadata, item),
+      // Legacy zebra rates are not derived from the Roller Blinds workbook.
+      needsReconfigure: true,
+    };
   }
   return null;
 }
@@ -744,12 +872,31 @@ export function CartProvider({ children }: { children: ReactNode }) {
       typeof crypto !== "undefined" && "randomUUID" in crypto
         ? crypto.randomUUID()
         : `item_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
-    setItems((prev) => [...prev, {
-      ...item,
-      qty: normalizeQuantity(item.qty),
-      pricingVersion: 2,
-      id,
-    } as CartItem]);
+    const qty = normalizeQuantity(item.qty);
+    if (item.type === "roller-workbook") {
+      const quote = quoteRollerWorkbookBlind({ ...item.configuration, quantity: qty });
+      if (!quote.ok || !isRollerWorkbookProductFamily(item.productId, item.configuration)) {
+        throw new Error(`Invalid Roller Blinds workbook configuration: ${quote.ok ? "product family mismatch" : quote.errors.join(" ")}`);
+      }
+      setItems((prev) => [...prev, {
+        type: "roller-workbook",
+        qty,
+        productId: item.productId,
+        configuration: item.configuration,
+        // Never persist a display name supplied by the client as a price source.
+        fabricName: quote.fabric.name,
+        workbookRevision: ROLLER_WORKBOOK_REVISION,
+        pricingVersion: 2,
+        id,
+      }]);
+    } else {
+      setItems((prev) => [...prev, {
+        ...item,
+        qty,
+        pricingVersion: 2,
+        id,
+      } as CartItem]);
+    }
     setOpen(true);
   }, []);
 

@@ -153,7 +153,7 @@ for (const name of calculatorNames) {
 const cartSource = await readFile(join(root, "src", "lib", "cart.tsx"), "utf8");
 assert.match(cartSource, /calculateDualRollerCartTotal/, "cart must use the visible dual roller calculation");
 assert.match(cartSource, /item\.qty = normalizeQuantity\(item\.qty\)/, "persisted cart quantities must normalize");
-assert.match(cartSource, /qty: normalizeQuantity\(item\.qty\)/, "new cart quantities must normalize");
+assert.match(cartSource, /const qty = normalizeQuantity\(item\.qty\)/, "new cart quantities must normalize");
 assert.match(cartSource, /normalizeQuantity\(qty\)/, "updated cart quantities must normalize");
 assert.match(cartSource, /sideTrackType: item\.type === "honeycomb-25" \? "l" : item\.sideTrackType \?\? "u"/, "cart must preserve U/L track selection and default 25mm to L");
 assert.match(cartSource, /const STORAGE_KEY = "solmyrkvun\.cart\.v2"/, "cart v2 storage key changed");

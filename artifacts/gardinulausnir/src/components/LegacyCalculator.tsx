@@ -10,6 +10,7 @@ import TDBUCalculator from "@/components/legacy-calculators/TDBUCalculator";
 import VerticalCalculator from "@/components/legacy-calculators/VerticalCalculator";
 import DualRollerCalculator from "@/components/legacy-calculators/DualRollerCalculator";
 import ZebraBlindCalculator from "@/components/legacy-calculators/ZebraBlindCalculator";
+import RollerWorkbookCalculator, { type RollerWorkbookProductIdentity } from "@/components/legacy-calculators/RollerWorkbookCalculator";
 
 export type LegacyCalculatorKind =
   | "roller"
@@ -19,7 +20,8 @@ export type LegacyCalculatorKind =
   | "tdbu"
   | "vertical"
   | "dual-roller"
-  | "zebra";
+  | "zebra"
+  | "roller-workbook";
 
 export const LEGACY_CART_OPEN_EVENT = "gardinulausnir:open-cart";
 
@@ -89,7 +91,7 @@ function CalculatorCartStatus() {
   );
 }
 
-function CalculatorBody({ kind, rollerProduct, product }: { kind: LegacyCalculatorKind; rollerProduct?: RollerProductIdentity; product: any }) {
+function CalculatorBody({ kind, rollerProduct, workbookProduct, product }: { kind: LegacyCalculatorKind; rollerProduct?: RollerProductIdentity; workbookProduct?: RollerWorkbookProductIdentity; product: any }) {
   switch (kind) {
     case "roller":
       return <PriceCalculator productIdentity={rollerProduct} product={product} />;
@@ -107,16 +109,18 @@ function CalculatorBody({ kind, rollerProduct, product }: { kind: LegacyCalculat
       return <DualRollerCalculator product={product} />;
     case "zebra":
       return <ZebraBlindCalculator product={product} />;
+    case "roller-workbook":
+      return workbookProduct ? <RollerWorkbookCalculator product={product} productIdentity={workbookProduct} /> : null;
   }
 }
 
-export function LegacyCalculator({ kind, rollerProduct, product }: { kind: LegacyCalculatorKind; rollerProduct?: RollerProductIdentity; product: any }) {
+export function LegacyCalculator({ kind, rollerProduct, workbookProduct, product }: { kind: LegacyCalculatorKind; rollerProduct?: RollerProductIdentity; workbookProduct?: RollerWorkbookProductIdentity; product: any }) {
   return (
     <CartProvider>
       <RailColorProvider>
         <div id="legacy-calculator" className="text-[#24313b]">
           <CalculatorCartStatus />
-          <CalculatorBody kind={kind} rollerProduct={rollerProduct} product={product} />
+          <CalculatorBody kind={kind} rollerProduct={rollerProduct} workbookProduct={workbookProduct} product={product} />
         </div>
       </RailColorProvider>
     </CartProvider>

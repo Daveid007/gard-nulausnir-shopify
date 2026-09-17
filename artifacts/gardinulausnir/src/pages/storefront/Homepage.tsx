@@ -6,6 +6,7 @@ import { BrandLogo } from "./_shared/BrandLogo";
 import { HelpDrawer } from "./_shared/HelpDrawer";
 import { Footer } from "./_shared/Storefront";
 import { ResponsiveImage } from "@/components/ResponsiveImage";
+import { WarrantyButton } from "@/components/WarrantyButton";
 import homepageFamily from "@/assets/homepage-family.jpg";
 import { curtainProductCoverImage } from "./_shared/curtains-assets";
 
@@ -15,6 +16,8 @@ const collections = [
   { id: "curtains", href: `${collectionHref}#curtains`, title: "Gluggatjöld", description: "1000, 2828 og 2883 · 14 + 17 + 6 litasýnishorn.", image: curtainProductCoverImage("curtains-1000") },
   { id: "honeycomb", href: `${collectionHref}#honeycomb`, title: "Myrkvunargardínur", description: "Gardínur eftir máli sem loka birtuna úti.", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-honeycomb-45mm.png?v=1787921250" },
   { id: "roller", href: `${collectionHref}#roller`, title: "Rúllugardínur", description: "Vandaðar gardínur eftir máli fyrir algjört myrkur.", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-square-cassette.png?v=1787921305" },
+  { id: "sheer-shades", href: `${collectionHref}#sheer-shades`, title: "Sheer Shades", description: "Láréttar Sheer Shades fyrir stillanlega dagsbirtu og næði.", image: "" },
+  { id: "butterfly", href: `${collectionHref}#butterfly`, title: "Fiðrildagardínur", description: "Lárétt Butterfly-kerfi með mjúkri ljósstýringu.", image: "" },
   { id: "vertical-sheer", href: `${collectionHref}#vertical-sheer-shades`, title: "Lóðréttar vefgardínur", description: "Vertical Sheer Shades / Dream Shades · 17 efni.", image: new URL("../../assets/vertical-sheer-shades/cases/Vertical sheer shades (2).jpg", import.meta.url).href },
   { id: "windour-single", href: `${collectionHref}#windour-single`, title: "Einfaldar Rúllugardínur", description: "Myrkvun eða net · 999 og 2000.", image: "https://cdn.shopify.com/s/files/1/0513/7589/8773/files/Gemini_Generated_Image_pg9wzppg9wzppg9w.png?v=1768448444" },
   { id: "windour-duo", href: `${collectionHref}#windour-duo`, title: "Tvískiptar Rúllugardínur (Duo)", description: "Myrkvun og net saman · 999 og 2000.", image: "https://cdn.shopify.com/s/files/1/0513/7589/8773/files/7953253b-19aa-4e2d-8210-5909e63fb0f0.jpg?v=1768840303" },
@@ -45,6 +48,9 @@ function HomepageHeader() {
         <Link href="/maelingar" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 py-3 text-[10px] uppercase tracking-[.16em]"><Ruler size={15} strokeWidth={1.5} />Mælingar</Link>
         <HelpDrawer />
       </nav>}
+      <div className="flex justify-center border-t border-[#d8e1e5] bg-[#edf3f8] px-5 py-1">
+        <WarrantyButton />
+      </div>
     </header>
   );
 }

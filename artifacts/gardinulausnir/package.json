@@ -14,7 +14,9 @@
     "test:collection": "node --experimental-strip-types scripts/test-collection-filter.mjs",
     "test:curtains": "node --experimental-strip-types scripts/test-curtains.mjs",
     "test:windour": "node --experimental-strip-types scripts/test-windour-pricing.mjs",
-    "test:vertical-sheer": "node --experimental-strip-types scripts/test-vertical-sheer.mjs"
+    "test:vertical-sheer": "node --experimental-strip-types scripts/test-vertical-sheer.mjs",
+    "test:roller-workbook": "node --experimental-strip-types scripts/test-roller-workbook-pricing.mjs",
+    "test:fabric-separation": "node --experimental-strip-types scripts/test-fabric-family-separation.mjs"
   },
   "devDependencies": {
     "@hookform/resolvers": "^3.10.0",
