@@ -2,6 +2,8 @@ import { useMemo, useState } from "react";
 import { Check, Search } from "lucide-react";
 import { StorefrontLayout } from "./StorefrontLayout";
 import { useCart } from "@/lib/cart";
+import { rollerWorkbookSwatchFilename } from "@/lib/rollerWorkbookSwatches";
+import { swatchUrl } from "@/pages/storefront/_shared/swatches";
 import {
   quoteRollerWorkbookBlind,
   getRollerWorkbookSizeLimits,
@@ -10,36 +12,15 @@ import {
   type ManualControl,
   type MotorType,
   type RollerWorkbookFamily,
+  type RollerWorkbookFabric,
   type RollerWorkbookQuoteInput,
   type RollerWorkbookOperation,
   type SideTrack,
 } from "@/lib/rollerWorkbookPricing";
 
-/**
- * These images are only connected when the fabric code in the workbook is the
- * same code (allowing the workbook's RS prefix) as the code embedded in an
- * existing swatch filename.  A colour name alone is never used as a photo
- * match: supplier workbooks contain many identically named colours.
- */
-const swatchModules = import.meta.glob("../../assets/swatches/*.{jpg,jpeg,png,webp}", {
-  eager: true,
-  import: "default",
-}) as Record<string, string>;
-
-function codeKey(value: string) {
-  return value.toUpperCase().replace(/[^A-Z0-9]/g, "");
-}
-
-function swatchForWorkbookCode(code: string): string | undefined {
-  const exact = codeKey(code);
-  // RS is the workbook prefix used for roller stock; source photo filenames
-  // predate that prefix. No other substitutions are made.
-  const legacy = exact.startsWith("RS") ? exact.slice(2) : exact;
-  return Object.entries(swatchModules).find(([path]) => {
-    const filename = path.split("/").pop() ?? "";
-    const key = codeKey(filename.replace(/\.[^.]+$/, ""));
-    return key.includes(exact) || (legacy.length > 3 && key.includes(legacy));
-  })?.[1];
+function swatchForWorkbookFabric(fabric: RollerWorkbookFabric): string | undefined {
+  const filename = rollerWorkbookSwatchFilename(fabric);
+  return filename ? swatchUrl(filename) || undefined : undefined;
 }
 
 const FAMILY_LABELS: Record<RollerWorkbookFamily, string> = {
@@ -211,7 +192,7 @@ export function RollerWorkbookCalculator({
 
   const activeFabric = {
     name: fabric ? `${fabric.code} · ${fabric.color}` : "Ekkert efni valið",
-    image: fabric ? swatchForWorkbookCode(fabric.code) : undefined,
+    image: fabric ? swatchForWorkbookFabric(fabric) : undefined,
   };
 
   if (unavailableOpenRoll) {
@@ -283,8 +264,8 @@ export function RollerWorkbookCalculator({
               </select>
             </label>
             <div className="mt-3 grid grid-cols-6 gap-2 sm:grid-cols-8" aria-label="Efnisýni">
-              {visibleFabrics.filter((item) => swatchForWorkbookCode(item.code)).slice(0, 32).map((item) => {
-                const image = swatchForWorkbookCode(item.code)!;
+              {visibleFabrics.filter((item) => swatchForWorkbookFabric(item)).slice(0, 32).map((item) => {
+                const image = swatchForWorkbookFabric(item)!;
                 return <button key={item.code} type="button" title={`${item.code} · ${item.color}`} onClick={() => setFabricCode(item.code)} className={`relative aspect-square overflow-hidden border ${item.code === fabricCode ? "border-[#24313b] ring-1 ring-[#24313b]" : "border-[#ccd9df]"}`}>
                   <img src={image} alt={`${item.code}, ${item.color}`} className="h-full w-full object-cover" />
                   {item.code === fabricCode && <Check className="absolute inset-0 m-auto text-white drop-shadow" size={16} />}
@@ -292,6 +273,7 @@ export function RollerWorkbookCalculator({
               })}
             </div>
             {fabric && <p className="mt-3 text-xs text-[#667984]">{fabric.code} · {fabric.color} · {fabric.light} · {fabric.size}</p>}
+            {fabric && !activeFabric.image && <p className="mt-2 text-xs text-[#667984]">Mynd af þessu efni er ekki tiltæk. Efnið er valið eftir birgjakóða.</p>}
           </section>
 
           <section className="border-b border-[#ccd9df] py-6">

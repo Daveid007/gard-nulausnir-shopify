@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Link } from "wouter";
+import { WarrantyButton } from "@/components/WarrantyButton";
 import {
   Dialog,
   DialogClose,
@@ -251,19 +252,6 @@ function DeliveryDialog() {
   );
 }
 
-function WarrantyDialog() {
-  return (
-    <FooterDialog label="Ábyrgðarskilmálar" description="Upplýsingar sem eru birtar í Hjálp & Upplýsingum.">
-      <p className={dialogTextClass}>
-        Við bjóðum <strong className="text-[#24313b]">3 ára ábyrgð</strong> á vélbúnaði og brautum fyrir allar okkar gardínur.
-      </p>
-      <a className={dialogLinkClass} href="mailto:hallo@gardinulausnir.is?subject=Spurning%20um%20%C3%A1byrg%C3%B0">
-        Spyrja um ábyrgð
-      </a>
-    </FooterDialog>
-  );
-}
-
 function PrivacyDialog() {
   return (
     <FooterDialog label="Persónuverndarstefna" description="Heildstæð persónuverndarstefna er ekki birt enn.">
@@ -316,7 +304,7 @@ export function Footer() {
                 Um okkur
               </Link>
               <DeliveryDialog />
-              <WarrantyDialog />
+              <WarrantyButton label="Ábyrgðarskilmálar" className={`${dialogTriggerClass} inline-flex items-center gap-2`} />
               <PrivacyDialog />
             </div>
           </section>

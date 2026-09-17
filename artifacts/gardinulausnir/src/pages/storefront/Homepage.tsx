@@ -6,6 +6,7 @@ import { BrandLogo } from "./_shared/BrandLogo";
 import { HelpDrawer } from "./_shared/HelpDrawer";
 import { Footer } from "./_shared/Storefront";
 import { ResponsiveImage } from "@/components/ResponsiveImage";
+import { WarrantyButton } from "@/components/WarrantyButton";
 import homepageFamily from "@/assets/homepage-family.jpg";
 import { curtainProductCoverImage } from "./_shared/curtains-assets";
 
@@ -47,6 +48,9 @@ function HomepageHeader() {
         <Link href="/maelingar" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 py-3 text-[10px] uppercase tracking-[.16em]"><Ruler size={15} strokeWidth={1.5} />Mælingar</Link>
         <HelpDrawer />
       </nav>}
+      <div className="flex justify-center border-t border-[#d8e1e5] bg-[#edf3f8] px-5 py-1">
+        <WarrantyButton />
+      </div>
     </header>
   );
 }

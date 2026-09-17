@@ -4,6 +4,7 @@ import { Link } from "wouter";
 import type { Product } from "./data";
 import { BrandLogo } from "./BrandLogo";
 import { ResponsiveImage } from "@/components/ResponsiveImage";
+import { WarrantyButton } from "@/components/WarrantyButton";
 import { HelpDrawer } from "./HelpDrawer";
 import { collectionHref } from "./collectionCategories";
 import { isCurtainProductId } from "./curtains";
@@ -42,6 +43,9 @@ export function Header({ cartCount = 0, categoryNav = false, onCartClick, showCa
       {open && <nav className={`border-t border-[#24313b]/10 px-5 py-5 ${categoryNav ? "min-[1500px]:hidden" : "xl:hidden"}`}>
             {(categoryNav ? [...categoryLinks, ["Mælingar", "/maelingar"] as const] : [["Safnið", "/collection"], ["Gluggatjöld", collectionHref("curtains")], ["Myrkvunargardínur", collectionHref("honeycomb")], ["Lóðréttar vefgardínur", collectionHref("vertical-sheer")], ["Sheer Shades", collectionHref("sheer-shades")], ["Fiðrildagardínur", collectionHref("butterfly")], ["Flugnanet og rammar", collectionHref("thedour-doors")], ["Mælingar", "/maelingar"]] as const).map(([label, href]) => <Link key={label} href={href} onClick={() => setOpen(false)} className="block py-2 text-[11px] uppercase tracking-[.18em]">{label}</Link>)}
       </nav>}
+      <div className="flex justify-center border-t border-[#d8e1e5] bg-[#edf3f8] px-5 py-1">
+        <WarrantyButton />
+      </div>
     </header>
   );
 }

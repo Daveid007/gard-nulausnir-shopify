@@ -8,6 +8,7 @@ import { LEGACY_CART_OPEN_EVENT, LegacyCalculator, type LegacyCalculatorKind } f
 import { ProductInfoFooter } from "@/components/ProductInfoFooter";
 import { MeasurementGuideTrigger } from "@/components/MeasurementGuide";
 import { ResponsiveImage } from "@/components/ResponsiveImage";
+import { WarrantyButton } from "@/components/WarrantyButton";
 import WindourCalculator, { WINDOUR_CART_OPEN_EVENT } from "@/components/WindourCalculator";
 import VerticalSheerCalculator, { VERTICAL_SHEER_CART_OPEN_EVENT } from "@/components/VerticalSheerCalculator";
 import type { RollerProductIdentity } from "@/components/legacy-calculators/PriceCalculator";
@@ -179,6 +180,7 @@ export function ProductDetail() {
       <main id="top">
         <div className="mx-auto flex max-w-[1510px] items-center justify-between gap-4 px-5 pt-5 md:px-10 md:pt-8 mb-5">
           <Link href="/collection" className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[.18em] text-[#667984]"><ArrowLeft size={14} /> Allar gardínur</Link>
+          <WarrantyButton />
         </div>
         <section id="vörulýsing" className="mx-auto max-w-[1510px] px-5 pb-16 md:px-10 md:pb-28">
           {legacyCalculator ? (

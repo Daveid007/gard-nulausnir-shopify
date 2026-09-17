@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { WarrantyText } from "@/components/WarrantyButton";
 import { HelpCircle, FileQuestion, PenTool, ShieldCheck, Baby, Mail } from "lucide-react";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -109,7 +110,7 @@ export function HelpDrawer() {
               </AccordionTrigger>
               <AccordionContent className="border border-t-0 border-[#ccd9df] bg-white p-5 text-sm text-[#596872] motion-reduce:animate-none">
                 <p>
-                  Við bjóðum <strong className="text-[#24313b]">3 ára ábyrgð</strong> á vélbúnaði og brautum fyrir allar okkar gardínur.
+                  <WarrantyText />
                 </p>
               </AccordionContent>
             </AccordionItem>
