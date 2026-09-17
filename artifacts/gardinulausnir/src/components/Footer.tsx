@@ -78,6 +78,16 @@ function CollectionGuidanceDialog({
           </Link>
         </DialogClose>
         <DialogClose asChild>
+          <Link className={dialogLinkClass} href="/collection#sheer-shades">
+            Sheer Shades
+          </Link>
+        </DialogClose>
+        <DialogClose asChild>
+          <Link className={dialogLinkClass} href="/collection#butterfly">
+            Fiðrildagardínur
+          </Link>
+        </DialogClose>
+        <DialogClose asChild>
           <Link className={dialogLinkClass} href="/collection#windour-single">
             Einfaldar Rúllugardínur
           </Link>
@@ -142,6 +152,12 @@ function ProductGuidance() {
       </Link>
       <Link className={footerLinkClass} href="/collection#vertical-sheer-shades">
         Lóðréttar vefgardínur
+      </Link>
+      <Link className={footerLinkClass} href="/collection#sheer-shades">
+        Sheer Shades
+      </Link>
+      <Link className={footerLinkClass} href="/collection#butterfly">
+        Fiðrildagardínur
       </Link>
       <CollectionGuidanceDialog
         label="Myrkvunargardínur"

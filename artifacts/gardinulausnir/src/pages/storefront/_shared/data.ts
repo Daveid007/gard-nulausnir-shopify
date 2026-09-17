@@ -55,6 +55,12 @@ const catalogProducts: Product[] = [
   { id: "dual-roller", title: "Tvöfalt rúll", subtitle: "Dagljós og myrkvun í tveimur lögum", category: "Rúllugardínur", price: "Reiknast eftir máli", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-dual-roller.jpg?v=1787921365", secondary: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/02-dual-roller-detail.jpg?v=1787921367", colors: [], note: "Tvö lög", sizes: ["60–120 cm", "121–180 cm", "181–240 cm"] },
   { id: "zebra-blind", title: "Sebragardína", subtitle: "Stillanleg dagsbirta og næði", category: "Rúllugardínur", price: "Reiknast eftir máli", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-zebra-blind.png?v=1787921376", secondary: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-zebra-blind.png?v=1787921376", colors: [], note: "Ljósdreifing", sizes: ["60–120 cm", "121–180 cm", "181–240 cm"] },
 
+  // These two workbook products intentionally have no guessed photography. The
+  // workbook supplies SS/BFHLA pricing and options; until matching catalogue
+  // photography is available, the storefront presents a neutral image panel.
+  { id: "sheer-shades", title: "Sheer Shades", subtitle: "Láréttar Sheer Shades · stillanleg dagsbirta og næði", category: "Sheer Shades", productType: "Sheer Shades", tags: ["sheer-shades", "SS"], collectionHandles: ["sheer-shades"], collectionTitles: ["Sheer Shades"], price: "Reiknast eftir máli", image: "", secondary: "", colors: [], note: "SS", sizes: ["50–300 cm", "50–400 cm"] },
+  { id: "butterfly-blinds", title: "Fiðrildagardína", subtitle: "Láréttar Butterfly Blinds · mjúk ljósstýring og næði", category: "Fiðrildagardínur", productType: "Butterfly Blinds", tags: ["butterfly", "BFHLA"], collectionHandles: ["butterfly"], collectionTitles: ["Fiðrildagardínur"], price: "Reiknast eftir máli", image: "", secondary: "", colors: [], note: "BFHLA", sizes: ["50–300 cm", "50–400 cm"] },
+
   ...curtainCatalogProducts,
 
   { id: "windour-single-999", title: "Einfaldar Rúllugardínur 999", subtitle: "Álfilmu-einangruð myrkvun eða net", category: "Einfaldar Rúllugardínur", price: "Reiknast eftir máli", image: "https://cdn.shopify.com/s/files/1/0513/7589/8773/files/Gemini_Generated_Image_pg9wzppg9wzppg9w.png?v=1768448444", secondary: "https://cdn.shopify.com/s/files/1/0513/7589/8773/files/Gemini_Generated_Image_6hn5b56hn5b56hn5.png?v=1768448393", colors: [], note: "100% myrkvun · hliðarlistar", sizes: ["60–120 cm"] },
@@ -87,4 +93,4 @@ export const products = catalogProducts
     };
   });
 
-export const categories = ["Allt", "Myrkvunargardínur", "Rúllugardínur", "Lóðréttar vefgardínur", "Einfaldar Rúllugardínur", "Tvískiptar Rúllugardínur (Duo)", "Flugnanet og rammar"];
+export const categories = ["Allt", "Myrkvunargardínur", "Rúllugardínur", "Lóðréttar vefgardínur", "Sheer Shades", "Fiðrildagardínur", "Einfaldar Rúllugardínur", "Tvískiptar Rúllugardínur (Duo)", "Flugnanet og rammar"];

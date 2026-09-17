@@ -5,6 +5,10 @@ import {
   ShopifyCheckoutError,
   type ShopifyDraftOrderLine,
 } from "../lib/shopifyAdminClient";
+import {
+  quoteRollerWorkbookBlind,
+  type RollerWorkbookQuoteInput,
+} from "../lib/rollerWorkbookPricing";
 
 const router: IRouter = Router();
 
@@ -545,6 +549,47 @@ const zebraItemSchema = z.object({
   railColor: railColorSchema,
 });
 
+const rollerWorkbookConfigurationSchema = z.object({
+  family: z.enum(["roller", "zebra", "sheer", "butterfly"]),
+  fabricCode: z.string().min(1).max(80),
+  widthCm: z.number().positive().max(400),
+  heightCm: z.number().positive().max(400),
+  operation: z.enum(["manual", "cordless", "motor"]),
+  manualControl: z.enum(["cord", "plastic-chain", "steel-chain"]).optional(),
+  motorType: z.enum(["battery-standard", "battery-wifi", "battery-zigbee", "wired", "wired-wifi"]).optional(),
+  remote: z.boolean().optional(),
+  hub: z.boolean().optional(),
+  noDrill: z.boolean().optional(),
+  mountPosition: z.enum(["inside", "outside"]),
+  track: z.enum(["none", "u-white", "u-grey", "l-white", "l-black"]).optional(),
+  cassette: z.enum(["Square with fabric inserted", "Arc with fabric inserted"]),
+}).strict();
+
+const rollerWorkbookItemSchema = z.object({
+  type: z.literal("roller-workbook"),
+  qty: z.number().int().min(1).max(99),
+  // The two new IDs without confirmed Shopify variants are handled as custom
+  // draft-order lines; existing catalogue IDs retain their real link.
+  productId: z.enum(["square-cassette", "arc-cassette", "zebra-blind", "sheer-shades", "butterfly-blinds"]),
+  configuration: rollerWorkbookConfigurationSchema,
+  fabricName: z.string().min(1).max(120),
+}).strict();
+
+function productMatchesRollerWorkbookConfiguration(
+  productId: z.infer<typeof rollerWorkbookItemSchema>["productId"],
+  configuration: z.infer<typeof rollerWorkbookItemSchema>["configuration"],
+): boolean {
+  return (productId === "square-cassette" &&
+      configuration.family === "roller" &&
+      configuration.cassette === "Square with fabric inserted") ||
+    (productId === "arc-cassette" &&
+      configuration.family === "roller" &&
+      configuration.cassette === "Arc with fabric inserted") ||
+    (productId === "zebra-blind" && configuration.family === "zebra") ||
+    (productId === "sheer-shades" && configuration.family === "sheer") ||
+    (productId === "butterfly-blinds" && configuration.family === "butterfly");
+}
+
 const cartItemSchema = z.discriminatedUnion("type", [
   rollerItemSchema,
   daynightItemSchema,
@@ -554,10 +599,43 @@ const cartItemSchema = z.discriminatedUnion("type", [
   tdbuItemSchema,
   verticalItemSchema,
   zebraItemSchema,
+  rollerWorkbookItemSchema,
 ]);
 
 export const checkoutRequestSchema = z.object({
   items: z.array(cartItemSchema).min(1).max(50),
+}).superRefine(({ items }, ctx) => {
+  items.forEach((item, index) => {
+    // The old roller/zebra tables are superseded by the Roller Blinds workbook.
+    // Reject rather than allowing a stale client cart to receive old rates.
+    if (item.type === "roller" || item.type === "zebra") {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["items", index, "type"],
+        message: "Legacy roller and zebra lines must be reconfigured using the Roller Blinds workbook.",
+      });
+      return;
+    }
+    if (item.type !== "roller-workbook") return;
+    if (!productMatchesRollerWorkbookConfiguration(item.productId, item.configuration)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["items", index, "productId"],
+        message: `${item.productId} does not match the selected Roller Blinds workbook configuration.`,
+      });
+    }
+    const quote = quoteRollerWorkbookBlind({
+      ...item.configuration,
+      quantity: item.qty,
+    } satisfies RollerWorkbookQuoteInput);
+    if (!quote.ok) {
+      quote.errors.forEach((message) => ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["items", index, "configuration"],
+        message,
+      }));
+    }
+  });
 });
 
 type RollerItem = z.infer<typeof rollerItemSchema>;
@@ -568,7 +646,29 @@ type Honeycomb25Item = z.infer<typeof honeycomb25ItemSchema>;
 type TdbuItem = z.infer<typeof tdbuItemSchema>;
 type VerticalItem = z.infer<typeof verticalItemSchema>;
 type ZebraItem = z.infer<typeof zebraItemSchema>;
+type RollerWorkbookItem = z.infer<typeof rollerWorkbookItemSchema>;
 type CartItem = z.infer<typeof cartItemSchema>;
+
+function priceRollerWorkbookUsd(item: RollerWorkbookItem): { unitUsd: number; description: string; name: string } {
+  const quote = quoteRollerWorkbookBlind({
+    ...item.configuration,
+    quantity: item.qty,
+  } satisfies RollerWorkbookQuoteInput);
+  if (!quote.ok) throw new Error(`Invalid Roller Blinds workbook configuration: ${quote.errors.join(" ")}`);
+  const manual = quote.manualControl ? ` · manual control: ${quote.manualControl}` : "";
+  const motor = quote.motorType ? ` · motor: ${quote.motorType}` : "";
+  return {
+    unitUsd: quote.supplier.unitUsd,
+    name: item.productId === "sheer-shades"
+      ? "Sheer Shades"
+      : item.productId === "butterfly-blinds"
+        ? "Fiðrildagardína"
+        : item.productId === "zebra-blind"
+          ? "Sebragardína"
+          : "Rúllugardína",
+    description: `${quote.fabric.name} (${quote.fabric.code}) · color: ${quote.fabric.color} · ${quote.enteredWidthMm / 10}×${quote.heightMm / 10}cm · ${quote.operation}${manual}${motor} · remote: ${quote.remote ? "yes" : "no"} · hub: ${quote.hub ? "yes" : "no"} · mount: ${quote.mountPosition} · no-drill: ${quote.noDrill ? "yes" : "no"} · track: ${quote.track} · cassette: ${quote.cassette}`,
+  };
+}
 
 function priceRollerUsd(item: RollerItem): { unitUsd: number; description: string } {
   const w = item.width / 1000;
@@ -806,6 +906,7 @@ function priceZebraUsd(item: ZebraItem): { unitUsd: number; description: string 
 }
 
 function priceItem(item: CartItem): { unitUsd: number; description: string; name: string } {
+  if (item.type === "roller-workbook") return priceRollerWorkbookUsd(item);
   if (item.type === "roller") {
     const { unitUsd, description } = priceRollerUsd(item);
     return { unitUsd, description, name: "Rúllugardína" };
@@ -845,7 +946,12 @@ function rollerProductHandle(cassette: string): "arc-cassette" | "square-cassett
   return "square-cassette";
 }
 
-function productHandle(item: CartItem): string {
+function productHandle(item: CartItem): string | null {
+  if (item.type === "roller-workbook") {
+    return item.productId === "sheer-shades" || item.productId === "butterfly-blinds"
+      ? null
+      : item.productId;
+  }
   if (item.type === "roller") return rollerProductHandle(item.cassette);
   if (item.type === "honeycomb") return "honeycomb-45mm";
   if (item.type === "honeycomb-25") return "honeycomb-25mm";
@@ -857,6 +963,29 @@ function productHandle(item: CartItem): string {
 }
 
 function configurationAttributes(item: CartItem, description: string): Array<{ key: string; value: string }> {
+  if (item.type === "roller-workbook") {
+    const quote = quoteRollerWorkbookBlind({ ...item.configuration, quantity: item.qty });
+    if (!quote.ok) throw new Error(`Invalid Roller Blinds workbook configuration: ${quote.errors.join(" ")}`);
+    return [
+      { key: "Vörutegund", value: item.productId },
+      { key: "Fjölskylda", value: quote.fabric.family },
+      { key: "Efnisnúmer", value: quote.fabric.code },
+      { key: "Efni", value: quote.fabric.name },
+      { key: "Litur", value: quote.fabric.color },
+      { key: "Breidd (cm)", value: String(quote.enteredWidthMm / 10) },
+      { key: "Hæð (cm)", value: String(quote.heightMm / 10) },
+      { key: "Stýring", value: quote.operation },
+      ...(quote.manualControl ? [{ key: "Handstýring", value: quote.manualControl }] : []),
+      ...(quote.motorType ? [{ key: "Mótor", value: quote.motorType }] : []),
+      { key: "Fjarstýring", value: quote.remote ? "Já" : "Nei" },
+      { key: "Miðstöð", value: quote.hub ? "Já" : "Nei" },
+      { key: "Festing", value: quote.mountPosition },
+      { key: "Án borunar", value: quote.noDrill ? "Já" : "Nei" },
+      { key: "Hliðarspor", value: quote.track },
+      { key: "Kassetta", value: quote.cassette },
+      { key: "Samantekt", value: description.slice(0, 255) },
+    ];
+  }
   const labels: Record<string, string> = {
     type: "Vörutegund",
     width: "Breidd (mm)",

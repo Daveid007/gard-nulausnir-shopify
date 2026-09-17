@@ -16,6 +16,8 @@ export type CollectionCategoryKey =
   | "honeycomb"
   | "roller"
   | "vertical-sheer"
+  | "sheer-shades"
+  | "butterfly"
   | "windour-single"
   | "windour-duo"
   | "curtains"
@@ -69,6 +71,20 @@ export const COLLECTION_CATEGORY_DEFINITIONS: readonly CollectionCategoryDefinit
     hash: "vertical-sheer-shades",
   },
   {
+    key: "sheer-shades",
+    label: "Sheer Shades",
+    english: "SHEER SHADES / HORIZONTAL",
+    description: "Láréttar Sheer Shades eftir máli með stillanlegri dagsbirtu og næði.",
+    hash: "sheer-shades",
+  },
+  {
+    key: "butterfly",
+    label: "Fiðrildagardínur",
+    english: "BUTTERFLY BLINDS / HORIZONTAL",
+    description: "Lárétt Butterfly-kerfi eftir máli fyrir mjúka ljósstýringu og næði.",
+    hash: "butterfly",
+  },
+  {
     key: "windour-single",
     label: "Einfaldar Rúllugardínur",
     english: "RÚLLUGARDÍNUR / EINFALDAR",
@@ -105,6 +121,8 @@ const canonicalProductCategories: Readonly<Record<string, Exclude<CollectionCate
   "top-down-bottom-up": "honeycomb",
   "vertical-45mm": "honeycomb",
   "vertical-sheer-shades": "vertical-sheer",
+  "sheer-shades": "sheer-shades",
+  "butterfly-blinds": "butterfly",
   "square-cassette": "roller",
   "arc-cassette": "roller",
   "open-roll": "roller",
@@ -164,6 +182,17 @@ const categoryByToken = new Map<string, CollectionCategoryKey>([
   ["dream-shades", "vertical-sheer"],
   ["vertical-sheer-blinds", "vertical-sheer"],
   ["lodrettar-vefgardinur", "vertical-sheer"],
+
+  ["sheer-shades", "sheer-shades"],
+  ["sheer-shade", "sheer-shades"],
+  ["horizontal-sheer-shades", "sheer-shades"],
+  ["horizontal-sheer", "sheer-shades"],
+  ["sheer-blinds", "sheer-shades"],
+
+  ["butterfly", "butterfly"],
+  ["butterfly-blinds", "butterfly"],
+  ["fidrildagardinur", "butterfly"],
+  ["fidrildagardina", "butterfly"],
 
   ["roller", "roller"],
   ["category-roller", "roller"],
