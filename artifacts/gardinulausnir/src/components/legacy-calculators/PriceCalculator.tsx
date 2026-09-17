@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { useCart, HOLDER_USD } from "@/lib/cart";
+import { useCart, HOLDER_USD, formatIsk } from "@/lib/cart";
 import { ShoppingBag } from "lucide-react";
 import { MeasurementGuideTrigger } from "@/components/MeasurementGuide";
 import { retailPriceFromSupplierUsd } from "@/lib/pricing";
@@ -301,8 +301,12 @@ export function PriceCalculator({ productIdentity = "square-cassette", product }
     const totalUSD = perPieceUSD * quantity;
     const perPieceISK = retailPriceFromSupplierUsd(perPieceUSD);
     const totalISK = perPieceISK * normalizeQuantity(quantity);
+    const withoutTrackUSD = perPieceUSD - sideTrackCost;
+    const sideTrackExtraISK =
+      retailPriceFromSupplierUsd(withoutTrackUSD + SIDETRACK_USD_PER_M * h) -
+      retailPriceFromSupplierUsd(withoutTrackUSD);
 
-    return { sqm, perPieceUSD, totalUSD, perPieceISK, totalISK, holderCost };
+    return { sqm, perPieceUSD, totalUSD, perPieceISK, totalISK, holderCost, sideTrackExtraISK };
   }, [width, height, operation, fabric, sideTrack, quantity, holder]);
 
 
@@ -372,6 +376,29 @@ export function PriceCalculator({ productIdentity = "square-cassette", product }
               ))}
             </div>
           </div>
+
+          <section aria-labelledby="roller-side-track-heading">
+            <h3 id="roller-side-track-heading" className="mb-3 text-[10px] uppercase tracking-[.18em]">
+              Hliðarbrautir / Side tracks
+            </h3>
+            <label className={`flex cursor-pointer items-center justify-between gap-3 border p-3 transition ${sideTrack ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>
+              <span>
+                <span className="block text-sm">Bæta við hliðarbrautum</span>
+                <span className="mt-1 block text-xs text-[#667984]">Draga úr ljósbili meðfram hliðum gardínunnar.</span>
+                <span data-testid="roller-side-track-price" className="mt-2 block text-xs">
+                  +{formatIsk(calc.sideTrackExtraISK)} / stk. · með VSK
+                </span>
+              </span>
+              <input
+                type="checkbox"
+                data-testid="roller-side-track"
+                aria-label="Hliðarbrautir / Side tracks"
+                checked={sideTrack}
+                onChange={(e) => setSideTrack(e.target.checked)}
+                className="h-5 w-5 shrink-0 accent-[#24313b]"
+              />
+            </label>
+          </section>
 
           {/* Fabric */}
           <div>
@@ -480,11 +507,6 @@ export function PriceCalculator({ productIdentity = "square-cassette", product }
             </div>
           </div>
 
-          {/* Side track */}
-          <label className="flex cursor-pointer items-center justify-between border border-[#ccd9df] px-3 py-3 text-[10px] uppercase tracking-[.1em]">
-            <span>Hliðarspor (Myrkvun)</span>
-            <input type="checkbox" checked={sideTrack} onChange={(e) => setSideTrack(e.target.checked)} className="accent-[#24313b]" />
-          </label>
           <div>
             <span className="mb-3 block text-[10px] uppercase tracking-[.18em]">Lásahaldari</span>
             <div className="flex flex-wrap gap-2">
