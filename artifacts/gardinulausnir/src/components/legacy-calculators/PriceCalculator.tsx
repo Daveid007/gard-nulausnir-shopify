@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { useCart, HOLDER_USD } from "@/lib/cart";
 import { ShoppingBag } from "lucide-react";
 import { MeasurementGuideTrigger } from "@/components/MeasurementGuide";
+import { retailPriceFromSupplierUsd } from "@/lib/pricing";
 import { BOTTOM_RAIL_COLORS, HOLDER_COLORS } from "@/assets/railImages";
 import { normalizeQuantity } from "@/lib/quantity";
 import { COLLECTIONS } from "@/pages/storefront/_shared/fabric-collections";
@@ -37,9 +38,12 @@ import casC6 from "@/assets/accessory-thumbs/for_45mm_motorized_(1)_178032780024
 import casC7 from "@/assets/accessory-thumbs/for_45mm_motorized_(2)_1780327800247.jpg";
 import casDC2 from "@/assets/accessory-thumbs/for_45mm_motorized_(3)_1780327800247.jpg";
 
-const USD_TO_ISK_RETAIL = 461;
-// Aukahlutir (motor, hliðarspor o.fl.): frakt 20% í stað 100% → $1 × 1.2 × 124 × 1.5 × 1.24 ≈ 276
-const USD_TO_ISK_ACCESSORY = 276;
+// Supplier costs from the original roller calculator. Retail conversion is
+// applied to the complete supplier cost in pricing.ts.
+const CORDLESS_USD_PER_SQM = 6.25;
+const MOTOR_USD = 100;
+const REMOTE_USD = 17.5;
+const SIDETRACK_USD_PER_M = 21.25;
 
 type Operation = "chain" | "cordless" | "motor";
 export type RollerProductIdentity = "square-cassette" | "arc-cassette" | "open-roll";
@@ -287,16 +291,15 @@ export function PriceCalculator({ productIdentity = "square-cassette", product }
     const sqm = w * h;
 
     const fabricCost = fabric.pricePerSqmUSD * sqm;
-    const cordlessCost = operation === "cordless" ? 6.25 * sqm : 0;
-    const motorCost = operation === "motor" ? 100 : 0;
-    const remoteCost = operation === "motor" ? 17.5 : 0;
-    const sideTrackCost = sideTrack ? 21.25 * h : 0;
+    const cordlessCost = operation === "cordless" ? CORDLESS_USD_PER_SQM * sqm : 0;
+    const motorCost = operation === "motor" ? MOTOR_USD : 0;
+    const remoteCost = operation === "motor" ? REMOTE_USD : 0;
+    const sideTrackCost = sideTrack ? SIDETRACK_USD_PER_M * h : 0;
     const holderCost = holder ? HOLDER_USD : 0;
 
     const perPieceUSD = fabricCost + cordlessCost + motorCost + remoteCost + sideTrackCost + holderCost;
     const totalUSD = perPieceUSD * quantity;
-    const accessoriesUSD = cordlessCost + motorCost + remoteCost + sideTrackCost + holderCost;
-    const perPieceISK = fabricCost * USD_TO_ISK_RETAIL + accessoriesUSD * USD_TO_ISK_ACCESSORY;
+    const perPieceISK = retailPriceFromSupplierUsd(perPieceUSD);
     const totalISK = perPieceISK * normalizeQuantity(quantity);
 
     return { sqm, perPieceUSD, totalUSD, perPieceISK, totalISK, holderCost };

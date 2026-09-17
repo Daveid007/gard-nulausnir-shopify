@@ -25,9 +25,9 @@ import { normalizeQuantity } from "@/lib/quantity";
 import { StorefrontLayout } from "./StorefrontLayout";
 import { MeasurementGuideTrigger } from "@/components/MeasurementGuide";
 
-// Formula: supplier_usd × 4 (freight) × 140 (rate) × 1.5 (markup) × 1.24 (VAT) = × 1042
+// Supplier costs from the original dual-roller calculator. Retail conversion
+// is applied to the complete supplier cost in dualRollerPricing.ts.
 const USD_TO_ISK_RETAIL = DUAL_ROLLER_RETAIL_ISK;
-// Aukahlutir (motor, hliðarspor o.fl.): frakt 20% í stað 100% → $1 × 1.2 × 124 × 1.5 × 1.24 ≈ 276
 const USD_TO_ISK_ACCESSORY = DUAL_ROLLER_ACCESSORY_ISK;
 const CORDLESS_USD_PER_SQM = 20;
 const MOTOR_USD = 142.26;
@@ -148,7 +148,7 @@ export default function DualRollerCalculator({ product }: { product?: any }) {
     <StorefrontLayout
       product={product}
       priceISK={calc.totalISK}
-      roundPricePerUnit={false}
+      priceRounding="exact"
       activeFabric={{ name: `${front.is} + ${back.is}`, image: front.image, pattern: back.image }}
       quantity={quantity}
       setQuantity={(next) => setQuantity(normalizeQuantity(next))}

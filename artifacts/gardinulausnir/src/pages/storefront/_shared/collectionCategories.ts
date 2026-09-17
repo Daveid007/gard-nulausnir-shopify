@@ -15,8 +15,10 @@ export type CollectionCategoryKey =
   | "all"
   | "honeycomb"
   | "roller"
+  | "vertical-sheer"
   | "windour-single"
   | "windour-duo"
+  | "curtains"
   | "thedour-doors";
 
 export type CollectionCategorySelection = CollectionCategoryKey | "unknown";
@@ -42,41 +44,55 @@ export const COLLECTION_CATEGORY_DEFINITIONS: readonly CollectionCategoryDefinit
     key: "all",
     label: "Allt safnið",
     english: "GARDÍNULAUSNIR / ALLT",
-    description: "Skoðaðu öll fimm kerfin í vörulistanum.",
+    description: "Skoðaðu öll kerfin í vörulistanum.",
     hash: "all-products",
   },
   {
     key: "honeycomb",
-    label: "Hunangskambsgardínur",
+    label: "Myrkvunargardínur",
     english: "HANDE / CELLULAR",
-    description: "Cellular, brautalausar og álfilmu-einangraðar myrkvunargardínur.",
+    description: "Gardínur eftir máli sem loka birtuna úti.",
     hash: "honeycomb",
   },
   {
     key: "roller",
     label: "Rúllugardínur",
     english: "HANDE / ROLLER",
-    description: "Blackout, ljósdreifing, kassettur og tvöföld rúllukerfi.",
+    description: "Vandaðar gardínur eftir máli fyrir algjört myrkur.",
     hash: "roller",
   },
   {
+    key: "vertical-sheer",
+    label: "Lóðréttar vefgardínur",
+    english: "VERTICAL SHEER SHADES / DREAM SHADES",
+    description: "Lóðréttar vefgardínur eftir máli með 17 birgjaskráðum efnum.",
+    hash: "vertical-sheer-shades",
+  },
+  {
     key: "windour-single",
-    label: "WINdoûr Single",
-    english: "THEdoûr / SINGLE",
-    description: "Myrkvun eða net. Veldu á milli WINdoûr Single 999 og 2000.",
+    label: "Einfaldar Rúllugardínur",
+    english: "RÚLLUGARDÍNUR / EINFALDAR",
+    description: "Myrkvun eða net. Veldu á milli 999 og 2000.",
     hash: "windour-single",
   },
   {
     key: "windour-duo",
-    label: "WINdoûr Duo",
-    english: "THEdoûr / DUO",
-    description: "Myrkvun og net saman í einu kerfi. Veldu á milli WINdoûr Duo 999 og 2000.",
+    label: "Tvískiptar Rúllugardínur (Duo)",
+    english: "RÚLLUGARDÍNUR / TVÍSKIPTAR (DUO)",
+    description: "Myrkvun og net saman í einu kerfi. Veldu á milli 999 og 2000.",
     hash: "windour-duo",
   },
   {
+    key: "curtains",
+    label: "Gluggatjöld",
+    english: "GARDÍNUR / CURTAINS",
+    description: "Gluggatjöld — 1000, 2828 og 2883 með litasýnishornum til skoðunar.",
+    hash: "curtains",
+  },
+  {
     key: "thedour-doors",
-    label: "Thedoûr - Hurðir & Net",
-    english: "THEdoûr / BLINDdoûr / NETdoûr",
+    label: "Flugnanet og rammar",
+    english: "FLUGNANET OG RAMMAR",
     description: "Hurðakerfi, brautalaus net og mý-/skordýravörn úr Shopify-vörulistanum.",
     hash: "thedour-doors",
   },
@@ -88,6 +104,7 @@ const canonicalProductCategories: Readonly<Record<string, Exclude<CollectionCate
   "day-night": "honeycomb",
   "top-down-bottom-up": "honeycomb",
   "vertical-45mm": "honeycomb",
+  "vertical-sheer-shades": "vertical-sheer",
   "square-cassette": "roller",
   "arc-cassette": "roller",
   "open-roll": "roller",
@@ -97,6 +114,11 @@ const canonicalProductCategories: Readonly<Record<string, Exclude<CollectionCate
   "windour-single-2000": "windour-single",
   "windour-duo-2000": "windour-duo",
   "windour-duo-999": "windour-duo",
+  "curtains-1000": "curtains",
+  "curtains-2828": "curtains",
+  "curtains-2883": "curtains",
+  "gluggatjold-1000": "curtains",
+  "gluggatjöld-1000": "curtains",
   "blinddour-trackless-door": "thedour-doors",
   "netdour-trackless-door": "thedour-doors",
   "roldour-duo-horizontal": "thedour-doors",
@@ -123,6 +145,11 @@ const categoryByToken = new Map<string, CollectionCategoryKey>([
   ["collection-cellular", "honeycomb"],
   ["cellular-blind", "honeycomb"],
   ["cellular-blinds", "honeycomb"],
+  ["myrkvun", "honeycomb"],
+  ["myrkvunargardinur", "honeycomb"],
+  ["myrkvunargardina", "honeycomb"],
+  ["myrkvunargardina-25-mm", "honeycomb"],
+  ["myrkvunargardina-45-mm", "honeycomb"],
   ["hunangskamb", "honeycomb"],
   ["hunangskambsgardinur", "honeycomb"],
   ["hunangskambsgardina", "honeycomb"],
@@ -131,6 +158,12 @@ const categoryByToken = new Map<string, CollectionCategoryKey>([
   ["day-and-night", "honeycomb"],
   ["top-down-bottom-up", "honeycomb"],
   ["vertical-45-mm", "honeycomb"],
+
+  ["vertical-sheer-shades", "vertical-sheer"],
+  ["vertical-sheer", "vertical-sheer"],
+  ["dream-shades", "vertical-sheer"],
+  ["vertical-sheer-blinds", "vertical-sheer"],
+  ["lodrettar-vefgardinur", "vertical-sheer"],
 
   ["roller", "roller"],
   ["category-roller", "roller"],
@@ -157,6 +190,12 @@ const categoryByToken = new Map<string, CollectionCategoryKey>([
   ["thedour-single", "windour-single"],
   ["thedour-windows", "windour-single"],
   ["gluggalausnir-single", "windour-single"],
+  ["einfaldar-rullugardinur", "windour-single"],
+  ["einfaldar-rullugardina", "windour-single"],
+  ["einfaldar-rullugardinur-999", "windour-single"],
+  ["einfaldar-rullugardinur-2000", "windour-single"],
+  ["einfold-rullugardinur", "windour-single"],
+  ["einfold-rullugardina", "windour-single"],
 
   ["windour-duo", "windour-duo"],
   ["category-windour-duo", "windour-duo"],
@@ -166,6 +205,19 @@ const categoryByToken = new Map<string, CollectionCategoryKey>([
   ["the-dour-duo", "windour-duo"],
   ["thedour-duo", "windour-duo"],
   ["gluggalausnir-duo", "windour-duo"],
+  ["tviskiptar-rullugardinur", "windour-duo"],
+  ["tviskiptar-rullugardinur-duo", "windour-duo"],
+  ["tviskiptar-rullugardina", "windour-duo"],
+  ["tviskiptar-rullugardina-duo", "windour-duo"],
+  ["tviskiptar-rullugardinur-duo-999", "windour-duo"],
+  ["tviskiptar-rullugardinur-duo-2000", "windour-duo"],
+
+  ["curtains", "curtains"],
+  ["curtain", "curtains"],
+  ["gluggatjold", "curtains"],
+  ["gluggatjold-1000", "curtains"],
+  ["gluggatjold-1000-litir", "curtains"],
+  ["gardintjold", "curtains"],
 
   ["thedour-doors", "thedour-doors"],
   ["category-thedour-doors", "thedour-doors"],
@@ -177,6 +229,8 @@ const categoryByToken = new Map<string, CollectionCategoryKey>([
   ["blinddour", "thedour-doors"],
   ["netdour", "thedour-doors"],
   ["roldour", "thedour-doors"],
+  ["flugnanet-og-rammar", "thedour-doors"],
+  ["flugnanet-rammar", "thedour-doors"],
 ]);
 
 const categoryLabelByKey = new Map(

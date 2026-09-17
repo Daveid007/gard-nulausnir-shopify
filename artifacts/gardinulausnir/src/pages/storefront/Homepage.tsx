@@ -4,17 +4,21 @@ import { Link } from "wouter";
 import "./_group.css";
 import { BrandLogo } from "./_shared/BrandLogo";
 import { HelpDrawer } from "./_shared/HelpDrawer";
+import { Footer } from "./_shared/Storefront";
 import { ResponsiveImage } from "@/components/ResponsiveImage";
 import homepageFamily from "@/assets/homepage-family.jpg";
+import { curtainProductCoverImage } from "./_shared/curtains-assets";
 
 const collectionHref = "/collection";
 
 const collections = [
-  { id: "honeycomb", href: `${collectionHref}#honeycomb`, title: "Hunangskambsgardínur", description: "Gardínur eftir máli sem einangra og mýkja birtuna.", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-honeycomb-45mm.png?v=1787921250" },
-  { id: "roller", href: `${collectionHref}#roller`, title: "Rúllugardínur", description: "Vandaðar rúllugardínur eftir máli, fyrir næði og myrkvun.", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-square-cassette.png?v=1787921305" },
-  { id: "windour-single", href: `${collectionHref}#windour-single`, title: "WINdoûr Single", description: "Myrkvun eða net · 999 og 2000.", image: "https://cdn.shopify.com/s/files/1/0513/7589/8773/files/Gemini_Generated_Image_pg9wzppg9wzppg9w.png?v=1768448444" },
-  { id: "windour-duo", href: `${collectionHref}#windour-duo`, title: "WINdoûr Duo", description: "Myrkvun og net saman · 999 og 2000.", image: "https://cdn.shopify.com/s/files/1/0513/7589/8773/files/7953253b-19aa-4e2d-8210-5909e63fb0f0.jpg?v=1768840303" },
-  { id: "thedour-doors", href: `${collectionHref}#thedour-doors`, title: "Thedoûr - Hurðir & Net", description: "Flugnanet fyrir hurðir sem halda skordýrum úti.", image: "https://cdn.shopify.com/s/files/1/0513/7589/8773/files/e6f45daa-cfd5-408a-88fe-c5eafba3034b.jpg?v=1769688238" },
+  { id: "curtains", href: `${collectionHref}#curtains`, title: "Gluggatjöld", description: "1000, 2828 og 2883 · 14 + 17 + 6 litasýnishorn.", image: curtainProductCoverImage("curtains-1000") },
+  { id: "honeycomb", href: `${collectionHref}#honeycomb`, title: "Myrkvunargardínur", description: "Gardínur eftir máli sem loka birtuna úti.", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-honeycomb-45mm.png?v=1787921250" },
+  { id: "roller", href: `${collectionHref}#roller`, title: "Rúllugardínur", description: "Vandaðar gardínur eftir máli fyrir algjört myrkur.", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-square-cassette.png?v=1787921305" },
+  { id: "vertical-sheer", href: `${collectionHref}#vertical-sheer-shades`, title: "Lóðréttar vefgardínur", description: "Vertical Sheer Shades / Dream Shades · 17 efni.", image: new URL("../../assets/vertical-sheer-shades/cases/Vertical sheer shades (2).jpg", import.meta.url).href },
+  { id: "windour-single", href: `${collectionHref}#windour-single`, title: "Einfaldar Rúllugardínur", description: "Myrkvun eða net · 999 og 2000.", image: "https://cdn.shopify.com/s/files/1/0513/7589/8773/files/Gemini_Generated_Image_pg9wzppg9wzppg9w.png?v=1768448444" },
+  { id: "windour-duo", href: `${collectionHref}#windour-duo`, title: "Tvískiptar Rúllugardínur (Duo)", description: "Myrkvun og net saman · 999 og 2000.", image: "https://cdn.shopify.com/s/files/1/0513/7589/8773/files/7953253b-19aa-4e2d-8210-5909e63fb0f0.jpg?v=1768840303" },
+  { id: "thedour-doors", href: `${collectionHref}#thedour-doors`, title: "Flugnanet og rammar", description: "Flugnanet fyrir hurðir sem halda skordýrum úti.", image: "https://cdn.shopify.com/s/files/1/0513/7589/8773/files/e6f45daa-cfd5-408a-88fe-c5eafba3034b.jpg?v=1769688238" },
 ] as const;
 
 function HomepageHeader() {
@@ -25,6 +29,7 @@ function HomepageHeader() {
         <BrandLogo className="h-10 w-[202px] sm:h-11 sm:w-[222px]" />
         <nav className="hidden items-center gap-6 text-[10px] uppercase tracking-[.16em] text-[#43515a] lg:flex" aria-label="Aðalleiðsögn">
            <Link href={collectionHref} className="transition-colors hover:text-[#6892b8]">Gardínur</Link>
+           <Link href={`${collectionHref}#curtains`} className="transition-colors hover:text-[#6892b8]">Gluggatjöld</Link>
           <Link href="/maelingar" className="inline-flex items-center gap-2 transition-colors hover:text-[#6892b8]"><Ruler size={15} strokeWidth={1.5} />Mælingar</Link>
           <HelpDrawer />
         </nav>
@@ -36,6 +41,7 @@ function HomepageHeader() {
       </div>
       {menuOpen && <nav className="border-t border-[#24313b]/10 bg-[#f7f9fa] px-5 py-4 lg:hidden" aria-label="Farsímaleiðsögn">
          <Link href={collectionHref} onClick={() => setMenuOpen(false)} className="block py-3 text-[10px] uppercase tracking-[.16em]">Gardínur</Link>
+         <Link href={`${collectionHref}#curtains`} onClick={() => setMenuOpen(false)} className="block py-3 text-[10px] uppercase tracking-[.16em]">Gluggatjöld</Link>
         <Link href="/maelingar" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 py-3 text-[10px] uppercase tracking-[.16em]"><Ruler size={15} strokeWidth={1.5} />Mælingar</Link>
         <HelpDrawer />
       </nav>}
@@ -50,12 +56,15 @@ function HeroBanner() {
         <div className="flex min-h-[350px] flex-col justify-center px-5 py-12 md:min-h-[520px] md:px-10">
           <p className="sol-kicker text-[9px] uppercase tracking-[.27em] text-[#43515a]">Vandaðar gardínur eftir máli</p>
           <h1 className="mt-5 max-w-lg font-serif text-5xl leading-[.94] tracking-[-.06em] text-[#24313b] md:text-7xl">Gæða gardínur í þinn glugga</h1>
-          <p className="mt-6 max-w-sm text-sm leading-6 text-[#43515a]">Veldu vandaðar gardínur eftir máli fyrir þitt heimili. Fjölbreytt efni, fallegir litir og ráðgjöf við val og mælingar.</p>
+          <p className="mt-6 max-w-sm text-sm leading-6 text-[#43515a]">Veldu vandaðar gardínur eftir máli fyrir þitt heimili. Fjölbreytt efni og fallegir litir.</p>
           <a href="#collections" className="sol-action mt-8 inline-flex w-fit items-center gap-3 px-5 py-3.5 text-[10px] uppercase tracking-[.17em]">Skoða gardínur <ArrowRight size={14} /></a>
         </div>
-        <div className="relative flex min-h-[330px] items-center justify-center bg-[#edf2f4] p-5 md:min-h-[520px] md:p-10">
-          <ResponsiveImage src={homepageFamily} alt="Fjölskylda við glugga með hunangskambsgardínu" fetchPriority="high" sizes="(min-width: 768px) 55vw, 100vw" className="max-h-[460px] max-w-full object-contain" />
-          <p className="absolute bottom-5 left-5 bg-[#f7f9fa]/90 px-3 py-2 text-[9px] uppercase tracking-[.17em] text-[#24313b] md:bottom-7 md:left-7">Ráðgjöf heima hjá þér</p>
+        <div className="flex min-h-[330px] flex-col items-center justify-center gap-4 bg-[#edf2f4] p-5 md:min-h-[520px] md:p-10">
+          <ResponsiveImage src={homepageFamily} alt="Fjölskylda við glugga með myrkvunargardínu" fetchPriority="high" sizes="(min-width: 768px) 55vw, 100vw" className="max-h-[380px] max-w-full object-contain" />
+          <div className="w-full max-w-lg bg-[#f7f9fa]/90 px-4 py-3 text-[#24313b]">
+            <h2 className="text-base font-semibold">Frí mæling á höfuðborgarsvæðinu</h2>
+            <p className="mt-1 text-sm leading-6 text-[#43515a]">Við komum og aðstoðum við nákvæmar mælingar svo gardínurnar passi fullkomlega í gluggann.</p>
+          </div>
         </div>
       </div>
     </section>
@@ -86,26 +95,11 @@ function CategoryTilesGrid() {
   );
 }
 
-function InformationalFooter() {
-  const columns = [
-    ["Um okkur", [{ label: "Saga Gardínulausna", href: "/um-okkur" }, { label: "Vandaðar gardínur eftir máli", href: "/um-okkur" }]],
-    ["Þjónusta", [{ label: "Heimaráðgjöf", href: "/maelingar" }, { label: "Mæling og uppsetning", href: "/maelingar" }]],
-    ["Flokkar", [{ label: "Hunangskambsgardínur", href: `${collectionHref}#honeycomb` }, { label: "Rúllugardínur", href: `${collectionHref}#roller` }, { label: "WINdoûr Single", href: `${collectionHref}#windour-single` }, { label: "WINdoûr Duo", href: `${collectionHref}#windour-duo` }, { label: "Thedoûr Hurðir & Net", href: `${collectionHref}#thedour-doors` }]],
-    ["Hafa samband", [{ label: "hallo@gardinulausnir.is", href: "mailto:hallo@gardinulausnir.is" }, { label: "Fá ráðgjöf", href: "/maelingar" }]],
-  ] as const;
-  return <footer className="border-t border-[#24313b]/10 bg-[#eaf1f5] px-5 py-12 md:px-10 md:py-16">
-    <div className="mx-auto grid max-w-[1480px] gap-10 sm:grid-cols-2 lg:grid-cols-4">
-      {columns.map(([title, links]) => <div key={title}><p className="text-[9px] uppercase tracking-[.2em] text-[#71808a]">{title}</p><div className="mt-4 grid gap-3 text-[10px] uppercase tracking-[.13em] text-[#43515a]">{links.map((link) => <Link key={link.label} href={link.href} className="hover:text-[#6892b8] transition-colors">{link.label}</Link>)}</div></div>)}
-    </div>
-    <p className="mx-auto mt-12 max-w-[1480px] border-t border-[#24313b]/10 pt-5 font-serif text-2xl text-[#24313b]">Gardínulausnir.is</p>
-  </footer>;
-}
-
 export function Homepage() {
   return <div id="top" className="solmyrkvun-grid min-h-screen bg-[#f3f7f8]">
     <HomepageHeader />
     <main><HeroBanner /><CategoryTilesGrid /></main>
-    <InformationalFooter />
+    <Footer />
   </div>;
 }
 

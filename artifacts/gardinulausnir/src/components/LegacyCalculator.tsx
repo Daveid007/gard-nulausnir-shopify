@@ -52,7 +52,11 @@ function CalculatorCartStatus() {
                       <div>
                         <p className="font-serif text-xl">{description.title}</p>
                         <p className="mt-2 text-xs leading-5 text-[#667984]">{description.sub}</p>
-                        <p className="mt-2 text-xs">{formatIsk(priceLineIsk(item))}</p>
+                        {item.needsReconfigure ? (
+                          <p className="mt-2 text-xs font-medium text-amber-700">Þessi eldri lína þarf að vera endurstillt áður en verð er notað.</p>
+                        ) : (
+                          <p className="mt-2 text-xs">{formatIsk(priceLineIsk(item))}</p>
+                        )}
                       </div>
                       <button type="button" onClick={() => removeItem(item.id)} className="text-[10px] uppercase tracking-[.14em] text-[#667984]">
                         Fjarlægja

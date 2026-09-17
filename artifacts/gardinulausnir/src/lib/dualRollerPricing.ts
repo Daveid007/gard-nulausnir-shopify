@@ -1,7 +1,8 @@
 import { normalizeQuantity } from "./quantity.ts";
+import { retailPriceFromSupplierUsd, SUPPLIER_TO_RETAIL_ISK } from "./pricing";
 
-export const DUAL_ROLLER_RETAIL_ISK = 1042;
-export const DUAL_ROLLER_ACCESSORY_ISK = 276;
+export const DUAL_ROLLER_RETAIL_ISK = SUPPLIER_TO_RETAIL_ISK;
+export const DUAL_ROLLER_ACCESSORY_ISK = SUPPLIER_TO_RETAIL_ISK;
 export const DUAL_ROLLER_MIN_SQM = 1;
 export const DUAL_ROLLER_MAX_SQM = 5.6;
 
@@ -50,8 +51,7 @@ export function calculateDualRollerPrice(input: DualRollerPricingInput): DualRol
 
   const perPieceUSD = fabricUSD + cordlessUSD + motorUSD + remoteUSD + sidetrackUSD;
   const totalUSD = perPieceUSD * quantity;
-  const accessoriesUSD = cordlessUSD + motorUSD + remoteUSD + sidetrackUSD;
-  const perPieceISK = fabricUSD * DUAL_ROLLER_RETAIL_ISK + accessoriesUSD * DUAL_ROLLER_ACCESSORY_ISK;
+  const perPieceISK = retailPriceFromSupplierUsd(perPieceUSD);
   const totalISK = perPieceISK * quantity;
 
   return {
@@ -75,6 +75,5 @@ export function calculateDualRollerPrice(input: DualRollerPricingInput): DualRol
 }
 
 export function calculateDualRollerCartTotal(input: DualRollerPricingInput): number {
-  const { totalISK } = calculateDualRollerPrice(input);
-  return Math.ceil(totalISK / 100) * 100;
+  return calculateDualRollerPrice(input).totalISK;
 }

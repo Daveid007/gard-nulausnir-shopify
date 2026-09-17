@@ -8,20 +8,84 @@ import {
 
 const router: IRouter = Router();
 
-const USD_TO_ISK_RETAIL = 461;
-// Accessories (motor, side track, cordless, holder) use ×276: $1 × 1.2 (freight 20%) × 124 × 1.5 × 1.24 ≈ 276.
-// unitUsd is later multiplied by USD_TO_ISK_RETAIL, so accessory USD is pre-scaled by 276/461.
-const ACCESSORY_FACTOR = 276 / 461;
+// One supplier USD receives 100% shipping, then 40% margin, FX and VAT.
+// This is applied once to the complete per-unit supplier cost.
+const USD_TO_ISK_RETAIL = 2 * (1 / 0.6) * 121.16 * 1.24;
 const HOLDER_USD = 5.0;
 
-// Honeycomb (cellular) — 45 mm Standard. Per-fabric pricing from supplier xlsx "Honeycomb Standard" × 2.5.
-// Day & Night (zebra) — 45 mm, per-combo pricing from Vertical sheet × 2.5 (see DAYNIGHT_COMBOS below).
-const DN_CORDLESS_USD_PER_SQM = 20;
-const DN_MOTOR_USD = 142.26;
-const DN_REMOTE_USD = 14;
-const DN_SIDETRACK_USD_PER_M = 20;
+// Honeycomb (cellular) — 45 mm Standard, with supplier USD/m² rates.
+// Day & Night — 45 mm, with per-combination supplier USD/m² rates.
+const DN_CORDLESS_USD_PER_SQM = 3;
+const DN_MOTOR_USD = 34.5573219076603;
+const DN_REMOTE_USD = 0;
+const DN_SIDETRACK_USD_PER_M = 10;
 const DN_MIN_SQM = 1;
-const DN_MAX_SQM = 5.6;
+const MOTOR_OVER_4M2_USD = 71.1311073101807;
+const INSIDE_MOUNT_DEDUCTION_MM = 5;
+type HoneycombOperation = "manual" | "cordless" | "motor";
+type TdbuOperation = "manual" | "cordless";
+type HoneycombSizeLimits = {
+  minWidthMm: number;
+  maxWidthMm: number;
+  minHeightMm: number;
+  maxHeightMm: number;
+  maxAreaSqm: number;
+};
+const HONEYCOMB_45_LIMITS: Record<HoneycombOperation, HoneycombSizeLimits> = {
+  manual: { minWidthMm: 500, maxWidthMm: 2750, minHeightMm: 800, maxHeightMm: 3000, maxAreaSqm: 5.6 },
+  cordless: { minWidthMm: 500, maxWidthMm: 2000, minHeightMm: 500, maxHeightMm: 1800, maxAreaSqm: 3 },
+  motor: { minWidthMm: 550, maxWidthMm: 2000, minHeightMm: 500, maxHeightMm: 2500, maxAreaSqm: 4 },
+};
+const HONEYCOMB_25_LIMITS: Record<"manual" | "cordless", HoneycombSizeLimits> = {
+  manual: { minWidthMm: 500, maxWidthMm: 2750, minHeightMm: 800, maxHeightMm: 3000, maxAreaSqm: 5.6 },
+  cordless: { minWidthMm: 500, maxWidthMm: 2000, minHeightMm: 500, maxHeightMm: 1800, maxAreaSqm: 3 },
+};
+const TDBU_45_LIMITS: Record<TdbuOperation, HoneycombSizeLimits> = {
+  manual: { minWidthMm: 800, maxWidthMm: 2750, minHeightMm: 800, maxHeightMm: 3000, maxAreaSqm: 5.6 },
+  cordless: { minWidthMm: 500, maxWidthMm: 2000, minHeightMm: 500, maxHeightMm: 1800, maxAreaSqm: 3 },
+};
+
+function motorSupplierUsd(areaSqm: number): number {
+  return areaSqm > 4 ? MOTOR_OVER_4M2_USD : DN_MOTOR_USD;
+}
+
+function effectiveWidthMm(widthMm: number, mountPosition: "inside" | "outside"): number {
+  const width = mountPosition === "inside" ? widthMm - INSIDE_MOUNT_DEDUCTION_MM : widthMm;
+  if (width <= 0) throw new Error(`Inside-mount width must exceed ${INSIDE_MOUNT_DEDUCTION_MM}mm`);
+  return width;
+}
+
+function assertHoneycombSize(input: {
+  product: "honeycomb-45" | "honeycomb-25" | "daynight" | "tdbu";
+  operation: HoneycombOperation;
+  widthMm: number;
+  heightMm: number;
+  mountPosition: "inside" | "outside";
+}): void {
+  const limits = input.product === "honeycomb-45" || input.product === "daynight"
+    ? HONEYCOMB_45_LIMITS[input.operation]
+    : input.product === "honeycomb-25"
+      ? HONEYCOMB_25_LIMITS[input.operation as "manual" | "cordless"]
+      : TDBU_45_LIMITS[input.operation as TdbuOperation];
+  const effectiveWidth = effectiveWidthMm(input.widthMm, input.mountPosition);
+  const areaSqm = (effectiveWidth / 1000) * (input.heightMm / 1000);
+  if (
+    !limits ||
+    effectiveWidth < limits.minWidthMm ||
+    effectiveWidth > limits.maxWidthMm ||
+    input.heightMm < limits.minHeightMm ||
+    input.heightMm > limits.maxHeightMm ||
+    areaSqm > limits.maxAreaSqm
+  ) {
+    const envelope = limits
+      ? `${limits.minWidthMm}–${limits.maxWidthMm} × ${limits.minHeightMm}–${limits.maxHeightMm}mm, ${limits.maxAreaSqm}m²`
+      : "this operation is not supported";
+    throw new Error(
+      `${input.product} ${input.operation} size ${input.widthMm}×${input.heightMm}mm ` +
+      `(${areaSqm.toFixed(2)}m² effective) exceeds workbook limits: ${envelope}`,
+    );
+  }
+}
 
 // Server-side roller fabric catalog — single source of truth for pricing.
 // Client only sends fabricCode; server determines USD/m² and rejects unknown codes.
@@ -128,6 +192,8 @@ const ROLLER_FABRICS: Record<string, { name: string; usdPerSqm: number }> = {
 // Roller item — client sends fabricCode only; server looks up price.
 const holderColorSchema = z.enum(["white", "navy", "black"]);
 const railColorSchema = z.enum(["Svartur", "Hvítur", "Silfur / Grár", "Sandur / Beige", "Krémhvítur"]);
+const mountPositionSchema = z.enum(["inside", "outside"]).default("outside");
+const sideTrackTypeSchema = z.enum(["u", "l"]).default("u");
 const rollerCassetteSchema = z.string().regex(/^(C1|C2|C3|C4|C5|C6|C7)\s+—\s+.+$/);
 const rollerBottomRailSchema = z.string().refine(
   (value) =>
@@ -158,12 +224,26 @@ const rollerItemSchema = z.object({
   holder: holderColorSchema.optional().nullable(),
 });
 
-// 45mm Day & Night — Vertical supplier "Middle Open Day & Night" × 2.5.
+// 45mm Day & Night — supplier "Middle Open Day & Night" combination sheet.
 // Each combo defines which fabric families are valid for front/back layers.
 const DAYNIGHT_COMBOS: Record<string, { front: "KS" | "KT"; back: "KB" | "KT"; usdPerSqm: number; label: string }> = {
-  "KS+KB": { front: "KS", back: "KB", usdPerSqm: 161.20, label: "Sheer + Blackout" },
-  "KT+KB": { front: "KT", back: "KB", usdPerSqm: 153.00, label: "Translucent + Blackout" },
-  "KS+KT": { front: "KS", back: "KT", usdPerSqm: 156.25, label: "Sheer + Translucent" },
+  "KS+KB": { front: "KS", back: "KB", usdPerSqm: 28.6931231792052, label: "Sheer + Blackout" },
+  "KT+KB": { front: "KT", back: "KB", usdPerSqm: 28.6931231792052, label: "Translucent + Blackout" },
+  "KS+KT": { front: "KS", back: "KT", usdPerSqm: 26.3427429770029, label: "Sheer + Translucent" },
+};
+
+const DAYNIGHT_BACK_RATES: Record<string, number> = {
+  KT401: 26.3427429770029, KT402: 26.3427429770029, KT403: 26.3427429770029,
+  KT404: 26.3427429770029, KT405: 26.3427429770029, KT406: 26.3427429770029,
+  KT407: 26.3427429770029, KT408: 26.3427429770029, KT409: 26.3427429770029,
+  KT410: 39.0347960688951, KT411: 39.0347960688951, KT412: 39.0347960688951,
+  KT413: 39.0347960688951, KT414: 39.0347960688951, KT415: 39.0347960688951,
+  KT428: 26.3427429770029, KT431: 27.34, KT432: 27.34, KT433: 27.34, KT434: 27.34, KT435: 27.34,
+  KB401: 28.6931231792052, KB402: 28.6931231792052, KB403: 28.6931231792052,
+  KB404: 28.6931231792052, KB405: 28.6931231792052, KB406: 28.6931231792052,
+  KB420: 41.6691455343199, KB422: 41.6691455343199, KB426: 41.6691455343199,
+  KB428: 41.6691455343199, KB431: 28.6931231792052, KB432: 28.6931231792052,
+  KB433: 28.6931231792052, KB434: 28.6931231792052, KB435: 28.6931231792052,
 };
 
 function fabricFamily(code: string): "KS" | "KT" | "KB" | "KN" | null {
@@ -179,13 +259,16 @@ function fabricFamily(code: string): "KS" | "KT" | "KB" | "KN" | null {
 const daynightItemSchema = z.object({
   type: z.literal("daynight"),
   qty: z.number().int().min(1).max(99),
-  width: z.number().min(800).max(2750),
+   width: z.number().min(500).max(2750),
   height: z.number().min(500).max(3000),
   comboKey: z.enum(["KS+KB", "KT+KB", "KS+KT"]),
   frontCode: z.string().min(1).max(20),
   backCode: z.string().min(1).max(20),
   operation: z.enum(["manual", "cordless", "motor"]),
   sideTrack: z.boolean().optional().default(false),
+  sideTrackType: sideTrackTypeSchema,
+  mountPosition: mountPositionSchema,
+  noDrill: z.boolean().default(false),
   railColor: railColorSchema,
 });
 
@@ -193,9 +276,9 @@ const daynightItemSchema = z.object({
 // Uses the same KS/KT/KB fabric families as Day & Night; pricing mirrors the daynight
 // supplier sheet since it draws from the same supplier catalogue.
 const DUAL_ROLLER_COMBOS: Record<string, { front: "KS" | "KT"; back: "KB" | "KT"; usdPerSqm: number; label: string }> = {
-  "KS+KB": { front: "KS", back: "KB", usdPerSqm: 161.20, label: "Sheer + Blackout" },
-  "KT+KB": { front: "KT", back: "KB", usdPerSqm: 153.00, label: "Translucent + Blackout" },
-  "KS+KT": { front: "KS", back: "KT", usdPerSqm: 156.25, label: "Sheer + Translucent" },
+  "KS+KB": { front: "KS", back: "KB", usdPerSqm: 64.48, label: "Sheer + Blackout" },
+  "KT+KB": { front: "KT", back: "KB", usdPerSqm: 61.20, label: "Translucent + Blackout" },
+  "KS+KT": { front: "KS", back: "KT", usdPerSqm: 62.50, label: "Sheer + Translucent" },
 };
 
 const DR_CORDLESS_USD_PER_SQM = 20;
@@ -218,168 +301,202 @@ const dualrollerItemSchema = z.object({
   railColor: railColorSchema,
 });
 
-// 45 mm Standard Honeycomb fabrics — supplier "Honeycomb Standard" × 2.5. Must mirror
+// 45 mm Standard Honeycomb fabrics — supplier "Honeycomb Standard" table. Must mirror
 // STANDARD_FABRICS in artifacts/solmyrkvun/src/components/HoneycombCalculator.tsx.
 const STANDARD_HONEYCOMB_FABRICS: Record<string, { name: string; usdPerSqm: number; type: "sheer" | "translucent" | "blackout" | "dualdeck" }> = {
   // Sheer
-  KS401: { name: "White Sheer",        usdPerSqm: 45.05, type: "sheer" },
-  KS402: { name: "Creamy Sheer",       usdPerSqm: 45.05, type: "sheer" },
-  KS404: { name: "Pink Sheer",         usdPerSqm: 45.05, type: "sheer" },
-  KS406: { name: "Lilac White Sheer",  usdPerSqm: 45.05, type: "sheer" },
-  KS407: { name: "Mocha Sheer",        usdPerSqm: 45.05, type: "sheer" },
-  KS408: { name: "Dove Grey Sheer",    usdPerSqm: 45.05, type: "sheer" },
-  KS414: { name: "Black Sheer",        usdPerSqm: 45.05, type: "sheer" },
+  KS401: { name: "White Sheer",        usdPerSqm: 18.02, type: "sheer" },
+  KS402: { name: "Creamy Sheer",       usdPerSqm: 18.02, type: "sheer" },
+  KS404: { name: "Pink Sheer",         usdPerSqm: 18.02, type: "sheer" },
+  KS406: { name: "Lilac White Sheer",  usdPerSqm: 18.02, type: "sheer" },
+  KS407: { name: "Mocha Sheer",        usdPerSqm: 18.02, type: "sheer" },
+  KS408: { name: "Dove Grey Sheer",    usdPerSqm: 18.02, type: "sheer" },
+  KS414: { name: "Black Sheer",        usdPerSqm: 18.02, type: "sheer" },
   // Translucent basic
-  KT401: { name: "Simply White",       usdPerSqm: 31.25, type: "translucent" },
-  KT402: { name: "Buckskin",           usdPerSqm: 31.25, type: "translucent" },
-  KT403: { name: "Impatiens",          usdPerSqm: 31.25, type: "translucent" },
-  KT404: { name: "Lavender Lily",      usdPerSqm: 31.25, type: "translucent" },
-  KT405: { name: "Spring Green",       usdPerSqm: 31.25, type: "translucent" },
-  KT406: { name: "Lime Light",         usdPerSqm: 31.25, type: "translucent" },
-  KT407: { name: "Papyrus",            usdPerSqm: 31.25, type: "translucent" },
-  KT408: { name: "Café",               usdPerSqm: 31.25, type: "translucent" },
-  KT409: { name: "Indigo",             usdPerSqm: 31.25, type: "translucent" },
-  KT410: { name: "Chocolate",          usdPerSqm: 31.25, type: "translucent" },
-  KT411: { name: "Water Edge",         usdPerSqm: 31.25, type: "translucent" },
-  KT412: { name: "Pottery Red",        usdPerSqm: 31.25, type: "translucent" },
+  KT401: { name: "Simply White",       usdPerSqm: 12.5, type: "translucent" },
+  KT402: { name: "Buckskin",           usdPerSqm: 12.5, type: "translucent" },
+  KT403: { name: "Impatiens",          usdPerSqm: 12.5, type: "translucent" },
+  KT404: { name: "Lavender Lily",      usdPerSqm: 12.5, type: "translucent" },
+  KT405: { name: "Spring Green",       usdPerSqm: 12.5, type: "translucent" },
+  KT406: { name: "Lime Light",         usdPerSqm: 12.5, type: "translucent" },
+  KT407: { name: "Papyrus",            usdPerSqm: 12.5, type: "translucent" },
+  KT408: { name: "Café",               usdPerSqm: 12.5, type: "translucent" },
+  KT409: { name: "Indigo",             usdPerSqm: 12.5, type: "translucent" },
+  KT410: { name: "Chocolate",          usdPerSqm: 12.5, type: "translucent" },
+  KT411: { name: "Water Edge",         usdPerSqm: 12.5, type: "translucent" },
+  KT412: { name: "Pottery Red",        usdPerSqm: 12.5, type: "translucent" },
   // Translucent premium
-  KT413: { name: "Cloud White",        usdPerSqm: 61.50, type: "translucent" },
-  KT414: { name: "Palegoldenrod",      usdPerSqm: 61.50, type: "translucent" },
-  KT415: { name: "Sage",               usdPerSqm: 61.50, type: "translucent" },
+  KT413: { name: "Cloud White",        usdPerSqm: 24.6, type: "translucent" },
+  KT414: { name: "Palegoldenrod",      usdPerSqm: 24.6, type: "translucent" },
+  KT415: { name: "Sage",               usdPerSqm: 24.6, type: "translucent" },
+  KT428: { name: "Linen",              usdPerSqm: 24.6, type: "translucent" },
+  KT431: { name: "White",              usdPerSqm: 13, type: "translucent" },
+  KT432: { name: "Light Apricot",      usdPerSqm: 13, type: "translucent" },
+  KT433: { name: "Camel",              usdPerSqm: 13, type: "translucent" },
+  KT434: { name: "Black",              usdPerSqm: 13, type: "translucent" },
+  KT435: { name: "Grey Blue",          usdPerSqm: 13, type: "translucent" },
   // Blackout
-  KB401: { name: "Liveingston",        usdPerSqm: 35.65, type: "blackout" },
-  KB402: { name: "Tan",                usdPerSqm: 35.65, type: "blackout" },
-  KB403: { name: "Maize",              usdPerSqm: 35.65, type: "blackout" },
-  KB404: { name: "Bisque",             usdPerSqm: 35.65, type: "blackout" },
-  KB405: { name: "Pottery Red",        usdPerSqm: 35.65, type: "blackout" },
-  KB406: { name: "Indigo",             usdPerSqm: 35.65, type: "blackout" },
-  KB420: { name: "White",              usdPerSqm: 35.65, type: "blackout" },
-  KB422: { name: "Buckskin",           usdPerSqm: 35.65, type: "blackout" },
-  KB426: { name: "Dove Grey",          usdPerSqm: 35.65, type: "blackout" },
-  KB428: { name: "Linen",              usdPerSqm: 35.65, type: "blackout" },
-  KB431: { name: "White",              usdPerSqm: 35.65, type: "blackout" },
-  KB432: { name: "Light Apricot",      usdPerSqm: 35.65, type: "blackout" },
-  KB433: { name: "Camel",              usdPerSqm: 35.65, type: "blackout" },
-  KB434: { name: "Black",              usdPerSqm: 35.65, type: "blackout" },
-  KB435: { name: "Grey Blue",          usdPerSqm: 35.65, type: "blackout" },
+  KB401: { name: "Liveingston",        usdPerSqm: 14.26, type: "blackout" },
+  KB402: { name: "Tan",                usdPerSqm: 14.26, type: "blackout" },
+  KB403: { name: "Maize",              usdPerSqm: 14.26, type: "blackout" },
+  KB404: { name: "Bisque",             usdPerSqm: 14.26, type: "blackout" },
+  KB405: { name: "Pottery Red",        usdPerSqm: 14.26, type: "blackout" },
+  KB406: { name: "Indigo",             usdPerSqm: 14.26, type: "blackout" },
+  KB420: { name: "White",              usdPerSqm: 27.18, type: "blackout" },
+  KB422: { name: "Buckskin",           usdPerSqm: 27.18, type: "blackout" },
+  KB426: { name: "Dove Grey",          usdPerSqm: 27.18, type: "blackout" },
+  KB428: { name: "Linen",              usdPerSqm: 27.18, type: "blackout" },
+  KB431: { name: "White",              usdPerSqm: 14.26, type: "blackout" },
+  KB432: { name: "Light Apricot",      usdPerSqm: 14.26, type: "blackout" },
+  KB433: { name: "Camel",              usdPerSqm: 14.26, type: "blackout" },
+  KB434: { name: "Black",              usdPerSqm: 14.26, type: "blackout" },
+  KB435: { name: "Grey Blue",          usdPerSqm: 14.26, type: "blackout" },
   // Dual-Deck Blackout (premium)
   KN405: { name: "Cloud White Dual-Deck", usdPerSqm: 40.01, type: "dualdeck" },
   KN406: { name: "Shell Dual-Deck",       usdPerSqm: 40.01, type: "dualdeck" },
   KN407: { name: "Sage Dual-Deck",        usdPerSqm: 40.01, type: "dualdeck" },
 };
 
+const HONEYCOMB25_FABRICS: Record<string, { name: string; usdPerSqm: number; type: "sheer" | "translucent" | "blackout" }> = {};
+for (const [code, name] of Object.entries({ KS801: "White", KS802: "Almond", KS803: "Pink", KS814: "Black" })) {
+  HONEYCOMB25_FABRICS[code] = { name, usdPerSqm: 18.02, type: "sheer" };
+}
+for (const [code, name] of Object.entries({ KT802: "Buckskin", KT803: "Impatiens", KT804: "Spring Green", KT805: "Cumulus", KT807: "Zephyr", KT808: "Café", KT810: "Snow", KT811: "Eclipse", KT812: "Eventide", KT813: "Thistle", KT814: "Maize", KT815: "Glass Block" })) {
+  HONEYCOMB25_FABRICS[code] = { name, usdPerSqm: 12.5, type: "translucent" };
+}
+for (const [code, name] of Object.entries({ KT831: "White", KT832: "Light Apricot", KT833: "Camel", KT834: "Black", KT835: "Grey Blue" })) {
+  HONEYCOMB25_FABRICS[code] = { name, usdPerSqm: 13, type: "translucent" };
+}
+for (const [code, name] of Object.entries({ KB801: "Liveingston", KB802: "Pale Yellow", KB803: "Water Edge", KB804: "Spring Green", KB805: "Sedona", KB806: "Savannah", KB807: "Sawmill", KB808: "Chocolate", KB809: "Husk", KB810: "Thistle", KB811: "Maize", KB812: "Mink", KB831: "White", KB832: "Light Apricot", KB833: "Camel", KB834: "Black", KB835: "Grey Blue" })) {
+  HONEYCOMB25_FABRICS[code] = { name, usdPerSqm: 14.26, type: "blackout" };
+}
+
 const honeycombItemSchema = z.object({
   type: z.literal("honeycomb"),
   qty: z.number().int().min(1).max(99),
-  width: z.number().min(800).max(2750),
-  height: z.number().min(500).max(3000),
+   width: z.number().min(500).max(2750),
+   height: z.number().min(500).max(3000),
   fabricCode: z.string().min(1).max(20).refine((c) => c in STANDARD_HONEYCOMB_FABRICS, {
     message: "Unknown honeycomb fabric code",
   }),
   operation: z.enum(["manual", "cordless", "motor"]),
   sideTrack: z.boolean().optional().default(false),
+  sideTrackType: sideTrackTypeSchema,
+  mountPosition: mountPositionSchema,
+  noDrill: z.boolean().default(false),
   railColor: railColorSchema,
   bottomRail: railColorSchema,
   holder: holderColorSchema.optional().nullable(),
 });
 
-// 25 mm Standard Honeycomb — same fabric catalog as 45mm, tighter size limits.
+// 25 mm Standard Honeycomb — distinct 25mm supplier fabric table.
 const honeycomb25ItemSchema = z.object({
   type: z.literal("honeycomb-25"),
   qty: z.number().int().min(1).max(99),
-  width: z.number().min(400).max(2000),
-  height: z.number().min(300).max(2500),
-  fabricCode: z.string().min(1).max(20).refine((c) => c in STANDARD_HONEYCOMB_FABRICS, {
+   width: z.number().min(500).max(2750),
+   height: z.number().min(500).max(3000),
+  fabricCode: z.string().min(1).max(20).refine((c) => c in HONEYCOMB25_FABRICS, {
     message: "Unknown honeycomb-25 fabric code",
   }),
-  operation: z.enum(["manual", "cordless", "motor"]),
+  operation: z.enum(["manual", "cordless"]),
   sideTrack: z.boolean().optional().default(false),
+  sideTrackType: z.literal("l").default("l"),
+  mountPosition: mountPositionSchema,
+  noDrill: z.boolean().default(false),
   railColor: railColorSchema,
   bottomRail: railColorSchema,
   holder: holderColorSchema.optional().nullable(),
 });
 
-// 45 mm TDBU (Top-Down Bottom-Up) fabrics — supplier "Honeycomb TDBU" × 2.5.
+// 45 mm TDBU (Top-Down Bottom-Up) fabrics — distinct supplier "Honeycomb TDBU" table.
 // Sheer and Dual-Deck are not offered in TDBU (mechanism requires single-layer fabric).
 const TDBU_FABRICS: Record<string, { name: string; usdPerSqm: number; type: "translucent" | "blackout" }> = {
-  KT401: { name: "Simply White",  usdPerSqm: 40.00, type: "translucent" },
-  KT402: { name: "Buckskin",      usdPerSqm: 40.00, type: "translucent" },
-  KT403: { name: "Impatiens",     usdPerSqm: 40.00, type: "translucent" },
-  KT404: { name: "Lavender Lily", usdPerSqm: 40.00, type: "translucent" },
-  KT405: { name: "Spring Green",  usdPerSqm: 40.00, type: "translucent" },
-  KT406: { name: "Lime Light",    usdPerSqm: 40.00, type: "translucent" },
-  KT407: { name: "Papyrus",       usdPerSqm: 40.00, type: "translucent" },
-  KT408: { name: "Café",          usdPerSqm: 40.00, type: "translucent" },
-  KT409: { name: "Indigo",        usdPerSqm: 40.00, type: "translucent" },
-  KT410: { name: "Chocolate",     usdPerSqm: 40.00, type: "translucent" },
-  KT411: { name: "Water Edge",    usdPerSqm: 40.00, type: "translucent" },
-  KT412: { name: "Pottery Red",   usdPerSqm: 40.00, type: "translucent" },
-  KT413: { name: "Cloud White",   usdPerSqm: 71.73, type: "translucent" },
-  KT414: { name: "Palegoldenrod", usdPerSqm: 71.73, type: "translucent" },
-  KT415: { name: "Sage",          usdPerSqm: 71.73, type: "translucent" },
-  KB401: { name: "Liveingston",   usdPerSqm: 45.88, type: "blackout" },
-  KB402: { name: "Tan",           usdPerSqm: 45.88, type: "blackout" },
-  KB403: { name: "Maize",         usdPerSqm: 45.88, type: "blackout" },
-  KB404: { name: "Bisque",        usdPerSqm: 45.88, type: "blackout" },
-  KB405: { name: "Pottery Red",   usdPerSqm: 45.88, type: "blackout" },
-  KB406: { name: "Indigo",        usdPerSqm: 45.88, type: "blackout" },
-  KB420: { name: "White",         usdPerSqm: 45.88, type: "blackout" },
-  KB422: { name: "Buckskin",      usdPerSqm: 45.88, type: "blackout" },
-  KB426: { name: "Dove Grey",     usdPerSqm: 45.88, type: "blackout" },
-  KB428: { name: "Linen",         usdPerSqm: 45.88, type: "blackout" },
-  KB431: { name: "White",         usdPerSqm: 45.88, type: "blackout" },
-  KB432: { name: "Light Apricot", usdPerSqm: 45.88, type: "blackout" },
-  KB433: { name: "Camel",         usdPerSqm: 45.88, type: "blackout" },
-  KB434: { name: "Black",         usdPerSqm: 45.88, type: "blackout" },
-  KB435: { name: "Grey Blue",     usdPerSqm: 45.88, type: "blackout" },
+  KT401: { name: "Simply White",  usdPerSqm: 16.0010700873129, type: "translucent" },
+  KT402: { name: "Buckskin",      usdPerSqm: 16.0010700873129, type: "translucent" },
+  KT403: { name: "Impatiens",     usdPerSqm: 16.0010700873129, type: "translucent" },
+  KT404: { name: "Lavender Lily", usdPerSqm: 16.0010700873129, type: "translucent" },
+  KT405: { name: "Spring Green",  usdPerSqm: 16.0010700873129, type: "translucent" },
+  KT406: { name: "Lime Light",    usdPerSqm: 16.0010700873129, type: "translucent" },
+  KT407: { name: "Papyrus",       usdPerSqm: 16.0010700873129, type: "translucent" },
+  KT408: { name: "Café",          usdPerSqm: 16.0010700873129, type: "translucent" },
+  KT409: { name: "Indigo",        usdPerSqm: 16.0010700873129, type: "translucent" },
+  KT410: { name: "Chocolate",     usdPerSqm: 16.0010700873129, type: "translucent" },
+  KT411: { name: "Water Edge",    usdPerSqm: 16.0010700873129, type: "translucent" },
+  KT412: { name: "Pottery Red",   usdPerSqm: 16.0010700873129, type: "translucent" },
+  KT413: { name: "Cloud White",   usdPerSqm: 28.6931231792052, type: "translucent" },
+  KT414: { name: "Palegoldenrod", usdPerSqm: 28.6931231792052, type: "translucent" },
+  KT415: { name: "Sage",          usdPerSqm: 28.6931231792052, type: "translucent" },
+  KT431: { name: "White",         usdPerSqm: 16.5010700873129, type: "translucent" },
+  KT432: { name: "Light Apricot", usdPerSqm: 16.5010700873129, type: "translucent" },
+  KT433: { name: "Camel",         usdPerSqm: 16.5010700873129, type: "translucent" },
+  KT434: { name: "Black",         usdPerSqm: 16.5010700873129, type: "translucent" },
+  KT435: { name: "Grey Blue",     usdPerSqm: 16.5010700873129, type: "translucent" },
+  KB401: { name: "Liveingston",   usdPerSqm: 18.3514502895152, type: "blackout" },
+  KB402: { name: "Tan",           usdPerSqm: 18.3514502895152, type: "blackout" },
+  KB403: { name: "Maize",         usdPerSqm: 18.3514502895152, type: "blackout" },
+  KB404: { name: "Bisque",        usdPerSqm: 18.3514502895152, type: "blackout" },
+  KB405: { name: "Pottery Red",   usdPerSqm: 18.3514502895152, type: "blackout" },
+  KB406: { name: "Indigo",        usdPerSqm: 18.3514502895152, type: "blackout" },
+  KB420: { name: "White",         usdPerSqm: 28.26, type: "blackout" },
+  KB422: { name: "Buckskin",      usdPerSqm: 28.26, type: "blackout" },
+  KB426: { name: "Dove Grey",     usdPerSqm: 28.26, type: "blackout" },
+  KB428: { name: "Linen",         usdPerSqm: 28.26, type: "blackout" },
+  KB431: { name: "White",         usdPerSqm: 18.3514502895152, type: "blackout" },
+  KB432: { name: "Light Apricot", usdPerSqm: 18.3514502895152, type: "blackout" },
+  KB433: { name: "Camel",         usdPerSqm: 18.3514502895152, type: "blackout" },
+  KB434: { name: "Black",         usdPerSqm: 18.3514502895152, type: "blackout" },
+  KB435: { name: "Grey Blue",     usdPerSqm: 18.3514502895152, type: "blackout" },
 };
 
 const tdbuItemSchema = z.object({
   type: z.literal("tdbu"),
   qty: z.number().int().min(1).max(99),
-  width: z.number().min(800).max(2750),
-  height: z.number().min(500).max(3000),
+   width: z.number().min(500).max(2750),
+   height: z.number().min(500).max(3000),
   fabricCode: z.string().min(1).max(20).refine((c) => c in TDBU_FABRICS, {
     message: "Unknown TDBU fabric code",
   }),
-  operation: z.enum(["manual", "motor"]),
+   operation: z.enum(["manual", "cordless"]),
   sideTrack: z.boolean().optional().default(false),
+  sideTrackType: sideTrackTypeSchema,
+  mountPosition: mountPositionSchema,
+  noDrill: z.boolean().default(false),
   railColor: railColorSchema,
 });
 
-// 45 mm Vertical (lóðrétt) — supplier "Vertical" sheet × 2.5.
+// 45 mm Vertical (lóðrétt) — supplier "Vertical" sheet.
 // Slats hang vertically; sheer/dual-deck not offered. No side track.
 const VERTICAL_FABRICS: Record<string, { name: string; usdPerSqm: number; type: "translucent" | "blackout" }> = {
-  KT401: { name: "Simply White",  usdPerSqm: 91.02, type: "translucent" },
-  KT402: { name: "Buckskin",      usdPerSqm: 91.02, type: "translucent" },
-  KT403: { name: "Impatiens",     usdPerSqm: 91.02, type: "translucent" },
-  KT404: { name: "Lavender Lily", usdPerSqm: 91.02, type: "translucent" },
-  KT405: { name: "Spring Green",  usdPerSqm: 91.02, type: "translucent" },
-  KT406: { name: "Lime Light",    usdPerSqm: 91.02, type: "translucent" },
-  KT407: { name: "Papyrus",       usdPerSqm: 91.02, type: "translucent" },
-  KT408: { name: "Café",          usdPerSqm: 91.02, type: "translucent" },
-  KT409: { name: "Indigo",        usdPerSqm: 91.02, type: "translucent" },
-  KT410: { name: "Chocolate",     usdPerSqm: 91.02, type: "translucent" },
-  KT411: { name: "Water Edge",    usdPerSqm: 91.02, type: "translucent" },
-  KT412: { name: "Pottery Red",   usdPerSqm: 91.02, type: "translucent" },
-  KT413: { name: "Cloud White",   usdPerSqm: 91.02, type: "translucent" },
-  KT414: { name: "Palegoldenrod", usdPerSqm: 91.02, type: "translucent" },
-  KT415: { name: "Sage",          usdPerSqm: 91.02, type: "translucent" },
-  KB401: { name: "Liveingston",   usdPerSqm: 106.19, type: "blackout" },
-  KB402: { name: "Tan",           usdPerSqm: 106.19, type: "blackout" },
-  KB403: { name: "Maize",         usdPerSqm: 106.19, type: "blackout" },
-  KB404: { name: "Bisque",        usdPerSqm: 106.19, type: "blackout" },
-  KB405: { name: "Pottery Red",   usdPerSqm: 106.19, type: "blackout" },
-  KB406: { name: "Indigo",        usdPerSqm: 106.19, type: "blackout" },
-  KB420: { name: "White",         usdPerSqm: 106.19, type: "blackout" },
-  KB422: { name: "Buckskin",      usdPerSqm: 106.19, type: "blackout" },
-  KB426: { name: "Dove Grey",     usdPerSqm: 106.19, type: "blackout" },
-  KB428: { name: "Linen",         usdPerSqm: 106.19, type: "blackout" },
-  KB431: { name: "White",         usdPerSqm: 106.19, type: "blackout" },
-  KB432: { name: "Light Apricot", usdPerSqm: 106.19, type: "blackout" },
-  KB433: { name: "Camel",         usdPerSqm: 106.19, type: "blackout" },
-  KB434: { name: "Black",         usdPerSqm: 106.19, type: "blackout" },
-  KB435: { name: "Grey Blue",     usdPerSqm: 106.19, type: "blackout" },
+  KT401: { name: "Simply White",  usdPerSqm: 36.41, type: "translucent" },
+  KT402: { name: "Buckskin",      usdPerSqm: 36.41, type: "translucent" },
+  KT403: { name: "Impatiens",     usdPerSqm: 36.41, type: "translucent" },
+  KT404: { name: "Lavender Lily", usdPerSqm: 36.41, type: "translucent" },
+  KT405: { name: "Spring Green",  usdPerSqm: 36.41, type: "translucent" },
+  KT406: { name: "Lime Light",    usdPerSqm: 36.41, type: "translucent" },
+  KT407: { name: "Papyrus",       usdPerSqm: 36.41, type: "translucent" },
+  KT408: { name: "Café",          usdPerSqm: 36.41, type: "translucent" },
+  KT409: { name: "Indigo",        usdPerSqm: 36.41, type: "translucent" },
+  KT410: { name: "Chocolate",     usdPerSqm: 36.41, type: "translucent" },
+  KT411: { name: "Water Edge",    usdPerSqm: 36.41, type: "translucent" },
+  KT412: { name: "Pottery Red",   usdPerSqm: 36.41, type: "translucent" },
+  KT413: { name: "Cloud White",   usdPerSqm: 36.41, type: "translucent" },
+  KT414: { name: "Palegoldenrod", usdPerSqm: 36.41, type: "translucent" },
+  KT415: { name: "Sage",          usdPerSqm: 36.41, type: "translucent" },
+  KB401: { name: "Liveingston",   usdPerSqm: 42.48, type: "blackout" },
+  KB402: { name: "Tan",           usdPerSqm: 42.48, type: "blackout" },
+  KB403: { name: "Maize",         usdPerSqm: 42.48, type: "blackout" },
+  KB404: { name: "Bisque",        usdPerSqm: 42.48, type: "blackout" },
+  KB405: { name: "Pottery Red",   usdPerSqm: 42.48, type: "blackout" },
+  KB406: { name: "Indigo",        usdPerSqm: 42.48, type: "blackout" },
+  KB420: { name: "White",         usdPerSqm: 42.48, type: "blackout" },
+  KB422: { name: "Buckskin",      usdPerSqm: 42.48, type: "blackout" },
+  KB426: { name: "Dove Grey",     usdPerSqm: 42.48, type: "blackout" },
+  KB428: { name: "Linen",         usdPerSqm: 42.48, type: "blackout" },
+  KB431: { name: "White",         usdPerSqm: 42.48, type: "blackout" },
+  KB432: { name: "Light Apricot", usdPerSqm: 42.48, type: "blackout" },
+  KB433: { name: "Camel",         usdPerSqm: 42.48, type: "blackout" },
+  KB434: { name: "Black",         usdPerSqm: 42.48, type: "blackout" },
+  KB435: { name: "Grey Blue",     usdPerSqm: 42.48, type: "blackout" },
 };
 
 const VERTICAL_MAX_SQM = 14;
@@ -466,7 +583,7 @@ function priceRollerUsd(item: RollerItem): { unitUsd: number; description: strin
   const motor = item.operation === "motor" ? 100 + 17.5 : 0;
   const sideTrack = item.sideTrack ? 21.25 * h : 0;
   const holder = item.holder ? HOLDER_USD : 0;
-  const unitUsd = fabric + (cordless + motor + sideTrack + holder) * ACCESSORY_FACTOR;
+  const unitUsd = fabric + cordless + motor + sideTrack + holder;
   const opLabel =
     item.operation === "motor"
       ? "mótor+fjarstýring"
@@ -486,9 +603,6 @@ function priceDualRollerUsd(item: DualRollerItem): { unitUsd: number; descriptio
   }
   const combo = DUAL_ROLLER_COMBOS[item.comboKey];
   if (!combo) throw new Error(`Unknown Dual Roller combo: ${item.comboKey}`);
-  if (!(item.frontCode in STANDARD_HONEYCOMB_FABRICS) || !(item.backCode in STANDARD_HONEYCOMB_FABRICS)) {
-    throw new Error(`Unknown Dual Roller fabric codes: ${item.frontCode}+${item.backCode}`);
-  }
   if (fabricFamily(item.frontCode) !== combo.front || fabricFamily(item.backCode) !== combo.back) {
     throw new Error(
       `Dual Roller fabric codes ${item.frontCode}+${item.backCode} do not match combo ${item.comboKey} (expected ${combo.front}+${combo.back})`,
@@ -499,7 +613,7 @@ function priceDualRollerUsd(item: DualRollerItem): { unitUsd: number; descriptio
   const cordless = item.operation === "cordless" ? billedArea * DR_CORDLESS_USD_PER_SQM : 0;
   const motor = item.operation === "motor" ? DR_MOTOR_USD + DR_REMOTE_USD : 0;
   const sideTrack = item.sideTrack ? w * DR_SIDETRACK_USD_PER_M : 0;
-  const unitUsd = fabric + (cordless + motor + sideTrack) * ACCESSORY_FACTOR;
+  const unitUsd = fabric + cordless + motor + sideTrack;
   const opLabel =
     item.operation === "motor"
       ? "mótor+fjarstýring"
@@ -511,12 +625,16 @@ function priceDualRollerUsd(item: DualRollerItem): { unitUsd: number; descriptio
 }
 
 function priceDaynightUsd(item: DaynightItem): { unitUsd: number; description: string } {
-  const w = item.width / 1000;
+  const w = effectiveWidthMm(item.width, item.mountPosition) / 1000;
   const h = item.height / 1000;
   const rawArea = w * h;
-  if (rawArea > DN_MAX_SQM) {
-    throw new Error(`Day & Night area ${rawArea.toFixed(2)} m² exceeds ${DN_MAX_SQM} m² maximum`);
-  }
+  assertHoneycombSize({
+    product: "daynight",
+    operation: item.operation,
+    widthMm: item.width,
+    heightMm: item.height,
+    mountPosition: item.mountPosition,
+  });
   const combo = DAYNIGHT_COMBOS[item.comboKey];
   if (!combo) throw new Error(`Unknown Day & Night combo: ${item.comboKey}`);
   if (!(item.frontCode in STANDARD_HONEYCOMB_FABRICS) || !(item.backCode in STANDARD_HONEYCOMB_FABRICS)) {
@@ -528,12 +646,17 @@ function priceDaynightUsd(item: DaynightItem): { unitUsd: number; description: s
     );
   }
   const billedArea = Math.max(DN_MIN_SQM, rawArea);
-  // Fabric at full retail (×461 applied in checkout); accessories ×276 (pre-scaled by 276/461)
-  const fabric = billedArea * combo.usdPerSqm;
-  const cordless = item.operation === "cordless" ? billedArea * DN_CORDLESS_USD_PER_SQM * ACCESSORY_FACTOR : 0;
-  const motor = item.operation === "motor" ? (DN_MOTOR_USD + DN_REMOTE_USD) * ACCESSORY_FACTOR : 0;
-  const sideTrack = item.sideTrack ? w * DN_SIDETRACK_USD_PER_M * ACCESSORY_FACTOR : 0;
-  const unitUsd = fabric + cordless + motor + sideTrack;
+  // Fabric and accessories use the same supplier-cost conversion.
+  const backRate = DAYNIGHT_BACK_RATES[item.backCode];
+  if (backRate === undefined) {
+    throw new Error(`Unknown Day & Night supplier rate for back fabric: ${item.backCode}`);
+  }
+  const fabric = billedArea * backRate;
+  const cordless = item.operation === "cordless" ? billedArea * DN_CORDLESS_USD_PER_SQM : 0;
+  const noDrill = item.noDrill ? billedArea * 3 : 0;
+  const motor = item.operation === "motor" ? motorSupplierUsd(billedArea) + DN_REMOTE_USD : 0;
+  const sideTrack = item.sideTrack ? h * (item.sideTrackType === "l" ? 5 : DN_SIDETRACK_USD_PER_M) : 0;
+  const unitUsd = fabric + cordless + noDrill + motor + sideTrack;
   const opLabel =
     item.operation === "motor"
       ? "mótor+fjarstýring"
@@ -545,12 +668,16 @@ function priceDaynightUsd(item: DaynightItem): { unitUsd: number; description: s
 }
 
 function priceHoneycombUsd(item: HoneycombItem): { unitUsd: number; description: string } {
-  const w = item.width / 1000;
+  assertHoneycombSize({
+    product: "honeycomb-45",
+    operation: item.operation,
+    widthMm: item.width,
+    heightMm: item.height,
+    mountPosition: item.mountPosition,
+  });
+  const w = effectiveWidthMm(item.width, item.mountPosition) / 1000;
   const h = item.height / 1000;
   const rawArea = w * h;
-  if (rawArea > DN_MAX_SQM) {
-    throw new Error(`Honeycomb area ${rawArea.toFixed(2)} m² exceeds ${DN_MAX_SQM} m² maximum`);
-  }
   const fabricEntry = STANDARD_HONEYCOMB_FABRICS[item.fabricCode];
   if (!fabricEntry) {
     throw new Error(`Unknown honeycomb fabric code: ${item.fabricCode}`);
@@ -558,10 +685,11 @@ function priceHoneycombUsd(item: HoneycombItem): { unitUsd: number; description:
   const billedArea = Math.max(DN_MIN_SQM, rawArea);
   const fabric = billedArea * fabricEntry.usdPerSqm;
   const cordless = item.operation === "cordless" ? billedArea * DN_CORDLESS_USD_PER_SQM : 0;
-  const motor = item.operation === "motor" ? DN_MOTOR_USD + DN_REMOTE_USD : 0;
-  const sideTrack = item.sideTrack ? w * DN_SIDETRACK_USD_PER_M : 0;
+  const noDrill = item.noDrill ? billedArea * 3 : 0;
+  const motor = item.operation === "motor" ? motorSupplierUsd(billedArea) + DN_REMOTE_USD : 0;
+  const sideTrack = item.sideTrack ? h * (item.sideTrackType === "l" ? 5 : DN_SIDETRACK_USD_PER_M) : 0;
   const holder = item.holder ? HOLDER_USD : 0;
-  const unitUsd = fabric + (cordless + motor + sideTrack + holder) * ACCESSORY_FACTOR;
+  const unitUsd = fabric + cordless + noDrill + motor + sideTrack + holder;
   const opLabel =
     item.operation === "motor"
       ? "mótor+fjarstýring"
@@ -573,27 +701,30 @@ function priceHoneycombUsd(item: HoneycombItem): { unitUsd: number; description:
 }
 
 function priceHoneycomb25Usd(item: Honeycomb25Item): { unitUsd: number; description: string } {
-  const w = item.width / 1000;
+  assertHoneycombSize({
+    product: "honeycomb-25",
+    operation: item.operation,
+    widthMm: item.width,
+    heightMm: item.height,
+    mountPosition: item.mountPosition,
+  });
+  const effectiveWidth = effectiveWidthMm(item.width, item.mountPosition);
+  const w = effectiveWidth / 1000;
   const h = item.height / 1000;
   const rawArea = w * h;
-  if (rawArea > DN_MAX_SQM) {
-    throw new Error(`Honeycomb 25mm area ${rawArea.toFixed(2)} m² exceeds ${DN_MAX_SQM} m² maximum`);
-  }
-  const fabricEntry = STANDARD_HONEYCOMB_FABRICS[item.fabricCode];
+  const fabricEntry = HONEYCOMB25_FABRICS[item.fabricCode];
   if (!fabricEntry) {
     throw new Error(`Unknown honeycomb-25 fabric code: ${item.fabricCode}`);
   }
   const billedArea = Math.max(DN_MIN_SQM, rawArea);
   const fabric = billedArea * fabricEntry.usdPerSqm;
   const cordless = item.operation === "cordless" ? billedArea * DN_CORDLESS_USD_PER_SQM : 0;
-  const motor = item.operation === "motor" ? DN_MOTOR_USD + DN_REMOTE_USD : 0;
-  const sideTrack = item.sideTrack ? w * DN_SIDETRACK_USD_PER_M : 0;
+  const noDrill = item.noDrill ? billedArea * 3 : 0;
+  const sideTrack = item.sideTrack ? h * 5 : 0;
   const holder = item.holder ? HOLDER_USD : 0;
-  const unitUsd = fabric + (cordless + motor + sideTrack + holder) * ACCESSORY_FACTOR;
+  const unitUsd = fabric + cordless + noDrill + sideTrack + holder;
   const opLabel =
-    item.operation === "motor"
-      ? "mótor+fjarstýring"
-      : item.operation === "cordless"
+    item.operation === "cordless"
         ? "snærislaust"
         : "handvirkt";
   const description = `Hunangskamb 25mm · ${fabricEntry.name} (${item.fabricCode}) · ${fabricEntry.type} · ${item.width}×${item.height}mm · ${opLabel}${item.sideTrack ? " · hliðarspor" : ""}${item.holder ? ` · lásahaldari-${item.holder}` : ""}`;
@@ -601,22 +732,27 @@ function priceHoneycomb25Usd(item: Honeycomb25Item): { unitUsd: number; descript
 }
 
 function priceTdbuUsd(item: TdbuItem): { unitUsd: number; description: string } {
-  const w = item.width / 1000;
+  assertHoneycombSize({
+    product: "tdbu",
+    operation: item.operation,
+    widthMm: item.width,
+    heightMm: item.height,
+    mountPosition: item.mountPosition,
+  });
+  const w = effectiveWidthMm(item.width, item.mountPosition) / 1000;
   const h = item.height / 1000;
   const rawArea = w * h;
-  if (rawArea > DN_MAX_SQM) {
-    throw new Error(`TDBU area ${rawArea.toFixed(2)} m² exceeds ${DN_MAX_SQM} m² maximum`);
-  }
   const fabricEntry = TDBU_FABRICS[item.fabricCode];
   if (!fabricEntry) {
     throw new Error(`Unknown TDBU fabric code: ${item.fabricCode}`);
   }
   const billedArea = Math.max(DN_MIN_SQM, rawArea);
   const fabric = billedArea * fabricEntry.usdPerSqm;
-  const motor = item.operation === "motor" ? DN_MOTOR_USD + DN_REMOTE_USD : 0;
-  const sideTrack = item.sideTrack ? w * DN_SIDETRACK_USD_PER_M : 0;
-  const unitUsd = fabric + (motor + sideTrack) * ACCESSORY_FACTOR;
-  const opLabel = item.operation === "motor" ? "mótor+fjarstýring" : "handvirkt";
+  const noDrill = item.noDrill ? billedArea * 3 : 0;
+  const cordless = item.operation === "cordless" ? billedArea * DN_CORDLESS_USD_PER_SQM : 0;
+  const sideTrack = item.sideTrack ? h * (item.sideTrackType === "l" ? 5 : DN_SIDETRACK_USD_PER_M) : 0;
+  const unitUsd = fabric + cordless + noDrill + sideTrack;
+  const opLabel = item.operation === "cordless" ? "snærislaust" : "handvirkt";
   const description = `TDBU 45mm · ${fabricEntry.name} (${item.fabricCode}) · ${fabricEntry.type} · ${item.width}×${item.height}mm · ${opLabel}${item.sideTrack ? " · hliðarspor" : ""}`;
   return { unitUsd, description };
 }
@@ -634,8 +770,8 @@ function priceVerticalUsd(item: VerticalItem): { unitUsd: number; description: s
   }
   const billedArea = Math.max(DN_MIN_SQM, rawArea);
   const fabric = billedArea * fabricEntry.usdPerSqm;
-  const motor = item.operation === "motor" ? DN_MOTOR_USD + DN_REMOTE_USD : 0;
-  const unitUsd = fabric + motor * ACCESSORY_FACTOR;
+  const motor = item.operation === "motor" ? 142.26 + 14 : 0;
+  const unitUsd = fabric + motor;
   const opLabel = item.operation === "motor" ? "mótor+fjarstýring" : "handvirkt";
   const openLabel =
     item.openingType === "centre" ? "miðopnun" : item.openingType === "left" ? "vinstri" : "hægri";
@@ -661,7 +797,7 @@ function priceZebraUsd(item: ZebraItem): { unitUsd: number; description: string 
   if (!fabricEntry) throw new Error(`Unknown Zebra fabric code: ${item.fabricCode}`);
   const fabric = area * fabricEntry.usdPerSqm;
   const motor = item.operation === "motor" ? 142.26 + 14 : 0;
-  const unitUsd = fabric + motor * ACCESSORY_FACTOR;
+  const unitUsd = fabric + motor;
   const operation = item.operation === "motor" ? "rafknúið" : item.operation === "cordless" ? "snærislaust" : "keðja";
   return {
     unitUsd,
@@ -733,6 +869,9 @@ function configurationAttributes(item: CartItem, description: string): Array<{ k
     bottomRailType: "Botnlisti",
     bottomRailColor: "Litur botnlista",
     mountType: "Festing",
+    mountPosition: "Innfelld/utanáliggjandi festing",
+    noDrill: "Án borunar",
+    sideTrackType: "Gerð hliðarspors",
     comboKey: "Efnasamsetning",
     frontCode: "Fremra efni",
     backCode: "Aftara efni",
@@ -753,7 +892,7 @@ function configurationAttributes(item: CartItem, description: string): Array<{ k
 export function buildShopifyDraftOrderLines(items: CartItem[]): ShopifyDraftOrderLine[] {
   const lines: ShopifyDraftOrderLine[] = items.map((item) => {
     const { unitUsd, description, name } = priceItem(item);
-    const unitPriceIsk = Math.ceil((unitUsd * USD_TO_ISK_RETAIL) / 100) * 100;
+    const unitPriceIsk = Math.round(unitUsd * USD_TO_ISK_RETAIL);
     return {
       productHandle: productHandle(item),
       title: name,

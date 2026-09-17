@@ -126,7 +126,7 @@ test("Shopify Draft Order lines keep product links, exact prices, and configurat
     ],
   );
   assert.equal(lines[0]?.quantity, 2);
-  assert.equal(lines[0]?.unitPriceIsk, 18600);
+  assert.equal(lines[0]?.unitPriceIsk, 20120);
   assert.equal(lines[0]?.attributes.find((attribute) => attribute.key === "Breidd (mm)")?.value, "1000");
   assert.equal(lines[0]?.attributes.find((attribute) => attribute.key === "Hæð (mm)")?.value, "1200");
   assert.equal(lines[0]?.attributes.find((attribute) => attribute.key === "Botnlisti")?.value, "Álbotnlisti");
@@ -134,7 +134,7 @@ test("Shopify Draft Order lines keep product links, exact prices, and configurat
   assert.equal(lines[0]?.attributes.find((attribute) => attribute.key === "Litur")?.value, "Pure White");
   assert.equal(lines[0]?.attributes.find((attribute) => attribute.key === "Dúkagerð")?.value, "light-filtering");
   assert.equal(lines[0]?.attributes.find((attribute) => attribute.key === "Festing")?.value, "Smellifesting");
-  assert.equal(lines[7]?.unitPriceIsk, 7900);
+  assert.equal(lines[7]?.unitPriceIsk, 8546);
   assert.equal(lines[7]?.attributes.find((attribute) => attribute.key === "Litur brautar")?.value, "Hvítur");
   assert.equal(lines.at(-1)?.title, "Uppsetning / Professional installation");
   assert.equal(lines.at(-1)?.unitPriceIsk, 15000);

@@ -138,7 +138,7 @@ export function HelpDrawer() {
                 <Mail size={20} strokeWidth={1.5} />
               </div>
               <div>
-                <h4 className="font-serif text-lg tracking-[-.02em] text-[#24313b]">Hafa samband</h4>
+                <h4 className="font-serif text-lg tracking-[-.02em] text-[#24313b]">Hafðu samband</h4>
                 <p className="text-xs text-[#596872]">Svarað innan 24 klst</p>
               </div>
             </div>

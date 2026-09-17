@@ -40,7 +40,7 @@ export function Collection() {
   const heading = isUnknownCategory ? "Vöruflokkur fannst ekki" : selectedDefinition?.label ?? "Allt safnið";
   const description = isUnknownCategory
     ? "Þessi vöruflokkur er ekki til. Veldu flokk hér að ofan til að sjá réttar vörur."
-    : selectedDefinition?.description ?? "Skoðaðu öll fimm kerfin í vörulistanum.";
+     : selectedDefinition?.description ?? "Skoðaðu öll kerfin í vörulistanum.";
 
   return <div className="solmyrkvun-grid min-h-screen bg-[#f7f9fa]">
     <Header cartCount={0} categoryNav />
