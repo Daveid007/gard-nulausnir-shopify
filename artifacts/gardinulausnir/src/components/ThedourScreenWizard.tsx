@@ -3,6 +3,7 @@ import { ArrowDownUp, ArrowLeftRight, Check, ChevronLeft, ChevronRight, Moon, Ru
 import { Link } from "wouter";
 import { BusinessInquiryButton } from "@/components/BusinessInquiryButton";
 import { ResponsiveImage } from "@/components/ResponsiveImage";
+import { ThedourStepHelp } from "@/components/ThedourStepHelp";
 import {
   THEDOUR_FRAME_COLOURS,
   THEDOUR_HONEYCOMB_COLOURS,
@@ -221,6 +222,16 @@ export function ThedourScreenWizard(props: Props) {
     <section className="border-b border-[#ccd9df] py-6" aria-label="Leiðsögn um val og mælingu" onKeyDown={(event) => {
       if (event.key === "Enter" && event.target instanceof HTMLButtonElement === false && step < 8) next();
     }}>
+      <div className="mb-5 grid gap-3 rounded border border-[#9ebbd0] bg-[#eaf3f8] p-4 text-sm text-[#24313b] sm:grid-cols-2" aria-label="Skýring á opnunarstefnu">
+        <div className="flex items-center gap-3">
+          <ArrowDownUp size={24} aria-hidden="true" className="shrink-0" />
+          <p><strong className="block">Lóðrétt (vertical)</strong><span>Upp og niður</span></p>
+        </div>
+        <div className="flex items-center gap-3">
+          <ArrowLeftRight size={24} aria-hidden="true" className="shrink-0" />
+          <p><strong className="block">Lárétt (horizontal)</strong><span>Til hliðanna</span></p>
+        </div>
+      </div>
       <div className="mb-5 flex items-center justify-between gap-3">
         <span className="text-[10px] uppercase tracking-[.18em]">Mældu og veldu</span>
         <span className="text-xs text-[#667984]">{step + 1} / {STEP_LABELS.length}</span>
@@ -231,7 +242,7 @@ export function ThedourScreenWizard(props: Props) {
         {[
           "Hvaða gerð hentar?",
           "Hvernig á kerfið að opnast?",
-          "Single eða DUO?",
+          "Einföld lausn eða DUO?",
           "Myrkvun eða flugnanet?",
           "Hvernig á opnunin að vera?",
           "Hvernig verður kerfið fest?",
@@ -246,18 +257,19 @@ export function ThedourScreenWizard(props: Props) {
         {step === 6 && "Mældu í millimetrum: breidd efst/miðja/neðst og hæð vinstri/miðja/hægri."}
       </p>
 
+      <ThedourStepHelp step={step} family={family} fitting={fitting} />
       <div className="space-y-2">
         {step === 0 && <>
           <Choice selected={family === "windour"} title="WINdoûr" detail="Fellt honeycomb-kerfi í ramma fyrir myrkvun eða flugnanet." onClick={() => setFamily("windour")} />
           <Choice selected={family === "roldour"} title="ROLdoûr Slimline" detail="Inndraganlegt dúk- eða netkerfi sem rúllast í mjóa kassettu." onClick={() => setFamily("roldour")} />
         </>}
         {step === 1 && <>
-          <Choice icon={<ArrowDownUp size={17} />} selected={direction === "vertical"} title="Lóðrétt" detail="Dregið niður og rúllað upp." onClick={() => setDirection("vertical")} />
-          <Choice icon={<ArrowLeftRight size={17} />} selected={direction === "horizontal"} title="Lárétt" detail="Opnast og lokast til hliðar." onClick={() => setDirection("horizontal")} />
+          <Choice icon={<ArrowDownUp size={17} />} selected={direction === "vertical"} title="Lóðrétt — upp og niður" detail="Vertical · Hreyfist upp og niður." onClick={() => setDirection("vertical")} />
+          <Choice icon={<ArrowLeftRight size={17} />} selected={direction === "horizontal"} title="Lárétt — til hliðanna" detail="Horizontal · Opnast og lokast til hliðanna." onClick={() => setDirection("horizontal")} />
         </>}
         {step === 2 && <>
-          <Choice selected={system === "single"} title="Single" detail="Eitt kerfi: annaðhvort myrkvun eða flugnanet." onClick={() => setSystem("single")} />
-          <Choice selected={system === "duo"} title="DUO" detail="Samþætt myrkvun og flugnanet. Ekki opnunarálag." onClick={() => setSystem("duo")} />
+          <Choice selected={system === "single"} title="Einföld lausn (Single)" detail="Aðeins myrkvunargardína eða aðeins flugnanet. Þú velur hvort í næsta skrefi." onClick={() => setSystem("single")} />
+          <Choice selected={system === "duo"} title="Gardína og flugnanet (DUO)" detail="Myrkvunargardína og flugnanet saman í einu kerfi." onClick={() => setSystem("duo")} />
         </>}
         {step === 3 && (system === "duo" ? (
           <div className="border border-[#9ebbd0] bg-[#eaf3f8] p-4 text-sm leading-6"><strong>DUO valið:</strong> myrkvun og flugnanet fylgja saman.</div>
