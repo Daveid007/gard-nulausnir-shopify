@@ -16,6 +16,13 @@ import {
   type WindourOpeningDirection,
   type WindourOpeningType,
 } from "@/lib/windourPricing";
+import {
+  getWindourSizeBand,
+  isStandardWindourDuoChoice,
+  WINDOUR_PLEATED_NET,
+  WINDOUR_SIZE_BANDS,
+  type WindourMeasurementMode,
+} from "@/lib/windourOrderOptions";
 
 type Family = "windour" | "roldour";
 type System = "single" | "duo";
@@ -28,12 +35,18 @@ export type ThedourWizardSelection = {
   material: WindourMaterial;
   openingType: WindourOpeningType;
   fitting: Fitting;
-  widthReadingsMm: [number, number, number];
-  heightReadingsMm: [number, number, number];
+  measurementMode: WindourMeasurementMode;
+  widthReadingsMm?: [number, number, number];
+  heightReadingsMm?: [number, number, number];
   widthMm: number;
   heightMm: number;
+  widthBand: string;
+  heightBand: string;
   frameColor: string;
   materialColor: string;
+  duoPanelChoices?: [string, string];
+  additionalNotes: string;
+  requiresCustomQuote: boolean;
   mappedProductId: string;
 };
 
@@ -128,13 +141,19 @@ export function ThedourScreenWizard(props: Props) {
   const [fitting, setFitting] = useState<Fitting>("recessed");
   const [widths, setWidths] = useState(["", "", ""]);
   const [heights, setHeights] = useState(["", "", ""]);
+  const [measurementMode, setMeasurementMode] = useState<WindourMeasurementMode>("opening");
+  const [outerWidth, setOuterWidth] = useState("");
+  const [outerHeight, setOuterHeight] = useState("");
   const [frameColor, setFrameColor] = useState(props.initialFrameColor);
   const [materialColor, setMaterialColor] = useState(props.initialMaterialColor);
+  const [duoPanelChoices, setDuoPanelChoices] = useState<string[]>([props.initialMaterialColor, WINDOUR_PLEATED_NET]);
+  const [additionalNotes, setAdditionalNotes] = useState("");
   const [measurementError, setMeasurementError] = useState("");
+  const [duoChoiceError, setDuoChoiceError] = useState("");
   const headingRef = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
-    headingRef.current?.focus();
+    headingRef.current?.focus({ preventScroll: step === 0 });
   }, [step]);
 
   useEffect(() => {
@@ -149,12 +168,22 @@ export function ThedourScreenWizard(props: Props) {
 
   const numericWidths = useMemo(() => widths.map(Number), [widths]);
   const numericHeights = useMemo(() => heights.map(Number), [heights]);
-  const measurementsValid = [...widths, ...heights].every((value) => value.trim() !== "") &&
+  const openingMeasurementsValid = [...widths, ...heights].every((value) => value.trim() !== "") &&
     [...numericWidths, ...numericHeights].every((value) => Number.isFinite(value) && value > 0);
-  const widthMm = measurementsValid ? Math.min(...numericWidths) : 0;
-  const heightMm = measurementsValid ? Math.min(...numericHeights) : 0;
+  const outerWidthMm = Number(outerWidth);
+  const outerHeightMm = Number(outerHeight);
+  const outerMeasurementsValid = outerWidth.trim() !== "" && outerHeight.trim() !== "" &&
+    Number.isFinite(outerWidthMm) && Number.isFinite(outerHeightMm) && outerWidthMm > 0 && outerHeightMm > 0;
+  const measurementsValid = measurementMode === "outer-frame" ? outerMeasurementsValid : openingMeasurementsValid;
+  const widthMm = measurementsValid
+    ? measurementMode === "outer-frame" ? outerWidthMm : Math.min(...numericWidths)
+    : 0;
+  const heightMm = measurementsValid
+    ? measurementMode === "outer-frame" ? outerHeightMm : Math.min(...numericHeights)
+    : 0;
   const maxMm = family === "windour" ? 2000 : null;
-  const inSupportedRange = measurementsValid &&
+  const duoChoicesValid = family !== "windour" || system !== "duo" || duoPanelChoices.length === 2;
+  const inSupportedRange = measurementsValid && duoChoicesValid &&
     (maxMm === null || (widthMm <= maxMm && heightMm <= maxMm));
 
   const selection = useMemo<ThedourWizardSelection | null>(() => {
@@ -166,12 +195,18 @@ export function ThedourScreenWizard(props: Props) {
       material,
       openingType,
       fitting,
-      widthReadingsMm: numericWidths as [number, number, number],
-      heightReadingsMm: numericHeights as [number, number, number],
+      measurementMode,
+      widthReadingsMm: measurementMode === "opening" ? numericWidths as [number, number, number] : undefined,
+      heightReadingsMm: measurementMode === "opening" ? numericHeights as [number, number, number] : undefined,
       widthMm,
       heightMm,
+      widthBand: getWindourSizeBand(widthMm)?.id ?? "",
+      heightBand: getWindourSizeBand(heightMm)?.id ?? "",
       frameColor,
       materialColor,
+      duoPanelChoices: family === "windour" && system === "duo" ? duoPanelChoices as [string, string] : undefined,
+      additionalNotes: additionalNotes.trim(),
+      requiresCustomQuote: family === "windour" && system === "duo" && !isStandardWindourDuoChoice(duoPanelChoices),
     };
     const initialRoldourStillCompatible = family === "roldour" && props.initialFamily === "roldour" &&
       props.initialProductId?.startsWith("roldour-") &&
@@ -181,7 +216,7 @@ export function ThedourScreenWizard(props: Props) {
       ...base,
       mappedProductId: initialRoldourStillCompatible ? props.initialProductId! : chooseProduct(base),
     };
-  }, [direction, family, fitting, frameColor, heightMm, inSupportedRange, material, materialColor, numericHeights, numericWidths, openingType, props.initialFamily, props.initialProductId, system, widthMm]);
+  }, [additionalNotes, direction, duoPanelChoices, family, fitting, frameColor, heightMm, inSupportedRange, material, materialColor, measurementMode, numericHeights, numericWidths, openingType, props.initialFamily, props.initialProductId, system, widthMm]);
 
   useEffect(() => {
     props.onSelection(selection);
@@ -193,29 +228,59 @@ export function ThedourScreenWizard(props: Props) {
     setMeasurementError("");
   };
 
+  const toggleDuoPanelChoice = (choice: string) => {
+    setDuoChoiceError("");
+    if (duoPanelChoices.includes(choice)) {
+      setDuoPanelChoices(duoPanelChoices.filter((item) => item !== choice));
+    } else if (duoPanelChoices.length < 2) {
+      setDuoPanelChoices([...duoPanelChoices, choice]);
+      if (choice !== WINDOUR_PLEATED_NET) setMaterialColor(choice);
+    }
+  };
+
   const next = () => {
     if (step === 6 && !inSupportedRange) {
-      setMeasurementError(measurementsValid && maxMm !== null ? `Minnsta breidd og hæð mega ekki fara yfir ${maxMm} mm fyrir þessa vörufjölskyldu.` : "Skráðu öll sex málin sem jákvæðar tölur.");
+      setMeasurementError(measurementsValid && maxMm !== null
+        ? `Breidd og hæð mega ekki fara yfir ${maxMm} mm fyrir þessa vörufjölskyldu.`
+        : measurementMode === "outer-frame"
+          ? "Skráðu nákvæm ytri mál rammans sem jákvæðar tölur."
+          : "Skráðu öll sex mál opsins sem jákvæðar tölur.");
+      return;
+    }
+    if (step === 7 && family === "windour" && system === "duo" && duoPanelChoices.length !== 2) {
+      setDuoChoiceError("Veldu nákvæmlega tvo DUO-efnisfleti áður en þú heldur áfram.");
       return;
     }
     setStep((current) => Math.min(STEP_LABELS.length - 1, current + 1));
   };
 
+  const duoIsStandard = isStandardWindourDuoChoice(duoPanelChoices);
+  const duoPanelLabel = duoIsStandard
+    ? `${duoPanelChoices.find((choice) => choice !== WINDOUR_PLEATED_NET) ?? "Honeycomb"} + ${WINDOUR_PLEATED_NET}`
+    : duoPanelChoices.length ? duoPanelChoices.join(" + ") : "Engir efnisfletir valdir";
   const materialLabel = system === "duo"
-    ? "Myrkvun og flugnanet"
+    ? family === "windour" ? duoPanelLabel : "Myrkvun og flugnanet"
     : material === "honeycomb" ? "Myrkvunargardína" : "Flugnanet";
   const hasMaterialColour = family === "roldour" || system === "duo" || material === "honeycomb";
   const summaryText = selection ? [
     selection.family === "windour" ? "WINdoûr" : "ROLdoûr Slimline",
     selection.direction === "vertical" ? "lóðrétt (niður/upp)" : "lárétt (til hliðar)",
-    selection.system === "duo" ? "DUO · myrkvun + net" : `Single · ${materialLabel}`,
+    selection.system === "duo"
+      ? `DUO · ${selection.duoPanelChoices?.join(" + ") ?? "myrkvun + net"}`
+      : `Single · ${materialLabel}`,
     selection.openingType === "double" ? "tvöföld opnun · lágmark 1,2 m²" : "einföld opnun · lágmark 1 m²",
     selection.fitting === "recessed" ? "innfelld festing" : "utanáliggjandi / yfir op",
-    `hrá mæligildi breidd ${selection.widthReadingsMm.join("/")} mm`,
-    `hrá mæligildi hæð ${selection.heightReadingsMm.join("/")} mm`,
-    `minnsta mál ${selection.widthMm}×${selection.heightMm} mm`,
+    selection.widthReadingsMm ? `hrá mæligildi breidd ${selection.widthReadingsMm.join("/")} mm` : null,
+    selection.heightReadingsMm ? `hrá mæligildi hæð ${selection.heightReadingsMm.join("/")} mm` : null,
+    selection.measurementMode === "outer-frame"
+      ? `nákvæm YTRI RAMMAMÁL ${selection.widthMm}×${selection.heightMm} mm`
+      : `minnsta mál ops ${selection.widthMm}×${selection.heightMm} mm`,
+    `stærðarflokkar ${selection.widthBand} / ${selection.heightBand}`,
     `rammi ${selection.frameColor}`,
-    hasMaterialColour ? `efni ${selection.materialColor}` : null,
+    hasMaterialColour && !(family === "windour" && system === "duo") ? `efni ${selection.materialColor}` : null,
+    selection.duoPanelChoices ? `DUO fletir ${selection.duoPanelChoices.join(" + ")}` : null,
+    selection.additionalNotes ? `athugasemdir: ${selection.additionalNotes}` : null,
+    selection.requiresCustomQuote ? "sérval DUO · eingöngu fyrirspurn" : null,
     `vörukort ${selection.mappedProductId}`,
   ].filter(Boolean).join(" · ") : "";
 
@@ -247,30 +312,32 @@ export function ThedourScreenWizard(props: Props) {
           "Myrkvun eða flugnanet?",
           "Hvernig á opnunin að vera?",
           "Hvernig verður kerfið fest?",
-          "Mældu opið á sex stöðum",
+          measurementMode === "outer-frame" ? "Skráðu ytri mál fullbúins ramma" : "Mældu opið á sex stöðum",
           "Veldu liti",
           "Yfirlit og næstu skref",
         ][step]}
       </h2>
       <p className="mb-5 mt-2 text-xs leading-5 text-[#667984]" aria-live="polite">
-        {step === 2 && "DUO er myrkvun og net í einu kerfi. Það er ekki tvöföld opnun."}
+        {step === 2 && "DUO er tveggja flata kerfi. Það er ekki tvöföld opnun. Aðeins honeycomb + net styðst við núverandi verðlíkan."}
         {step === 5 && "Við skráum festinguna en breytum ekki málum eða framleiðslumáli sjálfkrafa."}
-        {step === 6 && "Mældu í millimetrum: breidd efst/miðja/neðst og hæð vinstri/miðja/hægri."}
+        {step === 6 && (measurementMode === "outer-frame"
+          ? "Skráðu nákvæma heildarbreidd og heildarhæð utanverðs ramma í millimetrum. Þetta eru ekki mál opsins."
+          : "Mældu opið í millimetrum: breidd efst/miðja/neðst og hæð vinstri/miðja/hægri.")}
       </p>
 
-      <ThedourStepHelp step={step} family={family} fitting={fitting} />
+       <ThedourStepHelp step={step} family={family} fitting={fitting} measurementMode={measurementMode} />
       <div className="space-y-2">
         {step === 0 && <p className="text-sm leading-6 text-[#344b59]">Þú ert að stilla {family === "windour" ? "WINdoûr-rammagardínu" : "ROLdoûr-rúllukerfi"}. Veldu Áfram til að velja opnunarstefnu, efni, mál og liti fyrir þetta kerfi.</p>}
         {step === 1 && <>
-          <Choice icon={<ArrowDownUp size={17} />} selected={direction === "vertical"} title="Lóðrétt — upp og niður" detail="Vertical · Hreyfist upp og niður." onClick={() => setDirection("vertical")} />
-          <Choice icon={<ArrowLeftRight size={17} />} selected={direction === "horizontal"} title="Lárétt — til hliðanna" detail="Horizontal · Opnast og lokast til hliðanna." onClick={() => setDirection("horizontal")} />
+          <Choice icon={<span className="flex h-8 w-6 flex-col justify-between border-2 border-[#667984] p-1"><span className="h-1 bg-[#8ca9b8]" /><ArrowDownUp size={12} /><span className="h-1 bg-[#8ca9b8]" /></span>} selected={direction === "vertical"} title="Lóðrétt — upp og niður" detail="Vertical opening · Fletirnir hreyfast upp og niður í rammanum." onClick={() => setDirection("vertical")} />
+          <Choice icon={<span className="flex h-6 w-8 items-center justify-between border-2 border-[#667984] p-1"><span className="h-full w-1 bg-[#8ca9b8]" /><ArrowLeftRight size={12} /><span className="h-full w-1 bg-[#8ca9b8]" /></span>} selected={direction === "horizontal"} title="Lárétt — til hliðanna" detail="Horizontal opening · Fletirnir hreyfast til hliðanna í rammanum." onClick={() => setDirection("horizontal")} />
         </>}
         {step === 2 && <>
           <Choice selected={system === "single"} title="Einföld lausn (Single)" detail="Aðeins myrkvunargardína eða aðeins flugnanet. Þú velur hvort í næsta skrefi." onClick={() => setSystem("single")} />
-          <Choice selected={system === "duo"} title="Gardína og flugnanet (DUO)" detail="Myrkvunargardína og flugnanet saman í einu kerfi." onClick={() => setSystem("duo")} />
+          <Choice selected={system === "duo"} title="Tveir efnisfletir (DUO)" detail="Veldu tvo ólíka fleti síðar. Honeycomb + net er staðlaða verðlagða samsetningin; annað sérval fer í fyrirspurn." onClick={() => setSystem("duo")} />
         </>}
         {step === 3 && (system === "duo" ? (
-          <div className="border border-[#9ebbd0] bg-[#eaf3f8] p-4 text-sm leading-6"><strong>DUO valið:</strong> myrkvun og flugnanet fylgja saman.</div>
+          <div className="border border-[#9ebbd0] bg-[#eaf3f8] p-4 text-sm leading-6"><strong>DUO valið:</strong> þú velur tvo ólíka efnisfleti í litaskrefinu. Honeycomb + fellt flugnanet samsvarar núverandi verðlíkani. Tvö honeycomb-efni eru skráð sem sérval í fyrirspurn.</div>
         ) : <>
           <Choice icon={<Moon size={17} />} selected={material === "honeycomb"} title="Myrkvunargardína" detail="Lokar birtu og veitir einangrun." onClick={() => setMaterial("honeycomb")} />
           <Choice icon={<Shield size={17} />} selected={material !== "honeycomb"} title="Flugnanet" detail="Hleypir lofti inn en heldur skordýrum úti." onClick={() => setMaterial("polyester-net")} />
@@ -285,6 +352,14 @@ export function ThedourScreenWizard(props: Props) {
         </>}
         {step === 6 && (
           <div>
+            {family === "windour" && <fieldset className="mb-5">
+              <legend className="mb-2 text-xs font-medium">Hvaða mál ertu að skrá?</legend>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <Choice selected={measurementMode === "opening"} title="Mál ops — sex mælingar" detail="Breidd og hæð opsins á þremur stöðum. Minnstu gildin eru notuð sem viðmiðun." onClick={() => { setMeasurementMode("opening"); setMeasurementError(""); }} />
+                <Choice selected={measurementMode === "outer-frame"} title="YTRI RAMMAMÁL — tvö nákvæm mál" detail="Heildarmál utanverðs fullbúins ramma. Enginn frádráttur eða viðbót er reiknuð." onClick={() => { setMeasurementMode("outer-frame"); setMeasurementError(""); }} />
+              </div>
+            </fieldset>}
+            {measurementMode === "opening" ? (<>
             {([
               ["Breidd (mm)", ["Efst", "Miðja", "Neðst"], widths, "width"],
               ["Hæð (mm)", ["Vinstri", "Miðja", "Hægri"], heights, "height"],
@@ -303,16 +378,74 @@ export function ThedourScreenWizard(props: Props) {
                 </div>
               </fieldset>
             ))}
-            {measurementsValid && <p className="bg-[#eef3f5] p-3 text-xs">Minnsta mælda mál: <strong>{widthMm} × {heightMm} mm</strong>. Öll hrá mæligildi fylgja fyrirspurn.</p>}
+            {measurementsValid && <p className="bg-[#eef3f5] p-3 text-xs">Minnsta mælda mál ops: <strong>{widthMm} × {heightMm} mm</strong>. Öll sex hrá mæligildi fylgja fyrirspurn.</p>}
+            </>) : (
+              <div className="space-y-4">
+                <div className="border border-[#d8c79f] bg-[#fffaf0] p-3 text-xs leading-5">
+                  <strong>Ytri rammi — ekki opnunarmál.</strong> Sláðu inn nákvæma heildarhæð og heildarbreidd frá ytri brún til ytri brúnar. Formið breytir þessum málum ekki.
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {([
+                    ["Heildarbreidd ytri ramma", outerWidth, setOuterWidth, "outer-width"],
+                    ["Heildarhæð ytri ramma", outerHeight, setOuterHeight, "outer-height"],
+                  ] as const).map(([label, value, setter, testId]) => (
+                    <label key={testId} className="text-xs font-medium">{label} (mm)
+                      <span className="relative mt-1 block"><Ruler size={14} className="absolute left-3 top-3.5" />
+                        <input data-testid={testId} aria-label={`${label} í millimetrum`} type="number" inputMode="numeric" min="1" max="2000" step="1" value={value}
+                          onChange={(event) => { setter(event.target.value); setMeasurementError(""); }}
+                          className="w-full border border-[#ccd9df] bg-transparent py-3 pl-9 pr-8 text-sm outline-none focus:border-[#24313b]" />
+                        <span className="absolute right-2 top-3 text-[10px]">mm</span>
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+            {measurementsValid && family === "windour" && <div className="mt-5 space-y-4">
+              {([["Hæðarflokkur", heightMm], ["Breiddarflokkur", widthMm]] as const).map(([label, mm]) => (
+                <fieldset key={label}>
+                  <legend className="mb-2 text-xs font-medium">{label} · sjálfvalið út frá {mm} mm</legend>
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                    {WINDOUR_SIZE_BANDS.map((band) => <span key={band.id}
+                      className={`border p-2 text-center text-[10px] ${getWindourSizeBand(mm)?.id === band.id ? "border-[#24313b] bg-[#e2edf1] font-medium" : "border-[#dde6ea] text-[#667984]"}`}>
+                      {band.label}{band.id === "up-to-1099" && props.initialProductId?.endsWith("-999") ? " · 999 vara: hámark 999 mm" : ""}
+                    </span>)}
+                  </div>
+                </fieldset>
+              ))}
+              {props.initialProductId?.endsWith("-999") && Math.max(widthMm, heightMm) > 999 && <p role="alert" className="border border-[#d8c79f] bg-[#fffaf0] p-3 text-xs leading-5">Þessi mál fara yfir 999 mm og eru því ekki samþykkt á 999 vörukortinu. Leiðsögnin hefur valið samsvarandi 2000 vörukort; opnaðu það til að halda áfram með verðáætlun.</p>}
+              <p className="text-xs leading-5 text-[#667984]">Stærðarflokkur er sjálfkrafa leiddur af nákvæma málinu. „Allt að 1099 mm“ er valflokkur birgis á 2000 vörukortinu; 999 vörukortið tekur aðeins mál allt að 999 mm. Mál 1000–1099 mm færast því á 2000 vörukort og eru ekki samþykkt á 999 vörukortinu.</p>
+            </div>}
             {measurementError && <p role="alert" className="mt-3 text-xs text-red-700">{measurementError}</p>}
           </div>
         )}
         {step === 7 && <>
           <Swatches label="Litur á álramma" options={THEDOUR_FRAME_COLOURS} value={frameColor} onChange={setFrameColor} />
-          {hasMaterialColour && <div className="pt-4"><Swatches label={system === "duo" ? "Litur / efni kerfis" : materialLabel}
+          {hasMaterialColour && (system !== "duo" || family === "roldour") && <div className="pt-4"><Swatches label={materialLabel}
             options={family === "roldour" ? THEDOUR_ROLDOUR_FABRIC_COLOURS : THEDOUR_HONEYCOMB_COLOURS}
             value={materialColor}
             onChange={setMaterialColor} /></div>}
+          {family === "windour" && system === "duo" && <fieldset className="pt-4">
+            <legend className="mb-2 text-[10px] uppercase tracking-[.18em]">DUO efnisfletir · veldu nákvæmlega 2</legend>
+            <p className="mb-3 text-xs leading-5 text-[#667984]">Veldu tvo ólíka fleti úr fjórum honeycomb-litum og felldu flugnaneti. Hver kostur er valinn í mesta lagi einu sinni; formið styður ekki magn af sama efni. Honeycomb + net samsvarar núverandi verðlíkani. Önnur samsetning fer eingöngu í fyrirspurn þar til verð er staðfest.</p>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+              {[...THEDOUR_HONEYCOMB_COLOURS, { name: WINDOUR_PLEATED_NET, image: "https://option.nyc3.digitaloceanspaces.com/files/34108/image-swatches-2_5_1737736998183-1741190634.jpg" }].map((option) => {
+                const selected = duoPanelChoices.includes(option.name);
+                return <button key={option.name} type="button" aria-pressed={selected} onClick={() => toggleDuoPanelChoice(option.name)}
+                  className={`flex min-h-14 items-center gap-2 border p-2 text-left text-[10px] ${selected ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>
+                  <ResponsiveImage src={option.image} alt="" sizes="36px" className="h-9 w-9 shrink-0 object-cover" />
+                  <span>{option.name}{selected ? ` · val ${duoPanelChoices.indexOf(option.name) + 1}` : ""}</span>
+                </button>;
+              })}
+            </div>
+            <p className={`mt-2 text-xs ${duoPanelChoices.length === 2 ? "text-[#526772]" : "text-red-700"}`}>{duoPanelChoices.length} af 2 valið{duoPanelChoices.length >= 2 ? " — afveldu eitt til að breyta." : "."}</p>
+            {duoChoiceError && <p role="alert" className="mt-2 text-xs text-red-700">{duoChoiceError}</p>}
+          </fieldset>}
+          <label className="block pt-4 text-[10px] uppercase tracking-[.18em]">Additional Instructions Notes / Viðbótarupplýsingar
+            <textarea value={additionalNotes} maxLength={2000} rows={4} onChange={(event) => setAdditionalNotes(event.target.value)}
+              placeholder="T.d. staðsetning, lokunarhlið, hindranir eða annað sem þarf að staðfesta."
+              className="mt-2 w-full resize-y border border-[#ccd9df] bg-transparent p-3 text-sm normal-case tracking-normal outline-none focus:border-[#24313b]" />
+          </label>
         </>}
         {step === 8 && selection && (
           <div className="space-y-4">
@@ -322,9 +455,14 @@ export function ThedourScreenWizard(props: Props) {
               {family === "windour" && <><dt className="text-[#667984]">Lágmarksverð</dt><dd>{getWindourMinimumChargeableSqm(openingType).toLocaleString("is-IS")} m² · ræðst af opnun, ekki DUO</dd></>}
               <dt className="text-[#667984]">Efni</dt><dd>{materialLabel}</dd>
               <dt className="text-[#667984]">Festing</dt><dd>{fitting === "recessed" ? "Innfelld" : "Utanáliggjandi / yfir op"}</dd>
-              <dt className="text-[#667984]">Mál</dt><dd>{widthMm} × {heightMm} mm (minnsta af þremur)</dd>
-              <dt className="text-[#667984]">Litir</dt><dd>{frameColor}{hasMaterialColour ? ` · ${materialColor}` : ""}</dd>
+              <dt className="text-[#667984]">Mæliaðferð</dt><dd>{measurementMode === "outer-frame" ? "Ytri mál fullbúins ramma" : "Sex mál opsins"}</dd>
+              <dt className="text-[#667984]">Mál</dt><dd>{widthMm} × {heightMm} mm {measurementMode === "opening" ? "(minnsta af þremur)" : "(utanverður rammi, óbreytt)"}</dd>
+              <dt className="text-[#667984]">Stærðarflokkar</dt><dd>Breidd {getWindourSizeBand(widthMm)?.label} · hæð {getWindourSizeBand(heightMm)?.label}</dd>
+              <dt className="text-[#667984]">Litir</dt><dd>{frameColor}{hasMaterialColour && !(family === "windour" && system === "duo") ? ` · ${materialColor}` : ""}</dd>
+              {selection.duoPanelChoices && <><dt className="text-[#667984]">DUO fletir</dt><dd>{selection.duoPanelChoices.join(" + ")}</dd></>}
+              {selection.additionalNotes && <><dt className="text-[#667984]">Athugasemdir</dt><dd className="whitespace-pre-wrap">{selection.additionalNotes}</dd></>}
             </dl>
+            {selection.requiresCustomQuote && <p className="border border-[#d8c79f] bg-[#fffaf0] p-3 text-xs leading-5">Þessi DUO samsetning er skráð í fyrirspurn en hefur ekki staðfest verðlíkan. Hún verður ekki sett í áætlunarkörfu.</p>}
             {fitting === "overlap" && <p className="border border-[#d8c79f] bg-[#fffaf0] p-3 text-xs leading-5">Utanáliggjandi festing er send til staðfestingar. Engin frádráttur eða skörun hefur verið ágiskuð og mælimál eru ekki notuð sem framleiðslumál.</p>}
             {family !== props.initialFamily && <Link href={`/products/${selection.mappedProductId}`} className="block border border-[#8ca9b8] px-4 py-3 text-center text-xs">Skoða samsvarandi vörusíðu</Link>}
             {props.summaryAction?.(selection)}

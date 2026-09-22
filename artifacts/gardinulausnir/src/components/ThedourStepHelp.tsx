@@ -1,9 +1,11 @@
 import { THEDOUR_WINDOUR_SOURCES, THEDOUR_ROLDOUR_SOURCES } from "@/lib/thedourProductOptions";
+import type { WindourMeasurementMode } from "@/lib/windourOrderOptions";
 
 type Props = {
   step: number;
   family: "windour" | "roldour";
   fitting: "recessed" | "overlap";
+  measurementMode?: WindourMeasurementMode;
 };
 
 /** A schematic of the opening, not a manufacturing or frame-profile drawing. */
@@ -27,7 +29,22 @@ function MeasurementDiagram() {
   );
 }
 
-export function ThedourStepHelp({ step, family, fitting }: Props) {
+function OuterFrameDiagram() {
+  return (
+    <figure className="my-4 rounded border border-[#ccd9df] bg-white p-3">
+      <svg viewBox="0 0 360 235" role="img" aria-label="Ytri breidd og ytri hæð fullbúins ramma, mælt frá ytri brún til ytri brúnar." className="mx-auto w-full max-w-sm">
+        <rect x="70" y="35" width="220" height="155" fill="#eaf3f8" stroke="#24313b" strokeWidth="10" />
+        <path d="M70 20 H290 M78 14 L70 20 L78 26 M282 14 L290 20 L282 26" stroke="#356582" fill="none" strokeWidth="2" />
+        <text x="180" y="14" textAnchor="middle" fontSize="12" fill="#24313b">Ytri breidd</text>
+        <path d="M52 35 V190 M46 43 L52 35 L58 43 M46 182 L52 190 L58 182" stroke="#356582" fill="none" strokeWidth="2" />
+        <text x="25" y="115" textAnchor="middle" fontSize="12" fill="#24313b" transform="rotate(-90 25 115)">Ytri hæð</text>
+      </svg>
+      <figcaption className="text-xs leading-5">Mældu frá ytri brún til ytri brúnar fullbúins ramma. Ekki slá inn gluggaopið í þessa reiti.</figcaption>
+    </figure>
+  );
+}
+
+export function ThedourStepHelp({ step, family, fitting, measurementMode = "opening" }: Props) {
   const copy = [
     {
       title: family === "windour" ? "Fellt efni í sérsmíðuðum ramma" : "Dúkur eða net sem rúllast í kassettu",
@@ -40,14 +57,18 @@ export function ThedourStepHelp({ step, family, fitting }: Props) {
       tips: ["Veldu hreyfingu sem er auðvelt að ná til og nota.", "Athugaðu hvort handfang, gluggakista eða opnanlegur gluggi geti rekist í ramma eða hreyfanlega hluta."],
     },
     {
-      title: "Einföld lausn (Single) eða gardína og net (DUO)",
-      text: "Þú getur valið einfalda myrkvunargardínu án flugnanets eða aðeins flugnanet án gardínu. Veldu Single fyrir annan hvorn kostinn. DUO sameinar myrkvun og flugnanet í sama kerfi.",
-      tips: ["Viltu aðeins myrkvun eða aðeins net? Veldu Single.", "Viltu bæði myrkvun og net? Veldu DUO.", "DUO segir ekki til um einfalda eða tvöfalda opnun. Það val kemur síðar."],
+      title: family === "windour" ? "Einn efnisflötur (Single) eða tveir (DUO)" : "Einföld lausn (Single) eða gardína og net (DUO)",
+      text: family === "windour"
+        ? "Single er einn honeycomb- eða netflötur. DUO er tveggja flata kerfi. Honeycomb + fellt flugnanet er staðlaða samsetningin sem núverandi verðlíkan styður; annað tveggja flata sérval er sent í fyrirspurn."
+        : "Þú getur valið einfalda myrkvunargardínu án flugnanets eða aðeins flugnanet án gardínu. Veldu Single fyrir annan hvorn kostinn. DUO sameinar myrkvun og flugnanet í sama kerfi.",
+      tips: family === "windour"
+        ? ["Veldu Single fyrir einn flöt.", "Veldu DUO fyrir tvo ólíka fleti; hver efnisvalkostur er valinn í mesta lagi einu sinni.", "DUO segir ekki til um einfalda eða tvöfalda opnun. Það val kemur síðar."]
+        : ["Viltu aðeins myrkvun eða aðeins net? Veldu Single.", "Viltu bæði myrkvun og net? Veldu DUO.", "DUO segir ekki til um einfalda eða tvöfalda opnun. Það val kemur síðar."],
     },
     {
       title: "Hvað á efnið að gera?",
       text: family === "windour" ? "Honeycomb-myrkvunarefnið er fellt efni með frumubyggingu. Flugnanet er annar valkostur, ekki myrkvunarefni." : "ROLdoûr notar inndraganlegan dúk eða net. Ekki rugla rúlludúknum saman við honeycomb-efni WINdoûr.",
-      tips: ["Myrkvun: til að draga úr birtu og auka næði.", "Flugnanet: til að halda skordýrum úti með opnum glugga; netið myrkvar ekki.", "Þegar DUO er valið fylgja báðir kostir. Þú þarft ekki að velja á milli þeirra."],
+      tips: ["Myrkvun: til að draga úr birtu og auka næði.", "Flugnanet: til að halda skordýrum úti með opnum glugga; netið myrkvar ekki.", family === "windour" ? "Í DUO velurðu tvo ólíka fleti í litaskrefinu. Aðeins honeycomb + net hefur staðfest verðlíkan." : "Þegar DUO er valið fylgja báðir kostir. Þú þarft ekki að velja á milli þeirra."],
     },
     {
       title: "Opnun er annað en DUO",
@@ -60,9 +81,13 @@ export function ThedourStepHelp({ step, family, fitting }: Props) {
       tips: ["Athugaðu dýpt, sléttan festiflöt og pláss við handföng og lamir.", "Ekki draga frá eða bæta við millimetrum sjálf/ur í þessu formi. Skráðu óbreytt mál opsins.", "Sendu mynd af opinu ef þú ert óviss. Við staðfestum prófíl, festipláss og lokamál áður en framleiðsla er samþykkt."],
     },
     {
-      title: "Svona mælirðu rétt",
-      text: "Notaðu málband og skráðu allar sex mælingarnar í heilum millimetrum. Haltu málbandinu beinu og mældu hverja vegalengd aftur til öryggis.",
-      tips: ["1. Mældu breidd opsins efst, í miðju og neðst.", "2. Mældu hæð opsins vinstra megin, í miðju og hægra megin.", "3. Skráðu hvert mál í réttan reit. Dæmi: 85 cm = 850 mm.", "4. Formið notar minnstu breidd og minnstu hæð sem viðmiðun. Þetta eru ekki staðfest framleiðslumál.", ...(fitting === "overlap" ? ["Utanáliggjandi festing: mældu samt opið hér. Við staðfestum skörun og ytri rammamál sérstaklega."] : ["Innfelld festing: mældu á þeim stað í opinu þar sem ramminn á að sitja."])],
+      title: measurementMode === "outer-frame" ? "Ytri mál fullbúins ramma" : "Svona mælirðu opið rétt",
+      text: measurementMode === "outer-frame"
+        ? "Veldu þessa leið aðeins þegar þú veist nákvæma heildarstærð rammans. Skráðu ytri breidd og ytri hæð í heilum millimetrum."
+        : "Notaðu málband og skráðu allar sex mælingarnar í heilum millimetrum. Haltu málbandinu beinu og mældu hverja vegalengd aftur til öryggis.",
+      tips: measurementMode === "outer-frame"
+        ? ["Mældu frá ytri brún til ytri brúnar rammans.", "Þetta eru ekki opnunarmál og formið reiknar hvorki frádrátt né viðbót.", "Stærðarflokkar eru sjálfkrafa valdir út frá nákvæmu málunum.", "Lokamál eru staðfest áður en framleiðsla hefst."]
+        : ["1. Mældu breidd opsins efst, í miðju og neðst.", "2. Mældu hæð opsins vinstra megin, í miðju og hægra megin.", "3. Skráðu hvert mál í réttan reit. Dæmi: 85 cm = 850 mm.", "4. Formið notar minnstu breidd og minnstu hæð sem viðmiðun. Þetta eru ekki staðfest framleiðslumál.", ...(fitting === "overlap" ? ["Utanáliggjandi festing: mældu samt opið hér. Við staðfestum skörun og ytri rammamál sérstaklega."] : ["Innfelld festing: mældu á þeim stað í opinu þar sem ramminn á að sitja."])],
     },
     {
       title: "Rammi og efni eru valin hvort í sínu lagi",
@@ -81,7 +106,7 @@ export function ThedourStepHelp({ step, family, fitting }: Props) {
     <aside aria-label="Leiðbeiningar fyrir þetta skref" className="mb-5 rounded border border-[#ccd9df] bg-[#f4f7f8] p-4 text-sm leading-6 text-[#344b59]">
       <h3 className="font-medium text-[#24313b]">{copy.title}</h3>
       <p className="mt-2">{copy.text}</p>
-      {step === 6 && <MeasurementDiagram />}
+      {step === 6 && (measurementMode === "outer-frame" ? <OuterFrameDiagram /> : <MeasurementDiagram />)}
       <ul className="mt-3 list-disc space-y-2 pl-5">{copy.tips.map(tip => <li key={tip}>{tip}</li>)}</ul>
       <details className="mt-4 border-t border-[#ccd9df] pt-3">
         <summary className="cursor-pointer text-xs font-medium">Leiðbeiningar og myndbönd frá Thedoûr</summary>
