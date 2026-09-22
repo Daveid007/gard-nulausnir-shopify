@@ -134,7 +134,8 @@ assert.equal(resolveProductCategory({ id: "unmapped", category: "Flugnanet og ra
 assert.equal(resolveProductCategory({ id: "unmapped", tags: ["roller-blinds"] }), "roller");
 assert.equal(resolveProductCategory({ id: "not-a-roller-product", title: "Roller-like" }), null);
 assert.equal(categoryLabel("honeycomb"), "Myrkvunargardínur");
-assert.equal(categoryLabel("windour-single"), "Ramma rúllugardínur");
+assert.equal(categoryLabel("windour-single"), "Rammagardínur");
+assert.equal(resolveProductCategory({ id: "unmapped", category: "Rammagardínur" }), "windour-single");
 assert.equal(categoryLabel("windour-duo"), "Ramma flugnanet og myrkvunargardínur");
 assert.equal(categoryLabel("curtains"), "Gluggatjöld");
 assert.equal(categoryLabel("thedour-doors"), "Flugnanet og rammar");

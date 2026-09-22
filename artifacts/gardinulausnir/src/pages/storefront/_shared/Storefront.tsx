@@ -18,7 +18,7 @@ const categoryLinks = [
   ["Lóðréttar vefgardínur", collectionHref("vertical-sheer")],
   ["Sheer Shades", collectionHref("sheer-shades")],
   ["Fiðrildagardínur", collectionHref("butterfly")],
-  ["Ramma rúllugardínur", collectionHref("windour-single")],
+  ["Rammagardínur", collectionHref("windour-single")],
   ["Ramma flugnanet og myrkvunargardínur", collectionHref("windour-duo")],
   ["Flugnanet og rammar", collectionHref("thedour-doors")],
 ] as const;

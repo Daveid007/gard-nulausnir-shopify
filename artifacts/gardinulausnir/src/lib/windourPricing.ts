@@ -170,7 +170,7 @@ export function validateWindourInput(input: WindourQuoteInput): WindourInputErro
   if (config.kind === "single") {
     const selectedMaterial = input.material;
     if (!selectedMaterial || !WINDOUR_MATERIAL_OPTIONS.some((option) => option.value === selectedMaterial)) {
-       errors.material = "Veldu eitt efni fyrir Ramma rúllugardínur.";
+       errors.material = "Veldu eitt efni fyrir Rammagardínur.";
     }
   }
 
