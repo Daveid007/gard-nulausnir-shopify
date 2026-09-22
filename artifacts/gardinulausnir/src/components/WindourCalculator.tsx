@@ -244,7 +244,7 @@ function WindourCalculatorBody({ product }: { product: WindourProduct; }) {
 
   const selectedMaterial = WINDOUR_MATERIAL_OPTIONS.find((option) => option.value === material) ?? WINDOUR_MATERIAL_OPTIONS[0];
   const inquiryContext = [
-    `${config.kind === "duo" ? "Ramma flugnanet og myrkvunargardínur" : "Ramma rúllugardínur"} ${config.tier}`,
+    `${config.kind === "duo" ? "Ramma flugnanet og myrkvunargardínur" : "Rammagardínur"} ${config.tier}`,
     `${widthCm}×${heightCm} cm`,
     quote?.materialLabel ?? selectedMaterial.label,
     openingType === "double" ? "tvöföld opnun" : "einföld opnun",

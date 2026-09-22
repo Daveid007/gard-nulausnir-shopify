@@ -475,7 +475,7 @@ export function describeCartItem(item: CartItem): { title: string; sub: string }
     : "";
   if (item.type === "windour") {
     const tier = item.productId.endsWith("-999") ? "999" : "2000";
-    const kind = item.productId.includes("-duo-") ? "Ramma flugnanet og myrkvunargardínur" : "Ramma rúllugardínur";
+    const kind = item.productId.includes("-duo-") ? "Ramma flugnanet og myrkvunargardínur" : "Rammagardínur";
     return {
       title: `${kind} ${tier} · ÁÆTLUN`,
       sub: `${item.widthCm}×${item.heightCm} cm · ${item.materialLabel} · ${item.openingType === "double" ? "tvöföld opnun" : "einföld opnun"} · ${item.openingDirection === "vertical" ? "lóðrétt (upp/niður)" : "lárétt (til hliðar)"} · ${item.fitting === "overlap" ? "utanáliggjandi / yfir op" : "innfelld"}${item.widthReadingsMm && item.heightReadingsMm ? ` · hrá mál B ${item.widthReadingsMm.join("/")} mm, H ${item.heightReadingsMm.join("/")} mm` : ""} · rammi: ${item.frameColor ?? "óvalinn"}${item.material === "honeycomb" ? ` · honeycomb: ${item.materialColor ?? "óvalinn"}` : ""} · ${item.chargeableSqm.toFixed(2)} m² · ${item.quoteExpiresInDays} daga provisional quote (${item.quoteExpiryLabel}) · staðfesting birgis vantar`,

@@ -90,7 +90,7 @@ function CollectionGuidanceDialog({
         </DialogClose>
         <DialogClose asChild>
           <Link className={dialogLinkClass} href="/collection#windour-single">
-            Ramma rúllugardínur
+            Rammagardínur
           </Link>
         </DialogClose>
         <DialogClose asChild>

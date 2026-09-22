@@ -246,7 +246,7 @@ assert.equal(validateWindourInput({
   widthCm: 50,
   heightCm: 50,
   quantity: 1,
-}).material, "Veldu eitt efni fyrir Ramma rúllugardínur.");
+}).material, "Veldu eitt efni fyrir Rammagardínur.");
 assert.ok(validateWindourInput({
   productId: "windour-duo-999",
   widthCm: 50,

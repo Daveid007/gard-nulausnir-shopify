@@ -86,9 +86,9 @@ export const COLLECTION_CATEGORY_DEFINITIONS: readonly CollectionCategoryDefinit
   },
   {
     key: "windour-single",
-    label: "Ramma rúllugardínur",
-    english: "RAMMA RÚLLUGARDÍNUR",
-    description: "Myrkvun eða net. Veldu á milli 999 og 2000.",
+    label: "Rammagardínur",
+    english: "RAMMAGARDÍNUR",
+    description: "Meira en gardína — eins og húsgagn í rýminu. Sérsmíðaður rammi með myrkvun eða flugnaneti.",
     hash: "windour-single",
   },
   {
@@ -227,6 +227,8 @@ const categoryByToken = new Map<string, CollectionCategoryKey>([
   ["einfold-rullugardina", "windour-single"],
   ["ramma-rullugardina", "windour-single"],
   ["ramma-rullugardinur", "windour-single"],
+  ["rammagardina", "windour-single"],
+  ["rammagardinur", "windour-single"],
 
   ["windour-duo", "windour-duo"],
   ["category-windour-duo", "windour-duo"],

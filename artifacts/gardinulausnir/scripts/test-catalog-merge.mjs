@@ -104,9 +104,10 @@ assert.equal(direct.secondary, "https://shopify.test/direct-secondary.jpg");
 
 const collectionProduct = catalog.products.find(({ id }) => id === "windour-single-999");
 assert.ok(collectionProduct);
-assert.equal(collectionProduct.title, "Ramma rúllugardínur 999");
-assert.equal(collectionProduct.category, "Ramma rúllugardínur");
-assert.equal(collectionProduct.subtitle, "Álfilmu-einangruð myrkvun eða net");
+assert.equal(collectionProduct.title, "Rammagardínur 999");
+assert.equal(collectionProduct.category, "Rammagardínur");
+assert.match(collectionProduct.subtitle, /eins og húsgagn/);
+assert.equal(collectionProduct.subtitle, "Meira en gardína — eins og húsgagn í rýminu.");
 assert.equal(collectionProduct.price, currency.format(98765));
 assert.equal(collectionProduct.image, "https://shopify.test/collection-primary.jpg");
 assert.equal(collectionProduct.secondary, "https://shopify.test/collection-secondary.jpg");

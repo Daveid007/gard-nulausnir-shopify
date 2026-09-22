@@ -20,7 +20,7 @@ const collections = [
   { id: "sheer-shades", href: `${collectionHref}#sheer-shades`, title: "Sheer Shades", description: "Láréttar Sheer Shades fyrir stillanlega dagsbirtu og næði.", image: "" },
   { id: "butterfly", href: `${collectionHref}#butterfly`, title: "Fiðrildagardínur", description: "Lárétt Butterfly-kerfi með mjúkri ljósstýringu.", image: "" },
   { id: "vertical-sheer", href: `${collectionHref}#vertical-sheer-shades`, title: "Lóðréttar vefgardínur", description: "Vertical Sheer Shades / Dream Shades · 17 efni.", image: new URL("../../assets/vertical-sheer-shades/cases/Vertical sheer shades (2).jpg", import.meta.url).href },
-  { id: "windour-single", href: `${collectionHref}#windour-single`, title: "Ramma rúllugardínur", description: "Myrkvun eða net · 999 og 2000.", image: "https://cdn.shopify.com/s/files/1/0513/7589/8773/files/Gemini_Generated_Image_pg9wzppg9wzppg9w.png?v=1768448444" },
+  { id: "windour-single", href: `${collectionHref}#windour-single`, title: "Rammagardínur", description: "Meira en gardína — eins og húsgagn í rýminu.", image: "https://cdn.shopify.com/s/files/1/0513/7589/8773/files/Gemini_Generated_Image_pg9wzppg9wzppg9w.png?v=1768448444" },
   { id: "windour-duo", href: `${collectionHref}#windour-duo`, title: "Ramma flugnanet og myrkvunargardínur", description: "Myrkvun og net saman · 999 og 2000.", image: "https://cdn.shopify.com/s/files/1/0513/7589/8773/files/7953253b-19aa-4e2d-8210-5909e63fb0f0.jpg?v=1768840303" },
   { id: "thedour-doors", href: `${collectionHref}#thedour-doors`, title: "Flugnanet og rammar", description: "Flugnanet fyrir hurðir sem halda skordýrum úti.", image: "https://cdn.shopify.com/s/files/1/0513/7589/8773/files/e6f45daa-cfd5-408a-88fe-c5eafba3034b.jpg?v=1769688238" },
 ] as const;
