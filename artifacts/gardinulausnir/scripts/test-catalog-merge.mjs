@@ -76,6 +76,15 @@ const catalog = mergeCatalog({
                 image("https://shopify.test/collection-secondary.jpg"),
               ],
             }),
+            product({
+              handle: "windour-duo-2000",
+              productType: "Windour Duo",
+              amount: 112233,
+              images: [
+                image("https://shopify.test/duo-primary.jpg"),
+                image("https://shopify.test/duo-secondary.jpg"),
+              ],
+            }),
           ],
         },
       },
@@ -83,7 +92,7 @@ const catalog = mergeCatalog({
   },
 });
 
-assert.equal(catalog.liveCount, 4);
+assert.equal(catalog.liveCount, 5);
 
 const direct = catalog.products.find(({ id }) => id === "honeycomb-45mm");
 assert.ok(direct);
@@ -95,11 +104,21 @@ assert.equal(direct.secondary, "https://shopify.test/direct-secondary.jpg");
 
 const collectionProduct = catalog.products.find(({ id }) => id === "windour-single-999");
 assert.ok(collectionProduct);
-assert.equal(collectionProduct.title, "Einfaldar Rúllugardínur 999");
+assert.equal(collectionProduct.title, "Ramma rúllugardínur 999");
+assert.equal(collectionProduct.category, "Ramma rúllugardínur");
 assert.equal(collectionProduct.subtitle, "Álfilmu-einangruð myrkvun eða net");
 assert.equal(collectionProduct.price, currency.format(98765));
 assert.equal(collectionProduct.image, "https://shopify.test/collection-primary.jpg");
 assert.equal(collectionProduct.secondary, "https://shopify.test/collection-secondary.jpg");
+
+const duoCollectionProduct = catalog.products.find(({ id }) => id === "windour-duo-2000");
+assert.ok(duoCollectionProduct);
+assert.equal(duoCollectionProduct.title, "Ramma flugnanet og myrkvunargardínur 2000");
+assert.equal(duoCollectionProduct.category, "Ramma flugnanet og myrkvunargardínur");
+assert.equal(duoCollectionProduct.subtitle, "Einangruð myrkvun og flugnanet");
+assert.equal(duoCollectionProduct.price, currency.format(112233));
+assert.equal(duoCollectionProduct.image, "https://shopify.test/duo-primary.jpg");
+assert.equal(duoCollectionProduct.secondary, "https://shopify.test/duo-secondary.jpg");
 
 const curtainProduct = catalog.products.find(({ id }) => id === "curtains-2828");
 assert.ok(curtainProduct);

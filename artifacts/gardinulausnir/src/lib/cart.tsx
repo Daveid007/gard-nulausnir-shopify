@@ -16,8 +16,11 @@ import { normalizeQuantity } from "./quantity";
 import {
   calculateWindourQuote,
   isWindourProductId,
+  WINDOUR_QUOTE_EXPIRY_LABEL,
   WINDOUR_QUOTE_VALID_DAYS,
   type WindourMaterial,
+  type WindourOpeningDirection,
+  type WindourOpeningType,
   type WindourProductId,
 } from "./windourPricing";
 import {
@@ -31,6 +34,10 @@ import {
   quoteRollerWorkbookBlind,
   type RollerWorkbookQuoteInput,
 } from "./rollerWorkbookPricing";
+import {
+  isThedourFrameColour,
+  isThedourHoneycombColour,
+} from "./thedourProductOptions";
 
 export const HOLDER_USD = 5.0;
 
@@ -218,6 +225,14 @@ export type WindourCartItem = {
   heightCm: number;
   material: WindourMaterial;
   materialLabel: string;
+  openingType: WindourOpeningType;
+  openingDirection: WindourOpeningDirection;
+  frameColor?: string;
+  materialColor?: string;
+  fitting?: "recessed" | "overlap";
+  widthReadingsMm?: [number, number, number];
+  heightReadingsMm?: [number, number, number];
+  sourceUrl?: string;
   supplierUsdPerSqm: number;
   chargeableSqm: number;
   unitIsk: number;
@@ -320,6 +335,8 @@ export function priceLineIsk(item: CartItem): number {
       heightCm: item.heightCm,
       quantity: item.qty,
       material: item.material,
+      openingType: item.openingType,
+      openingDirection: item.openingDirection,
     });
     return quote ? quote.unitIsk * item.qty : 0;
   }
@@ -360,6 +377,8 @@ export function priceCartItem(item: CartItem): number {
       heightCm: item.heightCm,
       quantity: 1,
       material: item.material,
+      openingType: item.openingType,
+      openingDirection: item.openingDirection,
     });
     return quote?.totalUsd ?? 0;
   }
@@ -456,10 +475,10 @@ export function describeCartItem(item: CartItem): { title: string; sub: string }
     : "";
   if (item.type === "windour") {
     const tier = item.productId.endsWith("-999") ? "999" : "2000";
-    const kind = item.productId.includes("-duo-") ? "Tvískiptar Rúllugardínur (Duo)" : "Einfaldar Rúllugardínur";
+    const kind = item.productId.includes("-duo-") ? "Ramma flugnanet og myrkvunargardínur" : "Ramma rúllugardínur";
     return {
       title: `${kind} ${tier} · ÁÆTLUN`,
-      sub: `${item.widthCm}×${item.heightCm} cm · ${item.materialLabel} · ${item.chargeableSqm.toFixed(2)} m² · ${item.quoteExpiresInDays} daga provisional quote (${item.quoteExpiryLabel}) · staðfesting birgis vantar`,
+      sub: `${item.widthCm}×${item.heightCm} cm · ${item.materialLabel} · ${item.openingType === "double" ? "tvöföld opnun" : "einföld opnun"} · ${item.openingDirection === "vertical" ? "lóðrétt (upp/niður)" : "lárétt (til hliðar)"} · ${item.fitting === "overlap" ? "utanáliggjandi / yfir op" : "innfelld"}${item.widthReadingsMm && item.heightReadingsMm ? ` · hrá mál B ${item.widthReadingsMm.join("/")} mm, H ${item.heightReadingsMm.join("/")} mm` : ""} · rammi: ${item.frameColor ?? "óvalinn"}${item.material === "honeycomb" ? ` · honeycomb: ${item.materialColor ?? "óvalinn"}` : ""} · ${item.chargeableSqm.toFixed(2)} m² · ${item.quoteExpiresInDays} daga provisional quote (${item.quoteExpiryLabel}) · staðfesting birgis vantar`,
     };
   }
   if (item.type === "roller-workbook") {
@@ -558,6 +577,11 @@ function isFiniteNumber(v: unknown): v is number {
   return typeof v === "number" && Number.isFinite(v);
 }
 
+function isPositiveMeasurementTriple(value: unknown): value is [number, number, number] {
+  return Array.isArray(value) && value.length === 3 &&
+    value.every((reading) => isFiniteNumber(reading) && reading > 0);
+}
+
 function hasAuthoritativeRate(item: CartItem): boolean {
   if (item.type === "honeycomb") {
     return honeycombSupplierRate(item.fabricCode, 45) === item.fabricUsdPerSqm;
@@ -636,7 +660,8 @@ function migrateCartItem(raw: unknown): CartItem | null {
     ) return null;
     const qty = normalizeQuantity(item.qty);
     const quote = quoteRollerWorkbookBlind({ ...item.configuration, quantity: qty });
-    if (!quote.ok || quote.fabric.name !== item.fabricName) return null;
+    if (!quote.ok) return null;
+    if (quote.fabric.name !== item.fabricName) return null;
     return {
       id: item.id,
       type: "roller-workbook",
@@ -657,6 +682,13 @@ function migrateCartItem(raw: unknown): CartItem | null {
       !isFiniteNumber(item.heightCm) || item.heightCm <= 0 ||
       (item.material !== "honeycomb" && item.material !== "polyester-net" && item.material !== "taiwan-pet-net") ||
       typeof item.materialLabel !== "string" ||
+      (item.openingType !== "single" && item.openingType !== "double") ||
+      (item.openingDirection !== "horizontal" && item.openingDirection !== "vertical") ||
+      (item.fitting !== undefined && item.fitting !== "recessed" && item.fitting !== "overlap") ||
+      (item.widthReadingsMm !== undefined && !isPositiveMeasurementTriple(item.widthReadingsMm)) ||
+      (item.heightReadingsMm !== undefined && !isPositiveMeasurementTriple(item.heightReadingsMm)) ||
+      !isThedourFrameColour(item.frameColor) ||
+      (item.material === "honeycomb" && !isThedourHoneycombColour(item.materialColor)) ||
       !isFiniteNumber(item.supplierUsdPerSqm) ||
       !isFiniteNumber(item.chargeableSqm) ||
       !isFiniteNumber(item.unitIsk) ||
@@ -671,10 +703,24 @@ function migrateCartItem(raw: unknown): CartItem | null {
       heightCm: item.heightCm,
       quantity: normalizeQuantity(item.qty as number),
       material: item.material,
+      openingType: item.openingType,
+      openingDirection: item.openingDirection,
     });
-    if (!quote || quote.unitIsk !== item.unitIsk) return null;
-    item.qty = normalizeQuantity(item.qty as number);
-    return finalizeMigratedItem(item as unknown as WindourCartItem & CartPricingMetadata, item);
+    if (
+      !quote ||
+      quote.materialLabel !== item.materialLabel
+    ) return null;
+    return {
+      ...(item as unknown as WindourCartItem & CartPricingMetadata),
+      qty: quote.quantity,
+      supplierUsdPerSqm: quote.supplierUsdPerSqm,
+      chargeableSqm: quote.chargeableSqm,
+      unitIsk: quote.unitIsk,
+      quoteExpiresInDays: WINDOUR_QUOTE_VALID_DAYS,
+      quoteExpiryLabel: WINDOUR_QUOTE_EXPIRY_LABEL,
+      pricingVersion: 2,
+      needsReconfigure: false,
+    };
   }
   if (item.type === "vertical-sheer") {
     if (

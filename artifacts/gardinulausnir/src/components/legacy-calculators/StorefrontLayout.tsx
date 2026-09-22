@@ -16,6 +16,7 @@ export function StorefrontLayout({
     priceRounding = "exact",
    priceText,
    priceLabel,
+  action,
 }: {
   product: any;
   priceISK: number;
@@ -29,6 +30,7 @@ export function StorefrontLayout({
    priceRounding?: "hundred-ceil" | "exact";
    priceText?: string;
    priceLabel?: string;
+   action?: ReactNode;
 }) {
   const [imageView, setImageView] = useState<"primary" | "secondary">("primary");
   const [openDetail, setOpenDetail] = useState<string | null>("Efni & ljós");
@@ -152,10 +154,10 @@ export function StorefrontLayout({
         <div className="flex items-center gap-3 py-6 border-b border-[#ccd9df]">
           <div className="flex h-[51px] items-center border border-[#ccd9df]">
             <button type="button" onClick={() => changeQuantity(safeQuantity - 1)} className="grid h-full w-10 place-items-center" aria-label="Fækka fjölda" disabled={safeQuantity <= 1}><Minus size={14} /></button>
-            <span className="w-7 text-center text-sm" aria-live="polite">{safeQuantity}</span>
+            <span data-testid="quantity-value" className="w-7 text-center text-sm" aria-live="polite">{safeQuantity}</span>
             <button type="button" onClick={() => changeQuantity(safeQuantity + 1)} className="grid h-full w-10 place-items-center" aria-label="Auka fjölda" disabled={safeQuantity >= 99}><Plus size={14} /></button>
           </div>
-          <button type="button" onClick={onAddToCart} disabled={!canAddToCart} data-testid="add-to-cart" className="flex h-[51px] flex-1 items-center justify-center gap-3 bg-[#a2c2e2] text-[10px] uppercase tracking-[.2em] transition hover:bg-[#89b0d5] text-[#24313b] font-medium disabled:cursor-not-allowed disabled:opacity-45">Bæta í körfu <ShoppingBag size={15} /></button>
+          {action ?? <button type="button" onClick={onAddToCart} disabled={!canAddToCart} data-testid="add-to-cart" className="flex h-[51px] flex-1 items-center justify-center gap-3 bg-[#a2c2e2] text-[10px] uppercase tracking-[.2em] transition hover:bg-[#89b0d5] text-[#24313b] font-medium disabled:cursor-not-allowed disabled:opacity-45">Bæta í körfu <ShoppingBag size={15} /></button>}
         </div>
         
         <div id="upplýsingar" className="mt-4">

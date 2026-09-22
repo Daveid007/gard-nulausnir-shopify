@@ -28,7 +28,7 @@ export function CurtainsProductDetail({ productId = GLUGGATJOLD_1000_ID }: { pro
 
   return (
     <div className="solmyrkvun-grid min-h-screen bg-[#f7f9fa] text-[#24313b]">
-      <Header categoryNav showCart={false} />
+      <Header categoryNav showCart={false} businessContext={product.title} />
       <main>
         <div className="mx-auto flex max-w-[1480px] items-center justify-between px-5 pb-5 pt-7 md:px-10 md:pb-8 md:pt-10">
           <Link href="/collection#curtains" className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[.18em] text-[#667984]">

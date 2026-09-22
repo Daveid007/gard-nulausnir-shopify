@@ -212,9 +212,6 @@ function VerticalSheerCalculatorBody({ product }: { product: Product }) {
                 {quote ? formatIsk(quote.unitIsk) : "—"}
               </p>
             </div>
-            <div role="note" className="mt-4 border border-[#e3c99f] bg-[#fff8ec] px-3 py-3 text-[10px] leading-5 text-[#79572f]">
-              <strong>Áætlað verð — mæling þarf staðfestingu.</strong> Birgjablaðið nefnir 20 mm innfellda frádrátt í leiðbeiningatexta, en vistuð verðformúla notar J×25,4−5 mm fyrir breidd og óbreytta hæð. Hér er aðeins vistuð formúla notuð; staðfestu mál við ráðgjafa áður en pöntun er lögð.
-            </div>
           </div>
 
           <section className="border-b border-[#ccd9df] py-6" aria-labelledby="vertical-sheer-fabric-heading">
@@ -232,6 +229,7 @@ function VerticalSheerCalculatorBody({ product }: { product: Product }) {
                     const first = VERTICAL_SHEER_FABRICS.find((fabric) => fabric.type === type);
                     if (first) setFabricCode(first.code);
                   }}
+                   aria-pressed={activeType === type}
                   className={`border px-3 py-3 text-left text-[10px] ${activeType === type ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}
                 >
                   {fabricTypeLabel(type)}
@@ -246,6 +244,7 @@ function VerticalSheerCalculatorBody({ product }: { product: Product }) {
                   type="button"
                   onClick={() => setFabricCode(fabric.code)}
                   aria-label={`Velja ${fabric.name} ${fabric.code}`}
+                   aria-pressed={fabric.code === fabricCode}
                   className={`group overflow-hidden border text-left ${fabric.code === fabricCode ? "border-[#24313b]" : "border-[#ccd9df]"}`}
                 >
                   <span className="relative block aspect-square bg-white">

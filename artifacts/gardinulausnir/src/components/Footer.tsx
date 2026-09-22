@@ -90,12 +90,12 @@ function CollectionGuidanceDialog({
         </DialogClose>
         <DialogClose asChild>
           <Link className={dialogLinkClass} href="/collection#windour-single">
-            Einfaldar Rúllugardínur
+            Ramma rúllugardínur
           </Link>
         </DialogClose>
         <DialogClose asChild>
           <Link className={dialogLinkClass} href="/collection#windour-duo">
-            Tvískiptar Rúllugardínur (Duo)
+            Ramma flugnanet og myrkvunargardínur
           </Link>
         </DialogClose>
       </div>

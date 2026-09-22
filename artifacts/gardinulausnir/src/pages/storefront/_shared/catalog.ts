@@ -82,9 +82,11 @@ function mergeLiveProduct(live: ShopifyProduct, fallback: Product, category: Col
 
 export function mergeCatalog(catalog: ShopifyCatalogResponse): { products: Product[]; liveCount: number } {
   const result = new Map(verifiedProducts.map((product) => [product.id, product]));
-  const byHandle = new Map(
-    verifiedProducts.map((product) => [product.shopifyHandle ?? product.id, product]),
-  );
+  const byHandle = new Map<string, Product>();
+  for (const product of verifiedProducts) {
+    byHandle.set(product.id, product);
+    if (product.shopifyHandle) byHandle.set(product.shopifyHandle, product);
+  }
   let liveCount = 0;
 
   const merge = (live: ShopifyProduct, collection?: ShopifyCollection) => {

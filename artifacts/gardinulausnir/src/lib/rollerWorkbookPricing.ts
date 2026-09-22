@@ -67,7 +67,7 @@ export interface RollerWorkbookQuoteInput {
   /** Defaults to false. Butterfly blinds cannot use it. */
   noDrill?: boolean;
   mountPosition: MountPosition;
-  /** Defaults to none. Track choices vary by family. */
+  /** Required and non-none for roller; defaults to none for the other families. */
   track?: SideTrack;
   /** Required because the source workbook makes a cassette selection. */
   cassette: string;

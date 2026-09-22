@@ -61,6 +61,7 @@ for (const fabric of pricing.rollerWorkbookFabrics) {
     operation: "manual",
     manualControl: "cord",
     mountPosition: "outside",
+    track: validTrack[fabric.family],
     cassette: "Square with fabric inserted",
   };
   const expected = pricing.quoteRollerWorkbookBlind(input);
@@ -94,12 +95,13 @@ const sourceFixture = pricing.quoteRollerWorkbookBlind({
   operation: "manual",
   manualControl: "plastic-chain",
   mountPosition: "inside",
-  track: "none",
+  track: "u-white",
   cassette: "Square with fabric inserted",
 });
 assert.equal(sourceFixture.ok, true);
-assert.ok(Math.abs(sourceFixture.supplier.unitUsd - 33.1363995678041) < 1e-12);
-assert.ok(Math.abs(sourceFixture.supplier.totalUsd - 66.2727991356082) < 1e-12);
+assert.ok(Math.abs(sourceFixture.supplier.unitUsd - 53.4563995678041) < 1e-12);
+assert.ok(Math.abs(sourceFixture.supplier.totalUsd - 106.9127991356082) < 1e-12);
+assert.equal(sourceFixture.supplier.trackUsd, 20.32, "U track is charged once for both sides");
 assert.equal(sourceFixture.effectiveWidthMm, 1265);
 const retailFactor = 2 * (1 / 0.6) * 121.16 * 1.24;
 assert.equal(sourceFixture.retail.unitIsk, Math.round(sourceFixture.supplier.unitUsd * retailFactor));
@@ -179,6 +181,7 @@ const manualRemote = pricing.quoteRollerWorkbookBlind({
   manualControl: "cord",
   remote: true,
   mountPosition: "outside",
+  track: "u-white",
   cassette: "Arc with fabric inserted",
 });
 assert.equal(manualRemote.ok, false);
@@ -194,6 +197,7 @@ const motorHub = pricing.quoteRollerWorkbookBlind({
   motorType: "battery-standard",
   hub: true,
   mountPosition: "outside",
+  track: "l-black",
   cassette: "Arc with fabric inserted",
 });
 assert.equal(motorHub.ok, true);
@@ -208,6 +212,7 @@ const manualHub = pricing.quoteRollerWorkbookBlind({
   manualControl: "cord",
   hub: true,
   mountPosition: "outside",
+  track: "u-grey",
   cassette: "Arc with fabric inserted",
 });
 assert.equal(manualHub.ok, false);
@@ -222,9 +227,89 @@ const tooManyBlinds = pricing.quoteRollerWorkbookBlind({
   operation: "manual",
   manualControl: "cord",
   mountPosition: "outside",
+  track: "l-white",
   cassette: "Arc with fabric inserted",
 });
 assert.equal(tooManyBlinds.ok, false);
 assert.match(tooManyBlinds.errors.join(" "), /no greater than 99/);
+
+for (const track of [undefined, "none"]) {
+  const optionalTrackQuote = pricing.quoteRollerWorkbookBlind({
+    family: "roller",
+    fabricCode: "RS-TSD2265-2",
+    widthCm: 100,
+    heightCm: 120,
+    quantity: 1,
+    operation: "manual",
+    manualControl: "cord",
+    mountPosition: "outside",
+    ...(track === undefined ? {} : { track }),
+    cassette: "Square with fabric inserted",
+  });
+  assert.equal(optionalTrackQuote.ok, true, `roller track ${String(track)} must be optional`);
+  assert.equal(optionalTrackQuote.track, "none");
+  assert.equal(optionalTrackQuote.supplier.trackUsd, 0);
+  for (const server of apiPricing) {
+    assert.deepEqual(server.quoteRollerWorkbookBlind({
+      family: "roller",
+      fabricCode: "RS-TSD2265-2",
+      widthCm: 100,
+      heightCm: 120,
+      quantity: 1,
+      operation: "manual",
+      manualControl: "cord",
+      mountPosition: "outside",
+      ...(track === undefined ? {} : { track }),
+      cassette: "Square with fabric inserted",
+    }), optionalTrackQuote);
+  }
+}
+
+for (const family of ["zebra", "sheer", "butterfly"]) {
+  const fabric = pricing.rollerWorkbookFabrics.find((item) => item.family === family);
+  const noTrack = pricing.quoteRollerWorkbookBlind({
+    family,
+    fabricCode: fabric.code,
+    widthCm: 100,
+    heightCm: 120,
+    quantity: 1,
+    operation: "manual",
+    manualControl: "cord",
+    mountPosition: "outside",
+    track: "none",
+    cassette: "Square with fabric inserted",
+  });
+  assert.equal(noTrack.ok, true, `${family} must continue to support no track`);
+  assert.equal(noTrack.supplier.trackUsd, 0);
+}
+
+const lTrack = pricing.quoteRollerWorkbookBlind({
+  family: "roller",
+  fabricCode: "RS-TSD2265-2",
+  widthCm: 100,
+  heightCm: 120,
+  quantity: 1,
+  operation: "manual",
+  manualControl: "cord",
+  mountPosition: "outside",
+  track: "l-black",
+  cassette: "Square with fabric inserted",
+});
+assert.equal(lTrack.ok, true);
+assert.equal(lTrack.supplier.trackUsd, 6, "L track is charged once for both sides");
+for (const server of apiPricing) {
+  assert.deepEqual(server.quoteRollerWorkbookBlind({
+    family: "roller",
+    fabricCode: "RS-TSD2265-2",
+    widthCm: 100,
+    heightCm: 120,
+    quantity: 1,
+    operation: "manual",
+    manualControl: "cord",
+    mountPosition: "outside",
+    track: "l-black",
+    cassette: "Square with fabric inserted",
+  }), lTrack);
+}
 
 console.log("roller workbook pricing tests passed");

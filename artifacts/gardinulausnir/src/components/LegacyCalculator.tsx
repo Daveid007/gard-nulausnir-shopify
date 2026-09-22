@@ -11,6 +11,7 @@ import VerticalCalculator from "@/components/legacy-calculators/VerticalCalculat
 import DualRollerCalculator from "@/components/legacy-calculators/DualRollerCalculator";
 import ZebraBlindCalculator from "@/components/legacy-calculators/ZebraBlindCalculator";
 import RollerWorkbookCalculator, { type RollerWorkbookProductIdentity } from "@/components/legacy-calculators/RollerWorkbookCalculator";
+import OpenRollExampleCalculator from "@/components/OpenRollExampleCalculator";
 
 export type LegacyCalculatorKind =
   | "roller"
@@ -21,7 +22,8 @@ export type LegacyCalculatorKind =
   | "vertical"
   | "dual-roller"
   | "zebra"
-  | "roller-workbook";
+  | "roller-workbook"
+  | "open-roll-example";
 
 export const LEGACY_CART_OPEN_EVENT = "gardinulausnir:open-cart";
 
@@ -111,6 +113,8 @@ function CalculatorBody({ kind, rollerProduct, workbookProduct, product }: { kin
       return <ZebraBlindCalculator product={product} />;
     case "roller-workbook":
       return workbookProduct ? <RollerWorkbookCalculator product={product} productIdentity={workbookProduct} /> : null;
+    case "open-roll-example":
+      return <OpenRollExampleCalculator product={product} />;
   }
 }
 

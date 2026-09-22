@@ -86,15 +86,15 @@ export const COLLECTION_CATEGORY_DEFINITIONS: readonly CollectionCategoryDefinit
   },
   {
     key: "windour-single",
-    label: "Einfaldar Rúllugardínur",
-    english: "RÚLLUGARDÍNUR / EINFALDAR",
+    label: "Ramma rúllugardínur",
+    english: "RAMMA RÚLLUGARDÍNUR",
     description: "Myrkvun eða net. Veldu á milli 999 og 2000.",
     hash: "windour-single",
   },
   {
     key: "windour-duo",
-    label: "Tvískiptar Rúllugardínur (Duo)",
-    english: "RÚLLUGARDÍNUR / TVÍSKIPTAR (DUO)",
+    label: "Ramma flugnanet og myrkvunargardínur",
+    english: "RAMMA FLUGNANET OG MYRKVUNARGARDÍNUR",
     description: "Myrkvun og net saman í einu kerfi. Veldu á milli 999 og 2000.",
     hash: "windour-duo",
   },
@@ -225,6 +225,8 @@ const categoryByToken = new Map<string, CollectionCategoryKey>([
   ["einfaldar-rullugardinur-2000", "windour-single"],
   ["einfold-rullugardinur", "windour-single"],
   ["einfold-rullugardina", "windour-single"],
+  ["ramma-rullugardina", "windour-single"],
+  ["ramma-rullugardinur", "windour-single"],
 
   ["windour-duo", "windour-duo"],
   ["category-windour-duo", "windour-duo"],
@@ -240,6 +242,9 @@ const categoryByToken = new Map<string, CollectionCategoryKey>([
   ["tviskiptar-rullugardina-duo", "windour-duo"],
   ["tviskiptar-rullugardinur-duo-999", "windour-duo"],
   ["tviskiptar-rullugardinur-duo-2000", "windour-duo"],
+  ["ramma-gardina-med-flugnaneti", "windour-duo"],
+  ["ramma-gardina-me-flugnaneti", "windour-duo"],
+  ["ramma-flugnanet-og-myrkvunargardinur", "windour-duo"],
 
   ["curtains", "curtains"],
   ["curtain", "curtains"],

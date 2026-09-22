@@ -35,6 +35,8 @@ type ShopifyCatalogResponse = {
       title: string;
       handle: string;
       description: string;
+      productType: string;
+      tags: string[];
       featuredImage: ShopifyImage | null;
       images: {
         nodes: ShopifyImage[];
@@ -65,6 +67,8 @@ type ShopifyCatalogResponse = {
           title: string;
           handle: string;
           description: string;
+          productType: string;
+          tags: string[];
           featuredImage: ShopifyImage | null;
           images: {
             nodes: ShopifyImage[];
@@ -97,6 +101,8 @@ const CATALOG_QUERY = `
         title
         handle
         description
+        productType
+        tags
         featuredImage {
           url
           altText
@@ -158,6 +164,8 @@ const CATALOG_QUERY = `
             title
             handle
             description
+            productType
+            tags
             featuredImage {
               url
               altText

@@ -118,4 +118,13 @@ assert.match(cartSource, /const STORAGE_KEY = "solmyrkvun\.cart\.v2"/, "vertical
 assert.match(cartSource, /calculateVerticalSheerQuote\(/, "cart total must recompute from authoritative pricing");
 assert.match(cartSource, /item\.type === "vertical-sheer"/, "cart migration and display must retain the new type");
 
+const calculatorSource = await readFile(join(root, "src", "components", "VerticalSheerCalculator.tsx"), "utf8");
+assert.match(calculatorSource, /VERTICAL_SHEER_FABRICS\.filter/, "fabric type tabs must filter the verified swatch set");
+assert.match(calculatorSource, /typeFabrics\.map/, "the filtered supplier swatches must render as selectors");
+assert.match(calculatorSource, /onClick=\{\(\) => setFabricCode\(fabric\.code\)\}/, "each rendered swatch must update the selected fabric");
+assert.match(calculatorSource, /aria-pressed=\{fabric\.code === fabricCode\}/, "swatches must expose their selected state");
+assert.doesNotMatch(calculatorSource, /Birgjablaðið nefnir 20 mm/, "the verbose provisional supplier warning must not be shown in the customer UI");
+assert.match(calculatorSource, /verðið er áætlun sem þarf endanlega mælingastaðfestingu/, "estimate acknowledgement and purchase guard must remain");
+assert.match(calculatorSource, /Mál utan birgjatakmarka/, "dimension safety warning must remain");
+
 console.log("PASS Vertical Sheer Shades workbook, assets, category, cart and retail regression checks");
