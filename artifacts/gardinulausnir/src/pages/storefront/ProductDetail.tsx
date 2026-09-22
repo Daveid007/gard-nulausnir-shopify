@@ -294,6 +294,7 @@ export function ProductDetail() {
 
                  {isRoldour && (
                    <ThedourScreenWizard
+                     key={product.id}
                      initialFamily="roldour"
                      initialDirection={product.id.includes("horizontal") ? "horizontal" : "vertical"}
                      initialSystem={product.id.includes("duo") ? "duo" : "single"}

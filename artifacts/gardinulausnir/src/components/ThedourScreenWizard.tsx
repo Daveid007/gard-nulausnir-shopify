@@ -119,7 +119,8 @@ function Swatches({ options, value, onChange, label }: {
 
 export function ThedourScreenWizard(props: Props) {
   const [step, setStep] = useState(0);
-  const [family, setFamily] = useState<Family>(props.initialFamily);
+  // Product families have separate entry points; selections cannot cross families.
+  const family = props.initialFamily;
   const [direction, setDirection] = useState(props.initialDirection);
   const [system, setSystem] = useState<System>(props.initialSystem);
   const [material, setMaterial] = useState<WindourMaterial>(props.initialMaterial ?? "honeycomb");
@@ -233,14 +234,14 @@ export function ThedourScreenWizard(props: Props) {
         </div>
       </div>
       <div className="mb-5 flex items-center justify-between gap-3">
-        <span className="text-[10px] uppercase tracking-[.18em]">Mældu og veldu</span>
+        <span className="text-[10px] uppercase tracking-[.18em]">{family === "windour" ? "WINdoûr" : "ROLdoûr"} · Mældu og veldu</span>
         <span className="text-xs text-[#667984]">{step + 1} / {STEP_LABELS.length}</span>
       </div>
       <div className="mb-7 h-1 overflow-hidden bg-[#dde6ea]" aria-hidden="true"><div className="h-full bg-[#6892b8] transition-all" style={{ width: `${((step + 1) / STEP_LABELS.length) * 100}%` }} /></div>
 
       <h2 ref={headingRef} tabIndex={-1} className="font-serif text-2xl outline-none">
         {[
-          "Hvaða gerð hentar?",
+          family === "windour" ? "WINdoûr — Rammagardínur" : "ROLdoûr — Rúllukerfi í ramma",
           "Hvernig á kerfið að opnast?",
           "Einföld lausn eða DUO?",
           "Myrkvun eða flugnanet?",
@@ -259,10 +260,7 @@ export function ThedourScreenWizard(props: Props) {
 
       <ThedourStepHelp step={step} family={family} fitting={fitting} />
       <div className="space-y-2">
-        {step === 0 && <>
-          <Choice selected={family === "windour"} title="WINdoûr" detail="Fellt honeycomb-kerfi í ramma fyrir myrkvun eða flugnanet." onClick={() => setFamily("windour")} />
-          <Choice selected={family === "roldour"} title="ROLdoûr Slimline" detail="Inndraganlegt dúk- eða netkerfi sem rúllast í mjóa kassettu." onClick={() => setFamily("roldour")} />
-        </>}
+        {step === 0 && <p className="text-sm leading-6 text-[#344b59]">Þú ert að stilla {family === "windour" ? "WINdoûr-rammagardínu" : "ROLdoûr-rúllukerfi"}. Veldu Áfram til að velja opnunarstefnu, efni, mál og liti fyrir þetta kerfi.</p>}
         {step === 1 && <>
           <Choice icon={<ArrowDownUp size={17} />} selected={direction === "vertical"} title="Lóðrétt — upp og niður" detail="Vertical · Hreyfist upp og niður." onClick={() => setDirection("vertical")} />
           <Choice icon={<ArrowLeftRight size={17} />} selected={direction === "horizontal"} title="Lárétt — til hliðanna" detail="Horizontal · Opnast og lokast til hliðanna." onClick={() => setDirection("horizontal")} />

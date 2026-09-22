@@ -105,7 +105,7 @@ assert.equal(direct.secondary, "https://shopify.test/direct-secondary.jpg");
 const collectionProduct = catalog.products.find(({ id }) => id === "windour-single-999");
 assert.ok(collectionProduct);
 assert.equal(collectionProduct.title, "Rammagardínur 999");
-assert.equal(collectionProduct.category, "Rammagardínur");
+assert.equal(collectionProduct.category, "WINdoûr — Rammagardínur");
 assert.match(collectionProduct.subtitle, /eins og húsgagn/);
 assert.equal(collectionProduct.subtitle, "Meira en gardína — eins og húsgagn í rýminu.");
 assert.equal(collectionProduct.price, currency.format(98765));
@@ -115,11 +115,15 @@ assert.equal(collectionProduct.secondary, "https://shopify.test/collection-secon
 const duoCollectionProduct = catalog.products.find(({ id }) => id === "windour-duo-2000");
 assert.ok(duoCollectionProduct);
 assert.equal(duoCollectionProduct.title, "Ramma flugnanet og myrkvunargardínur 2000");
-assert.equal(duoCollectionProduct.category, "Ramma flugnanet og myrkvunargardínur");
+assert.equal(duoCollectionProduct.category, "WINdoûr — Rammagardínur");
 assert.equal(duoCollectionProduct.subtitle, "Einangruð myrkvun og flugnanet");
 assert.equal(duoCollectionProduct.price, currency.format(112233));
 assert.equal(duoCollectionProduct.image, "https://shopify.test/duo-primary.jpg");
 assert.equal(duoCollectionProduct.secondary, "https://shopify.test/duo-secondary.jpg");
+
+const roldourProduct = catalog.products.find(({ id }) => id === "roldour-duo-horizontal");
+assert.ok(roldourProduct);
+assert.equal(roldourProduct.category, "ROLdoûr — Rúllukerfi í ramma");
 
 const curtainProduct = catalog.products.find(({ id }) => id === "curtains-2828");
 assert.ok(curtainProduct);

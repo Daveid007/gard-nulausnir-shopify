@@ -30,9 +30,9 @@ function MeasurementDiagram() {
 export function ThedourStepHelp({ step, family, fitting }: Props) {
   const copy = [
     {
-      title: "Munurinn á kerfunum",
-      text: "Veldu fyrst hvernig gardínan á að leggjast saman. Hægt er að velja einfalda lausn (Single): aðeins myrkvunargardínu eða aðeins flugnanet. Þú þarft ekki að velja DUO.",
-      tips: ["WINdoûr: efnið fellur saman í fellingar inni í rammanum.", "ROLdoûr: dúkur eða net rúllast inn í kassettu. Athuga þarf pláss fyrir kassettuna við uppsetningu."],
+      title: family === "windour" ? "Fellt efni í sérsmíðuðum ramma" : "Dúkur eða net sem rúllast í kassettu",
+      text: family === "windour" ? "WINdoûr er rammagardína með felldu efni. Meira en gardína — eins og húsgagn í rýminu." : "ROLdoûr er inndraganlegt rúllukerfi í ramma. Efnið rúllast inn í kassettu þegar kerfið er opnað.",
+      tips: ["Hægt er að velja einfalda lausn (Single): aðeins myrkvunargardínu eða aðeins flugnanet. Þú þarft ekki að velja DUO.", family === "windour" ? "Myrkvunarefnið er honeycomb-efni sem fellur saman inni í rammanum." : "Athuga þarf pláss fyrir kassettuna við uppsetningu. Efnið er rúlludúkur eða net, ekki honeycomb."],
     },
     {
       title: "Stefnan lýsir hreyfingunni",

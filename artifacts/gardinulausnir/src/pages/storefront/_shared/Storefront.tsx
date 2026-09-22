@@ -18,8 +18,8 @@ const categoryLinks = [
   ["Lóðréttar vefgardínur", collectionHref("vertical-sheer")],
   ["Sheer Shades", collectionHref("sheer-shades")],
   ["Fiðrildagardínur", collectionHref("butterfly")],
-  ["Rammagardínur", collectionHref("windour-single")],
-  ["Ramma flugnanet og myrkvunargardínur", collectionHref("windour-duo")],
+  ["WINdoûr — Rammagardínur", collectionHref("windour")],
+  ["ROLdoûr — Rúllukerfi í ramma", collectionHref("roldour")],
   ["Flugnanet og rammar", collectionHref("thedour-doors")],
 ] as const;
 
@@ -30,7 +30,7 @@ export function Header({ cartCount = 0, categoryNav = false, onCartClick, showCa
       <div className="mx-auto flex h-[72px] max-w-[1480px] items-center justify-between px-5 md:px-10">
         <BrandLogo className="h-9 w-[182px] sm:h-10 sm:w-[202px]" />
          <nav className={`hidden min-w-0 flex-1 justify-center gap-4 px-5 text-[10px] uppercase tracking-[.16em] text-[#43515a] ${categoryNav ? "min-[1500px]:flex" : "xl:flex"}`}>
-           {categoryNav ? <>{categoryLinks.map(([label, href]) => <Link key={label} href={href} className="transition-colors hover:text-[#6892b8]">{label}</Link>)}<Link href="/maelingar" className="transition-colors hover:text-[#6892b8]">Mælingar</Link></> : <><Link href="/collection" className="transition-colors hover:text-[#6892b8]">Safnið</Link><Link href={collectionHref("honeycomb")} className="transition-colors hover:text-[#6892b8]">Myrkvunargardínur</Link><Link href={collectionHref("vertical-sheer")} className="transition-colors hover:text-[#6892b8]">Lóðréttar vefgardínur</Link><Link href={collectionHref("sheer-shades")} className="transition-colors hover:text-[#6892b8]">Sheer Shades</Link><Link href={collectionHref("butterfly")} className="transition-colors hover:text-[#6892b8]">Fiðrildagardínur</Link><Link href={collectionHref("thedour-doors")} className="transition-colors hover:text-[#6892b8]">Flugnanet og rammar</Link><Link href="/maelingar" className="transition-colors hover:text-[#6892b8]">Mælingar</Link></>}
+           {categoryNav ? <>{categoryLinks.map(([label, href]) => <Link key={label} href={href} className="transition-colors hover:text-[#6892b8]">{label}</Link>)}<Link href="/maelingar" className="transition-colors hover:text-[#6892b8]">Mælingar</Link></> : <><Link href="/collection" className="transition-colors hover:text-[#6892b8]">Safnið</Link><Link href={collectionHref("honeycomb")} className="transition-colors hover:text-[#6892b8]">Myrkvunargardínur</Link><Link href={collectionHref("windour")} className="transition-colors hover:text-[#6892b8]">WINdoûr</Link><Link href={collectionHref("roldour")} className="transition-colors hover:text-[#6892b8]">ROLdoûr</Link><Link href={collectionHref("vertical-sheer")} className="transition-colors hover:text-[#6892b8]">Lóðréttar vefgardínur</Link><Link href={collectionHref("sheer-shades")} className="transition-colors hover:text-[#6892b8]">Sheer Shades</Link><Link href={collectionHref("butterfly")} className="transition-colors hover:text-[#6892b8]">Fiðrildagardínur</Link><Link href={collectionHref("thedour-doors")} className="transition-colors hover:text-[#6892b8]">Flugnanet og rammar</Link><Link href="/maelingar" className="transition-colors hover:text-[#6892b8]">Mælingar</Link></>}
            <BusinessInquiryButton productContext={businessContext} />
         </nav>
         <div className="flex items-center justify-end gap-4 md:min-w-[202px]">
@@ -43,7 +43,7 @@ export function Header({ cartCount = 0, categoryNav = false, onCartClick, showCa
         </div>
       </div>
       {open && <nav className={`border-t border-[#24313b]/10 px-5 py-5 ${categoryNav ? "min-[1500px]:hidden" : "xl:hidden"}`}>
-            {(categoryNav ? [...categoryLinks, ["Mælingar", "/maelingar"] as const] : [["Safnið", "/collection"], ["Gluggatjöld", collectionHref("curtains")], ["Myrkvunargardínur", collectionHref("honeycomb")], ["Lóðréttar vefgardínur", collectionHref("vertical-sheer")], ["Sheer Shades", collectionHref("sheer-shades")], ["Fiðrildagardínur", collectionHref("butterfly")], ["Flugnanet og rammar", collectionHref("thedour-doors")], ["Mælingar", "/maelingar"]] as const).map(([label, href]) => <Link key={label} href={href} onClick={() => setOpen(false)} className="block py-2 text-[11px] uppercase tracking-[.18em]">{label}</Link>)}
+            {(categoryNav ? [...categoryLinks, ["Mælingar", "/maelingar"] as const] : [["Safnið", "/collection"], ["Gluggatjöld", collectionHref("curtains")], ["Myrkvunargardínur", collectionHref("honeycomb")], ["WINdoûr — Rammagardínur", collectionHref("windour")], ["ROLdoûr — Rúllukerfi í ramma", collectionHref("roldour")], ["Lóðréttar vefgardínur", collectionHref("vertical-sheer")], ["Sheer Shades", collectionHref("sheer-shades")], ["Fiðrildagardínur", collectionHref("butterfly")], ["Flugnanet og rammar", collectionHref("thedour-doors")], ["Mælingar", "/maelingar"]] as const).map(([label, href]) => <Link key={label} href={href} onClick={() => setOpen(false)} className="block py-2 text-[11px] uppercase tracking-[.18em]">{label}</Link>)}
              <BusinessInquiryButton productContext={businessContext} className="block py-2 text-left text-[11px]" />
       </nav>}
       <div className="flex justify-center border-t border-[#d8e1e5] bg-[#edf3f8] px-5 py-1">
