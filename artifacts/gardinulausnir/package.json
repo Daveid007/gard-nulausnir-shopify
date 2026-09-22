@@ -14,6 +14,7 @@
     "test:collection": "node --experimental-strip-types scripts/test-collection-filter.mjs",
     "test:curtains": "node --experimental-strip-types scripts/test-curtains.mjs",
     "test:windour": "node --experimental-strip-types scripts/test-windour-pricing.mjs",
+    "test:windour-options": "node --experimental-strip-types scripts/test-windour-order-options.mjs",
     "test:vertical-sheer": "node --experimental-strip-types scripts/test-vertical-sheer.mjs",
     "test:roller-workbook": "node --experimental-strip-types scripts/test-roller-workbook-pricing.mjs",
     "test:open-roll-example": "node --experimental-strip-types scripts/test-open-roll-example.mjs",

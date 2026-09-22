@@ -14,6 +14,7 @@ import { normalizeQuantity } from "@/lib/quantity";
 import { BusinessInquiryButton } from "@/components/BusinessInquiryButton";
 import { ResponsiveImage } from "@/components/ResponsiveImage";
 import { ThedourScreenWizard, type ThedourWizardSelection } from "@/components/ThedourScreenWizard";
+import { WindourProductInfo } from "@/components/WindourProductInfo";
 import {
   THEDOUR_FRAME_COLOURS,
   THEDOUR_HONEYCOMB_COLOURS,
@@ -219,9 +220,11 @@ function WindourCalculatorBody({ product }: { product: WindourProduct; }) {
   );
   const errors = useMemo(() => validateWindourInput(input), [input]);
   const quote = useMemo(() => calculateWindourQuote(input), [input]);
+  const pricedQuote = wizardSelection?.requiresCustomQuote ? null : quote;
   const canAddToCart = quote !== null &&
     wizardSelection?.family === "windour" &&
     wizardSelection.fitting === "recessed" &&
+    !wizardSelection.requiresCustomQuote &&
     wizardSelection.mappedProductId === productId;
 
   // A product route can be reused by the router.  Reset dimensions to the
@@ -243,16 +246,27 @@ function WindourCalculatorBody({ product }: { product: WindourProduct; }) {
   }, [frameColor, materialColor]);
 
   const selectedMaterial = WINDOUR_MATERIAL_OPTIONS.find((option) => option.value === material) ?? WINDOUR_MATERIAL_OPTIONS[0];
+  const inquiryMaterialLabel = wizardSelection?.requiresCustomQuote && wizardSelection.duoPanelChoices
+    ? `DUO sérval: ${wizardSelection.duoPanelChoices.join(" + ")}`
+    : quote?.materialLabel ?? selectedMaterial.label;
   const inquiryContext = [
     `${config.kind === "duo" ? "Ramma flugnanet og myrkvunargardínur" : "Rammagardínur"} ${config.tier}`,
     `${widthCm}×${heightCm} cm`,
-    quote?.materialLabel ?? selectedMaterial.label,
+    inquiryMaterialLabel,
     openingType === "double" ? "tvöföld opnun" : "einföld opnun",
     openingDirection === "vertical" ? "lóðrétt (upp/niður)" : "lárétt (til hliðar)",
     `rammi: ${frameColor}`,
-    material === "honeycomb" ? `honeycomb: ${materialColor}` : null,
+    material === "honeycomb" && !wizardSelection?.requiresCustomQuote ? `honeycomb: ${materialColor}` : null,
+    wizardSelection?.measurementMode === "outer-frame"
+      ? `YTRI RAMMAMÁL: ${wizardSelection.widthMm}×${wizardSelection.heightMm} mm (óbreytt)`
+      : wizardSelection?.widthReadingsMm && wizardSelection?.heightReadingsMm
+        ? `mál ops B ${wizardSelection.widthReadingsMm.join("/")} mm, H ${wizardSelection.heightReadingsMm.join("/")} mm`
+        : null,
+    wizardSelection?.duoPanelChoices ? `DUO fletir: ${wizardSelection.duoPanelChoices.join(" + ")}` : null,
+    wizardSelection?.additionalNotes ? `athugasemdir: ${wizardSelection.additionalNotes}` : null,
+    wizardSelection?.requiresCustomQuote ? "sérval DUO · eingöngu fyrirspurn" : null,
     `${quantity} stk.`,
-    quote ? `áætlað verð: ${formatIskQuote(quote.totalIsk)}` : "verð eftir staðfestingu",
+    pricedQuote ? `áætlað verð: ${formatIskQuote(pricedQuote.totalIsk)}` : "verð eftir staðfestingu",
   ].filter(Boolean).join(" · ");
   const addToCart = () => {
     if (!quote || !canAddToCart) return;
@@ -269,8 +283,13 @@ function WindourCalculatorBody({ product }: { product: WindourProduct; }) {
       frameColor,
       materialColor: quote.material === "honeycomb" ? materialColor : undefined,
       fitting: wizardSelection?.fitting,
+      measurementMode: wizardSelection?.measurementMode,
       widthReadingsMm: wizardSelection?.widthReadingsMm,
       heightReadingsMm: wizardSelection?.heightReadingsMm,
+      widthBand: wizardSelection?.widthBand,
+      heightBand: wizardSelection?.heightBand,
+      duoPanelChoices: wizardSelection?.duoPanelChoices,
+      additionalNotes: wizardSelection?.additionalNotes,
       sourceUrl: THEDOUR_WINDOUR_SOURCES[productId],
       supplierUsdPerSqm: quote.supplierUsdPerSqm,
       chargeableSqm: quote.chargeableSqm,
@@ -300,10 +319,10 @@ function WindourCalculatorBody({ product }: { product: WindourProduct; }) {
       <WindourCartStatus />
       <StorefrontLayout
         product={product}
-        priceISK={quote?.totalIsk ?? 0}
-        priceText={quote ? formatIskQuote(quote.totalIsk) : "—"}
+        priceISK={pricedQuote?.totalIsk ?? 0}
+        priceText={pricedQuote ? formatIskQuote(pricedQuote.totalIsk) : "—"}
         priceLabel="ÁÆTLAÐ VERÐ"
-        activeFabric={{ name: quote?.materialLabel ?? selectedMaterial.label }}
+        activeFabric={{ name: inquiryMaterialLabel }}
         quantity={quantity}
         setQuantity={(next) => setQuantity(normalizeQuantity(next))}
         canAddToCart={canAddToCart}
@@ -312,6 +331,7 @@ function WindourCalculatorBody({ product }: { product: WindourProduct; }) {
         priceRounding="exact"
         controls={
           <div className="space-y-6">
+            <WindourProductInfo tier={config.tier} />
             <ThedourScreenWizard
               initialFamily="windour"
               initialDirection={openingDirection}
@@ -330,6 +350,8 @@ function WindourCalculatorBody({ product }: { product: WindourProduct; }) {
                 >
                   {wizardSelection?.fitting === "overlap"
                     ? "Verð og lokamál staðfest í fyrirspurn"
+                    : wizardSelection?.requiresCustomQuote
+                      ? "DUO sérval — notaðu fyrirspurnarhnappinn hér fyrir neðan"
                     : wizardSelection?.mappedProductId !== productId
                       ? "Opna samsvarandi vörukort til að áætla"
                       : quote ? `Bæta áætlun í körfu · ${formatIskQuote(quote.totalIsk)}` : "Mál þarfnast staðfestingar"}

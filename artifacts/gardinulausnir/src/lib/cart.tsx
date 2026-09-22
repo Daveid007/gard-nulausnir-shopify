@@ -35,9 +35,19 @@ import {
   type RollerWorkbookQuoteInput,
 } from "./rollerWorkbookPricing";
 import {
+  THEDOUR_HONEYCOMB_COLOURS,
   isThedourFrameColour,
   isThedourHoneycombColour,
 } from "./thedourProductOptions";
+import {
+  getWindourSizeBand,
+  isStandardWindourDuoChoice,
+  isValidDuoPanelChoices,
+  isValidWindourNotes,
+  isWindourMeasurementMode,
+  WINDOUR_PLEATED_NET,
+  type WindourMeasurementMode,
+} from "./windourOrderOptions";
 
 export const HOLDER_USD = 5.0;
 
@@ -230,8 +240,13 @@ export type WindourCartItem = {
   frameColor?: string;
   materialColor?: string;
   fitting?: "recessed" | "overlap";
+  measurementMode?: WindourMeasurementMode;
   widthReadingsMm?: [number, number, number];
   heightReadingsMm?: [number, number, number];
+  widthBand?: string;
+  heightBand?: string;
+  duoPanelChoices?: [string, string];
+  additionalNotes?: string;
   sourceUrl?: string;
   supplierUsdPerSqm: number;
   chargeableSqm: number;
@@ -478,7 +493,7 @@ export function describeCartItem(item: CartItem): { title: string; sub: string }
     const kind = item.productId.includes("-duo-") ? "Ramma flugnanet og myrkvunargardínur" : "Rammagardínur";
     return {
       title: `${kind} ${tier} · ÁÆTLUN`,
-      sub: `${item.widthCm}×${item.heightCm} cm · ${item.materialLabel} · ${item.openingType === "double" ? "tvöföld opnun" : "einföld opnun"} · ${item.openingDirection === "vertical" ? "lóðrétt (upp/niður)" : "lárétt (til hliðar)"} · ${item.fitting === "overlap" ? "utanáliggjandi / yfir op" : "innfelld"}${item.widthReadingsMm && item.heightReadingsMm ? ` · hrá mál B ${item.widthReadingsMm.join("/")} mm, H ${item.heightReadingsMm.join("/")} mm` : ""} · rammi: ${item.frameColor ?? "óvalinn"}${item.material === "honeycomb" ? ` · honeycomb: ${item.materialColor ?? "óvalinn"}` : ""} · ${item.chargeableSqm.toFixed(2)} m² · ${item.quoteExpiresInDays} daga provisional quote (${item.quoteExpiryLabel}) · staðfesting birgis vantar`,
+      sub: `${item.widthCm}×${item.heightCm} cm · ${item.materialLabel} · ${item.openingType === "double" ? "tvöföld opnun" : "einföld opnun"} · ${item.openingDirection === "vertical" ? "lóðrétt (upp/niður)" : "lárétt (til hliðar)"} · ${item.fitting === "overlap" ? "utanáliggjandi / yfir op" : "innfelld"}${item.measurementMode === "outer-frame" ? ` · YTRI RAMMAMÁL ${item.widthCm * 10}×${item.heightCm * 10} mm (óbreytt)` : item.widthReadingsMm && item.heightReadingsMm ? ` · hrá mál ops B ${item.widthReadingsMm.join("/")} mm, H ${item.heightReadingsMm.join("/")} mm` : ""}${item.widthBand && item.heightBand ? ` · stærðarflokkar ${item.widthBand}/${item.heightBand}` : ""} · rammi: ${item.frameColor ?? "óvalinn"}${item.material === "honeycomb" ? ` · honeycomb: ${item.materialColor ?? "óvalinn"}` : ""}${item.duoPanelChoices ? ` · DUO fletir: ${item.duoPanelChoices.join(" + ")}` : ""}${item.additionalNotes ? ` · athugasemdir: ${item.additionalNotes}` : ""} · ${item.chargeableSqm.toFixed(2)} m² · ${item.quoteExpiresInDays} daga provisional quote (${item.quoteExpiryLabel}) · staðfesting birgis vantar`,
     };
   }
   if (item.type === "roller-workbook") {
@@ -674,6 +689,7 @@ function migrateCartItem(raw: unknown): CartItem | null {
     };
   }
   if (item.type === "windour") {
+    const validDuoFabrics = [...THEDOUR_HONEYCOMB_COLOURS.map((option) => option.name), WINDOUR_PLEATED_NET];
     if (
       typeof item.id !== "string" ||
       !isFiniteNumber(item.qty) || item.qty < 1 ||
@@ -685,8 +701,15 @@ function migrateCartItem(raw: unknown): CartItem | null {
       (item.openingType !== "single" && item.openingType !== "double") ||
       (item.openingDirection !== "horizontal" && item.openingDirection !== "vertical") ||
       (item.fitting !== undefined && item.fitting !== "recessed" && item.fitting !== "overlap") ||
+      (item.measurementMode !== undefined && !isWindourMeasurementMode(item.measurementMode)) ||
       (item.widthReadingsMm !== undefined && !isPositiveMeasurementTriple(item.widthReadingsMm)) ||
       (item.heightReadingsMm !== undefined && !isPositiveMeasurementTriple(item.heightReadingsMm)) ||
+      (item.measurementMode === "outer-frame" && (item.widthReadingsMm !== undefined || item.heightReadingsMm !== undefined)) ||
+      (item.widthBand !== undefined && item.widthBand !== getWindourSizeBand(item.widthCm * 10)?.id) ||
+      (item.heightBand !== undefined && item.heightBand !== getWindourSizeBand(item.heightCm * 10)?.id) ||
+      (item.duoPanelChoices !== undefined && !isValidDuoPanelChoices(item.duoPanelChoices, validDuoFabrics)) ||
+      (item.duoPanelChoices !== undefined && !isStandardWindourDuoChoice(item.duoPanelChoices)) ||
+      (item.additionalNotes !== undefined && !isValidWindourNotes(item.additionalNotes)) ||
       !isThedourFrameColour(item.frameColor) ||
       (item.material === "honeycomb" && !isThedourHoneycombColour(item.materialColor)) ||
       !isFiniteNumber(item.supplierUsdPerSqm) ||
@@ -712,6 +735,7 @@ function migrateCartItem(raw: unknown): CartItem | null {
     ) return null;
     return {
       ...(item as unknown as WindourCartItem & CartPricingMetadata),
+      measurementMode: item.measurementMode ?? "opening",
       qty: quote.quantity,
       supplierUsdPerSqm: quote.supplierUsdPerSqm,
       chargeableSqm: quote.chargeableSqm,

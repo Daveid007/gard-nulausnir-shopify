@@ -4,6 +4,7 @@ import { StorefrontLayout } from "./StorefrontLayout";
 import { useCart } from "@/lib/cart";
 import { rollerWorkbookSwatchFilename } from "@/lib/rollerWorkbookSwatches";
 import { swatchUrl } from "@/pages/storefront/_shared/swatches";
+import sideTrackImage from "@/assets/accessory-thumbs/roller-side-track.png";
 import {
   quoteRollerWorkbookBlind,
   getRollerWorkbookSizeLimits,
@@ -247,6 +248,19 @@ export function RollerWorkbookCalculator({
       onAddToCart={addToCart}
       controls={
         <>
+          {family === "roller" && (
+            <aside className="my-5 rounded border border-[#9ebbd0] bg-[#eaf3f8] p-4 text-sm leading-6 text-[#344b59]" aria-label="Rúllugardínur með hliðarlistum">
+              <strong className="block text-[#24313b]">Hægt að velja hliðarlista með rúllugardínum</strong>
+              <p className="mt-1">Hliðarlistar hjálpa til við að draga úr birtu meðfram hliðum gardínunnar. Veldu með hliðarlistum eða án í valinu hér fyrir neðan. Þeir eru valfrjálsir og verð þeirra bætist aðeins við ef þeir eru valdir.</p>
+              <figure className="mt-4 flex flex-col items-center gap-3 rounded border border-[#ccd9df] bg-white p-3 sm:flex-row">
+                <img src={sideTrackImage} alt="Nærmynd af hvítum hliðarlista með burstum við raufina fyrir gardínuefnið" width={575} height={1024} className="h-44 w-28 shrink-0 object-contain" />
+                <figcaption className="text-xs leading-5">
+                  <strong className="block text-[#24313b]">Hliðarlisti í nærmynd</strong>
+                  <span className="mt-1 block">Hér sést rauf með burstum meðfram brún gardínuefnisins. Myndin sýnir dæmi um útfærslu; litur og gerð fara eftir vali.</span>
+                </figcaption>
+              </figure>
+            </aside>
+          )}
           <section className="border-b border-[#ccd9df] py-6">
             <div className="mb-3 flex items-center justify-between gap-3">
               <p className="text-[10px] uppercase tracking-[.18em]">Efni · {FAMILY_LABELS[family]}</p>
