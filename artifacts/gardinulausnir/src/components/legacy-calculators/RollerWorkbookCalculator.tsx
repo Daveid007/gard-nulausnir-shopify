@@ -32,7 +32,7 @@ const FAMILY_LABELS: Record<RollerWorkbookFamily, string> = {
 
 const TRACKS: Record<RollerWorkbookFamily, readonly { value: SideTrack; label: string }[]> = {
   roller: [
-    { value: "none", label: "Engin hliðarslá" },
+    { value: "none", label: "Án hliðarlista" },
     { value: "u-white", label: "U-skinna · hvít" },
     { value: "u-grey", label: "U-skinna · grá" },
     { value: "l-white", label: "L-skinna · hvít" },
@@ -214,6 +214,7 @@ export function RollerWorkbookCalculator({
               Verð og uppsetningarval fyrir opið rúllukerfi eru ekki staðfest í birgjavinnubókinni.
               Hafðu samband til að fá tilboð áður en hægt er að bæta vörunni í körfu.
             </p>
+            <p className="mt-3 text-sm leading-6 text-[#526772]">Hliðarlistar eru valfrjálsir. Láttu vita í tilboðsbeiðninni ef þú vilt bæta þeim við.</p>
             <a className="mt-4 inline-flex border border-[#24313b] px-4 py-3 text-[10px] uppercase tracking-[.16em]" href="mailto:info@gardinulausnir.is?subject=Tilboð%20í%20opið%20rúllukerfi">
               Óska eftir tilboði
             </a>
@@ -263,15 +264,19 @@ export function RollerWorkbookCalculator({
                 ))}
               </select>
             </label>
-            <div className="mt-3 grid grid-cols-6 gap-2 sm:grid-cols-8" aria-label="Efnisýni">
-              {visibleFabrics.filter((item) => swatchForWorkbookFabric(item)).slice(0, 32).map((item) => {
-                const image = swatchForWorkbookFabric(item)!;
-                return <button key={item.code} type="button" title={`${item.code} · ${item.color}`} onClick={() => setFabricCode(item.code)} className={`relative aspect-square overflow-hidden border ${item.code === fabricCode ? "border-[#24313b] ring-1 ring-[#24313b]" : "border-[#ccd9df]"}`}>
-                  <img src={image} alt={`${item.code}, ${item.color}`} className="h-full w-full object-cover" />
-                  {item.code === fabricCode && <Check className="absolute inset-0 m-auto text-white drop-shadow" size={16} />}
+            <div className="mt-3 grid max-h-96 grid-cols-3 gap-2 overflow-y-auto p-1 sm:grid-cols-4" aria-label="Efnisýni" data-testid="rw-swatches">
+              {(family === "roller" ? visibleFabrics : visibleFabrics.filter((item) => swatchForWorkbookFabric(item))).map((item) => {
+                const image = swatchForWorkbookFabric(item);
+                return <button key={item.code} type="button" aria-label={`${item.code} · ${item.color}`} aria-pressed={item.code === fabricCode} title={`${item.code} · ${item.color}`} onClick={() => setFabricCode(item.code)} className={`relative min-w-0 overflow-hidden border text-left ${item.code === fabricCode ? "border-[#24313b] ring-1 ring-[#24313b]" : "border-[#ccd9df]"}`}>
+                  {image
+                    ? <img src={image} alt={`${item.code}, ${item.color}`} loading="lazy" className="aspect-square w-full object-cover" />
+                    : <span className="flex aspect-square items-center justify-center bg-[#eef2f4] p-2 text-center text-[10px] text-[#667984]">Mynd ekki tiltæk</span>}
+                  <span className="block break-words px-1.5 py-2 text-[9px] leading-4"><strong className="block">{item.code}</strong>{item.color}</span>
+                  {item.code === fabricCode && <Check className="absolute right-1 top-1 rounded-full bg-[#24313b] p-0.5 text-white" size={20} />}
                 </button>;
               })}
             </div>
+            {visibleFabrics.length === 0 && <p role="status" className="mt-3 text-xs text-[#667984]">Engin efni fundust. Prófaðu annan kóða eða lit.</p>}
             {fabric && <p className="mt-3 text-xs text-[#667984]">{fabric.code} · {fabric.color} · {fabric.light} · {fabric.size}</p>}
             {fabric && !activeFabric.image && <p className="mt-2 text-xs text-[#667984]">Mynd af þessu efni er ekki tiltæk. Efnið er valið eftir birgjakóða.</p>}
           </section>
@@ -302,10 +307,11 @@ export function RollerWorkbookCalculator({
           </section>
 
           <section className="border-b border-[#ccd9df] py-6">
-            <p className="text-[10px] font-medium uppercase tracking-[.16em] text-[#6892b8]">Hliðarbrautir / Side tracks</p>
+            <p className="text-[10px] font-medium uppercase tracking-[.16em] text-[#6892b8]">Hliðarlistar</p>
+            {family === "roller" && <p className="mt-2 text-xs leading-5 text-[#667984]">Hliðarlistar eru valfrjálsir. Verð þeirra bætist aðeins við heildarverðið ef þeir eru valdir.</p>}
             <div className="mt-2 grid grid-cols-2 gap-2">{TRACKS[family].map((item) => {
               const extra = sideTrackExtra(item.value);
-              return <button data-testid={`rw-track-${item.value}`} key={item.value} type="button" onClick={() => setTrack(item.value)} className={`border px-3 py-3 text-left text-xs ${track === item.value ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}><span className="block">{item.label}</span>{extra !== null && <span className="mt-1 block text-[10px] text-[#667984]">{extra === 0 ? "Innifalið" : `+${extra.toLocaleString("is-IS")} kr. / stk.`}</span>}</button>;
+              return <button data-testid={`rw-track-${item.value}`} key={item.value} type="button" aria-pressed={track === item.value} onClick={() => setTrack(item.value)} className={`border px-3 py-3 text-left text-xs ${track === item.value ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}><span className="block">{item.label}</span>{extra !== null && <span className="mt-1 block text-[10px] text-[#667984]">{extra === 0 ? "Innifalið" : `+${extra.toLocaleString("is-IS")} kr. / stk.`}</span>}</button>;
             })}</div>
             <p className="mt-5 text-[10px] font-medium uppercase tracking-[.16em] text-[#6892b8]">Kassetta</p>
             <select data-testid="rw-cassette" aria-label="Veldu kassetu" value={cassette} onChange={(event) => setCassette(event.target.value)} disabled={cassetteChoices.length === 1} className="mt-2 w-full border border-[#ccd9df] bg-transparent px-3 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-70">{cassetteChoices.map((item) => <option key={item} value={item}>{item === ROLLER_WORKBOOK_CASSETTES[0] ? "Ferningskassetta með efni" : "Bogakassetta með efni"}</option>)}</select>

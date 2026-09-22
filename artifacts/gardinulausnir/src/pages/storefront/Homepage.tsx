@@ -9,6 +9,7 @@ import { ResponsiveImage } from "@/components/ResponsiveImage";
 import { WarrantyButton } from "@/components/WarrantyButton";
 import homepageFamily from "@/assets/homepage-family.jpg";
 import { curtainProductCoverImage } from "./_shared/curtains-assets";
+import { BusinessInquiryButton } from "@/components/BusinessInquiryButton";
 
 const collectionHref = "/collection";
 
@@ -19,8 +20,8 @@ const collections = [
   { id: "sheer-shades", href: `${collectionHref}#sheer-shades`, title: "Sheer Shades", description: "Láréttar Sheer Shades fyrir stillanlega dagsbirtu og næði.", image: "" },
   { id: "butterfly", href: `${collectionHref}#butterfly`, title: "Fiðrildagardínur", description: "Lárétt Butterfly-kerfi með mjúkri ljósstýringu.", image: "" },
   { id: "vertical-sheer", href: `${collectionHref}#vertical-sheer-shades`, title: "Lóðréttar vefgardínur", description: "Vertical Sheer Shades / Dream Shades · 17 efni.", image: new URL("../../assets/vertical-sheer-shades/cases/Vertical sheer shades (2).jpg", import.meta.url).href },
-  { id: "windour-single", href: `${collectionHref}#windour-single`, title: "Einfaldar Rúllugardínur", description: "Myrkvun eða net · 999 og 2000.", image: "https://cdn.shopify.com/s/files/1/0513/7589/8773/files/Gemini_Generated_Image_pg9wzppg9wzppg9w.png?v=1768448444" },
-  { id: "windour-duo", href: `${collectionHref}#windour-duo`, title: "Tvískiptar Rúllugardínur (Duo)", description: "Myrkvun og net saman · 999 og 2000.", image: "https://cdn.shopify.com/s/files/1/0513/7589/8773/files/7953253b-19aa-4e2d-8210-5909e63fb0f0.jpg?v=1768840303" },
+  { id: "windour-single", href: `${collectionHref}#windour-single`, title: "Ramma rúllugardínur", description: "Myrkvun eða net · 999 og 2000.", image: "https://cdn.shopify.com/s/files/1/0513/7589/8773/files/Gemini_Generated_Image_pg9wzppg9wzppg9w.png?v=1768448444" },
+  { id: "windour-duo", href: `${collectionHref}#windour-duo`, title: "Ramma flugnanet og myrkvunargardínur", description: "Myrkvun og net saman · 999 og 2000.", image: "https://cdn.shopify.com/s/files/1/0513/7589/8773/files/7953253b-19aa-4e2d-8210-5909e63fb0f0.jpg?v=1768840303" },
   { id: "thedour-doors", href: `${collectionHref}#thedour-doors`, title: "Flugnanet og rammar", description: "Flugnanet fyrir hurðir sem halda skordýrum úti.", image: "https://cdn.shopify.com/s/files/1/0513/7589/8773/files/e6f45daa-cfd5-408a-88fe-c5eafba3034b.jpg?v=1769688238" },
 ] as const;
 
@@ -35,6 +36,7 @@ function HomepageHeader() {
            <Link href={`${collectionHref}#curtains`} className="transition-colors hover:text-[#6892b8]">Gluggatjöld</Link>
           <Link href="/maelingar" className="inline-flex items-center gap-2 transition-colors hover:text-[#6892b8]"><Ruler size={15} strokeWidth={1.5} />Mælingar</Link>
           <HelpDrawer />
+           <BusinessInquiryButton />
         </nav>
         <div className="flex items-center gap-4">
            <Link href={collectionHref} className="hidden text-[10px] uppercase tracking-[.16em] text-[#43515a] sm:inline">Vöruflokkar</Link>
@@ -47,6 +49,7 @@ function HomepageHeader() {
          <Link href={`${collectionHref}#curtains`} onClick={() => setMenuOpen(false)} className="block py-3 text-[10px] uppercase tracking-[.16em]">Gluggatjöld</Link>
         <Link href="/maelingar" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 py-3 text-[10px] uppercase tracking-[.16em]"><Ruler size={15} strokeWidth={1.5} />Mælingar</Link>
         <HelpDrawer />
+         <BusinessInquiryButton className="block py-3 text-left" />
       </nav>}
       <div className="flex justify-center border-t border-[#d8e1e5] bg-[#edf3f8] px-5 py-1">
         <WarrantyButton />

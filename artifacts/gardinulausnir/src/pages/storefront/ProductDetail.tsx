@@ -10,6 +10,7 @@ import { MeasurementGuideTrigger } from "@/components/MeasurementGuide";
 import { ResponsiveImage } from "@/components/ResponsiveImage";
 import { WarrantyButton } from "@/components/WarrantyButton";
 import WindourCalculator, { WINDOUR_CART_OPEN_EVENT } from "@/components/WindourCalculator";
+import { ThedourScreenWizard } from "@/components/ThedourScreenWizard";
 import VerticalSheerCalculator, { VERTICAL_SHEER_CART_OPEN_EVENT } from "@/components/VerticalSheerCalculator";
 import type { RollerProductIdentity } from "@/components/legacy-calculators/PriceCalculator";
 import type { RollerWorkbookProductIdentity } from "@/components/legacy-calculators/RollerWorkbookCalculator";
@@ -35,6 +36,15 @@ import {
 
 import { getRollerFabrics, getHoneycombFabrics } from "./_shared/fabrics";
 import { normalizeQuantity } from "@/lib/quantity";
+import { BusinessInquiryButton } from "@/components/BusinessInquiryButton";
+import {
+  THEDOUR_FRAME_COLOURS,
+  THEDOUR_HONEYCOMB_COLOURS,
+  THEDOUR_ROLDOUR_FABRIC_COLOURS,
+  getThedourRoldourSource,
+  isThedourRoldourProductId,
+  type ThedourColourOption,
+} from "@/lib/thedourProductOptions";
 
 const fallbackFabrics = [
   { name: "Pure White", tone: "#f2f1eb", image: "" },
@@ -56,6 +66,11 @@ export function ProductDetail() {
   const isHoneycomb = product.category === "Myrkvunargardínur";
   const isWindour = isWindourProductId(product.id);
   const isVerticalSheer = product.id === "vertical-sheer-shades";
+  const isThedourDoor = product.id === "netdour-trackless-door" || product.id === "blinddour-trackless-door";
+  const isBlinddour = product.id === "blinddour-trackless-door";
+  const isRoldour = isThedourRoldourProductId(product.id);
+  const hasThedourColourOptions = isThedourDoor || isRoldour;
+  const isOpenRollExample = product.id === "open-roll";
   const isCustomizer = isRoller || isHoneycomb;
   const rollerProduct: RollerProductIdentity | undefined =
     product.id === "square-cassette" || product.id === "arc-cassette" || product.id === "open-roll"
@@ -73,7 +88,8 @@ export function ProductDetail() {
           : product.id === "top-down-bottom-up" ? "tdbu"
             : product.id === "vertical-45mm" ? "vertical"
               : product.id === "dual-roller" ? "dual-roller"
-                 : workbookProduct ? "roller-workbook"
+                 : isOpenRollExample ? "open-roll-example"
+                  : workbookProduct ? "roller-workbook"
                    : rollerProduct ? "roller"
                     : null;
 
@@ -113,6 +129,9 @@ export function ProductDetail() {
   const [cart, setCart] = useState(0);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [openDetail, setOpenDetail] = useState<string | null>("Efni & ljós");
+  const [thedourFrameColor, setThedourFrameColor] = useState(THEDOUR_FRAME_COLOURS[0].name);
+  const [thedourHoneycombColor, setThedourHoneycombColor] = useState(THEDOUR_HONEYCOMB_COLOURS[0].name);
+  const [thedourRoldourFabricColor, setThedourRoldourFabricColor] = useState(THEDOUR_ROLDOUR_FABRIC_COLOURS[0].name);
 
   const widthValue = Math.max(0, Number(width) || 0);
   const heightValue = Math.max(0, Number(height) || 0);
@@ -123,6 +142,38 @@ export function ProductDetail() {
   const validDimensions = widthValue >= 30 && widthValue <= 400 && heightValue >= 30 && heightValue <= 400;
   const dimensions = `${width || "—"} × ${height || "—"} cm`;
   const activeImage = imageView === "secondary" ? product.secondary : product.image;
+  const inquiryContext = hasThedourColourOptions
+    ? `${product.title} · rammalitur: ${thedourFrameColor}${isBlinddour ? ` · honeycomb-litur: ${thedourHoneycombColor}` : ""}${isRoldour ? ` · efni/net: ${thedourRoldourFabricColor}` : ""}`
+    : product.title;
+  const thedourSourceUrl = product.sourceUrl ?? getThedourRoldourSource(product.id);
+
+  const renderThedourColours = (
+    label: string,
+    options: readonly ThedourColourOption[],
+    value: string,
+    onChange: (value: string) => void,
+  ) => (
+    <div>
+      <div className="mb-3 flex items-center justify-between gap-3 text-[10px] uppercase tracking-[.18em]">
+        <span>{label}</span>
+        <span className="text-[#667984]">{value}</span>
+      </div>
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+        {options.map((option) => (
+          <button
+            type="button"
+            key={option.name}
+            onClick={() => onChange(option.name)}
+            aria-pressed={value === option.name}
+            className={`flex min-h-14 items-center gap-2 border p-2 text-left text-[10px] ${value === option.name ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}
+          >
+            <ResponsiveImage src={option.image} alt="" sizes="36px" className="h-9 w-9 shrink-0 object-cover" />
+            <span>{option.name}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 
   useEffect(() => {
     if (!zoom) return;
@@ -151,9 +202,9 @@ export function ProductDetail() {
       <header className="border-b border-[#d8e1e5] px-5 md:px-10">
         <div className="flex h-[74px] items-center justify-between">
         <BrandLogo className="h-9 w-[182px] sm:h-10 sm:w-[202px]" />
-          <nav className="hidden gap-8 text-[10px] uppercase tracking-[.18em] md:flex"><a href="#vörulýsing">{product.category}</a><a href="#upplýsingar">Leiðbeiningar</a><Link href="/maelingar">Mælingar</Link></nav>
+          <nav className="hidden gap-6 text-[10px] uppercase tracking-[.18em] md:flex"><a href="#vörulýsing">{product.category}</a><a href="#upplýsingar">Leiðbeiningar</a><Link href="/maelingar">Mælingar</Link><BusinessInquiryButton productContext={inquiryContext} /></nav>
           <div className="flex items-center gap-4">
-              <button
+              {!isOpenRollExample && <button
                aria-label={legacyCalculator ? "Opna reiknivélarkörfu" : isWindour ? "Opna áætlunarkörfu" : isVerticalSheer ? "Opna körfu lóðréttra vefgardína" : "Opna körfu"}
               onClick={() => {
                 if (legacyCalculator) window.dispatchEvent(new Event(LEGACY_CART_OPEN_EVENT));
@@ -164,7 +215,7 @@ export function ProductDetail() {
               className="flex items-center gap-2 text-[10px] uppercase tracking-[.18em]"
             >
               <ShoppingBag size={16} /> <span className="hidden sm:inline">{isWindour ? "Áætlun" : "Karfa"}</span> {!legacyCalculator && !isWindour && !isVerticalSheer && <span className="grid h-5 w-5 place-items-center rounded-full bg-[#24313b] text-[9px] text-[#f7f9fa]">{cart}</span>}
-            </button>
+              </button>}
             <button type="button" onClick={() => setMobileNavOpen((open) => !open)} className="grid h-9 w-9 place-items-center md:hidden" aria-label={mobileNavOpen ? "Loka valmynd" : "Opna valmynd"}>
               {mobileNavOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
@@ -174,6 +225,7 @@ export function ProductDetail() {
           <a href="#vörulýsing" onClick={() => setMobileNavOpen(false)} className="block py-2 text-[10px] uppercase tracking-[.18em]">{product.category}</a>
           <a href="#upplýsingar" onClick={() => setMobileNavOpen(false)} className="block py-2 text-[10px] uppercase tracking-[.18em]">Leiðbeiningar</a>
           <Link href="/maelingar" onClick={() => setMobileNavOpen(false)} className="block py-2 text-[10px] uppercase tracking-[.18em]">Mælingar</Link>
+            <BusinessInquiryButton productContext={inquiryContext} className="block py-2 text-left" />
         </nav>}
       </header>
 
@@ -222,7 +274,7 @@ export function ProductDetail() {
                 <h1 className="font-serif text-[clamp(2.7rem,4.8vw,5.2rem)] leading-[.9] tracking-[-.06em]">{product.title}</h1>
                 <div className="mt-7 flex items-end justify-between gap-5 border-b border-[#ccd9df] pb-5"><p className="text-sm text-[#5a6b74]">{product.subtitle}</p><p data-testid="live-price" aria-live="polite" className="whitespace-nowrap font-serif text-2xl tracking-tight">{product.price}</p></div>
 
-                <div className="border-b border-[#ccd9df] py-6">
+                 {!hasThedourColourOptions && <div className="border-b border-[#ccd9df] py-6">
                   <div className="mb-4 flex justify-between text-[10px] uppercase tracking-[.18em]"><span>Veldu lit</span><span className="text-[#667984]">{currentFabric?.name}</span></div>
                    <div className="flex flex-wrap gap-3">
                      {fabrics.map((item, index) => (
@@ -238,8 +290,40 @@ export function ProductDetail() {
                        </button>
                      ))}
                    </div>
-                </div>
+                 </div>}
 
+                 {isRoldour && (
+                   <ThedourScreenWizard
+                     initialFamily="roldour"
+                     initialDirection={product.id.includes("horizontal") ? "horizontal" : "vertical"}
+                     initialSystem={product.id.includes("duo") ? "duo" : "single"}
+                     initialFrameColor={thedourFrameColor}
+                     initialMaterialColor={thedourRoldourFabricColor}
+                     initialProductId={product.id}
+                     onSelection={() => undefined}
+                   />
+                 )}
+                 {hasThedourColourOptions && !isRoldour && (
+                   <div className="space-y-6 border-b border-[#ccd9df] py-6">
+                     {renderThedourColours("Litur á álramma", THEDOUR_FRAME_COLOURS, thedourFrameColor, setThedourFrameColor)}
+                     {isBlinddour && renderThedourColours("Litur á honeycomb-myrkvun", THEDOUR_HONEYCOMB_COLOURS, thedourHoneycombColor, setThedourHoneycombColor)}
+                     {isRoldour && renderThedourColours("Myrkvunarefni eða flugnanet", THEDOUR_ROLDOUR_FABRIC_COLOURS, thedourRoldourFabricColor, setThedourRoldourFabricColor)}
+                     <div className="border border-[#ccd9df] bg-[#f4f7f8] p-3 text-xs leading-5 text-[#526772]">
+                       {product.description && <p>{product.description}</p>}
+                       <p className={product.description ? "mt-2" : ""}>{isRoldour ? "Valið sýnir níu rammaliti og fjóra dúk-/netkosti sem skráðir eru fyrir þessa ROLdoûr-vöru hjá birgi." : "Níu heiti rammalita eru birt eins og þau eru skráð í núverandi vöruvali birgis; yfirlitssíða birgis nefnir tíu liti."}</p>
+                       {thedourSourceUrl && (
+                         <a href={thedourSourceUrl} target="_blank" rel="noreferrer" className="mt-2 inline-block underline underline-offset-2">
+                           {product.sourceLabel ?? "Vöruupplýsingar og litir: Thedoûr"}
+                         </a>
+                       )}
+                     </div>
+                     <BusinessInquiryButton
+                       label="Senda litaval í fyrirspurn"
+                       productContext={inquiryContext}
+                       className="block w-full border border-[#8ca9b8] px-4 py-3 text-center"
+                     />
+                   </div>
+                 )}
                 {isCustomizer && <div className="border-b border-[#ccd9df] py-6">
                   <div className="mb-4 flex justify-between text-[10px] uppercase tracking-[.18em]"><span>Dúkagerð</span><span className="text-[#667984]">{opacity === "blackout" ? "Myrkvun / Blackout" : "Ljós síað / Light filtering"}</span></div>
                   <div className="grid grid-cols-2 gap-2">
@@ -248,7 +332,7 @@ export function ProductDetail() {
                   </div>
                 </div>}
 
-                {!isCustomizer && <div className="border-b border-[#ccd9df] py-6">
+                 {!isCustomizer && !isRoldour && <div className="border-b border-[#ccd9df] py-6">
                    <div className="mb-4 flex items-center justify-between gap-3 text-[10px] uppercase tracking-[.18em]"><span>Mælingareiknivél</span><MeasurementGuideTrigger /></div>
                   <div className="grid grid-cols-2 gap-3">
                     <label className="block"><span className="mb-2 block text-[9px] uppercase tracking-[.14em] text-[#667984]">Breidd · cm</span><input aria-label="Breidd í sentímetrum" type="number" inputMode="decimal" min="30" max="400" value={width} onChange={(event) => setWidth(event.target.value)} className="w-full border border-[#ccd9df] bg-transparent px-3 py-3 text-sm outline-none transition focus:border-[#24313b]" /></label>
@@ -268,7 +352,7 @@ export function ProductDetail() {
                           <span className="text-[9px]">{item.name}</span>
                         </button>
                       ))}
-                    </div>
+                     </div>
                     {isRoller && <div className="mt-3 grid grid-cols-2 gap-2">
                       {(["Hulinn botnlisti", "Álbotnlisti"] as const).map((item) => (
                         <button key={item} onClick={() => setBottomRail(item)} className={`overflow-hidden border p-2 text-left text-[10px] ${bottomRail === item ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>
@@ -292,15 +376,15 @@ export function ProductDetail() {
                   </div>
                 </>}
 
-                <div className="border-b border-[#ccd9df] py-6">
+                {!isRoldour && <div className="border-b border-[#ccd9df] py-6">
                   <div className="mb-4 flex justify-between text-[10px] uppercase tracking-[.18em]"><span>Aukahlutir</span><span className="text-[#667984]">{accessories[accessory].name}</span></div>
                   <div className="space-y-2">{accessories.map((item, index) => <button key={item.name} onClick={() => setAccessory(index)} className={`flex w-full items-center justify-between border px-3 py-3 text-left transition ${accessory === index ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df] hover:border-[#7e9bab]"}`}><span><span className="block text-[11px]">{item.name}</span><span className="mt-1 block text-[10px] text-[#667984]">{item.detail}</span></span><span className="whitespace-nowrap pl-3 text-[10px] text-[#5a6b74]">{item.price ? `+${item.price.toLocaleString("is-IS")} kr.` : "Innifalið"}</span></button>)}</div>
-                </div>
+                </div>}
 
-                <div className="flex items-center gap-3 py-6 border-b border-[#ccd9df]">
+                 {!isRoldour && <div className="flex items-center gap-3 py-6 border-b border-[#ccd9df]">
                    <div className="flex h-[51px] items-center border border-[#ccd9df]"><button onClick={() => setQuantity(normalizeQuantity(quantity - 1))} disabled={quantity <= 1} aria-label="Fækka fjölda" className="grid h-full w-10 place-items-center disabled:opacity-40"><Minus size={14} /></button><span className="w-7 text-center text-sm" aria-live="polite">{normalizeQuantity(quantity)}</span><button onClick={() => setQuantity(normalizeQuantity(quantity + 1))} disabled={quantity >= 99} aria-label="Auka fjölda" className="grid h-full w-10 place-items-center disabled:opacity-40"><Plus size={14} /></button></div>
                    <button onClick={addToCart} disabled={!hasLivePrice || !validDimensions} className="flex h-[51px] flex-1 items-center justify-center gap-3 bg-[#a2c2e2] text-[10px] uppercase tracking-[.2em] transition hover:bg-[#89b0d5] disabled:cursor-not-allowed disabled:opacity-45">Bæta í körfu <Plus size={15} /></button>
-                </div>
+                 </div>}
                 
                  <div id="upplýsingar" className="mt-4">{["Efni & ljós", "Mæling & uppsetning"].map((detail) => <div key={detail} className="border-b border-[#ccd9df]"><button onClick={() => setOpenDetail(openDetail === detail ? null : detail)} className="flex w-full items-center justify-between py-5 text-left text-[10px] uppercase tracking-[.18em]">{detail}<ChevronDown size={16} className={`transition ${openDetail === detail ? "rotate-180" : ""}`} /></button>{openDetail === detail && <p className="max-w-md pb-5 text-sm leading-6 text-[#5a6b74]">{detail === "Efni & ljós" ? `${product.title} er sérsmíðað kerfi. Veldu lit og uppsetningu sem hentar birtu, næði og loftflæði rýmisins.` : "Sláðu inn breidd og hæð hér að ofan til að senda inn rétta grunnstillingu fyrir tilboðið."}</p>}</div>)}</div>
               </div>

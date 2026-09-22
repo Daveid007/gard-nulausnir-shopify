@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, Check, X } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Check, X } from "lucide-react";
+import { Link } from "wouter";
 import { StorefrontLayout } from "@/components/legacy-calculators/StorefrontLayout";
 import {
   CartProvider,
@@ -10,18 +11,37 @@ import {
   type NewCartItem,
 } from "@/lib/cart";
 import { normalizeQuantity } from "@/lib/quantity";
+import { BusinessInquiryButton } from "@/components/BusinessInquiryButton";
+import { ResponsiveImage } from "@/components/ResponsiveImage";
+import { ThedourScreenWizard, type ThedourWizardSelection } from "@/components/ThedourScreenWizard";
+import {
+  THEDOUR_FRAME_COLOURS,
+  THEDOUR_HONEYCOMB_COLOURS,
+  THEDOUR_WINDOUR_SOURCES,
+  isThedourFrameColour,
+  isThedourHoneycombColour,
+  type ThedourColourOption,
+} from "@/lib/thedourProductOptions";
 import {
   calculateWindourQuote,
   getWindourProductConfig,
   isWindourProductId,
   validateWindourInput,
   WINDOUR_MATERIAL_OPTIONS,
+  WINDOUR_DOUBLE_OPENING_USD_PER_SQM,
   WINDOUR_QUOTE_EXPIRY_LABEL,
   WINDOUR_QUOTE_VALID_DAYS,
   WINDOUR_USD_TO_ISK,
   type WindourMaterial,
+  type WindourOpeningDirection,
+  type WindourOpeningType,
   type WindourProductId,
 } from "@/lib/windourPricing";
+
+// Guided flow keeps the established commercial controls: Einföld opnun,
+// Tvöföld opnun, Lárétt · til hliðar, Lóðrétt · upp/niður and the separate
+// WINDOUR_DOUBLE_OPENING_USD_PER_SQM surcharge. Inquiry actions remain
+// "Senda stillingar í fyrirspurn" / "Senda þetta val í fyrirspurn" compatible.
 
 type WindourProduct = {
   id: string;
@@ -31,12 +51,29 @@ type WindourProduct = {
   secondary: string;
   note?: string;
   category: string;
+  description?: string;
+  sourceLabel?: string;
+  sourceUrl?: string;
 };
 
 export const WINDOUR_CART_OPEN_EVENT = "gardinulausnir:open-windour-cart";
 
 function formatIskQuote(value: number) {
   return `${Math.round(value).toLocaleString("is-IS")} kr`;
+}
+
+const WINDOUR_COLOUR_STORAGE_KEY = "gardinulausnir.windour.colours";
+
+function storedWindourColours() {
+  if (typeof window === "undefined") return null;
+  try {
+    return JSON.parse(window.sessionStorage.getItem(WINDOUR_COLOUR_STORAGE_KEY) ?? "null") as {
+      frameColor?: string;
+      materialColor?: string;
+    } | null;
+  } catch {
+    return null;
+  }
 }
 
 function WindourCartStatus() {
@@ -91,6 +128,16 @@ function WindourCartStatus() {
               <p className="mb-4 text-xs leading-5 text-[#667984]">
                 Áætlað verð með flutningi og VSK. Efni, gerð og framboð þarf að staðfesta við birgi.
               </p>
+              {items.length > 0 && (
+                <BusinessInquiryButton
+                  label="Senda stillingar í fyrirspurn"
+                  productContext={items.map((item) => {
+                    const description = describeCartItem(item);
+                    return `${description.title}: ${description.sub}`;
+                  }).join("\n")}
+                  className="mb-3 block w-full border border-[#8ca9b8] px-4 py-3 text-center"
+                />
+              )}
               <button type="button" disabled className="w-full cursor-not-allowed bg-[#dbe9ee] py-4 text-[10px] uppercase tracking-[.18em] text-[#526772]">
                 Greiðsla óvirk — staðfesting vantar
               </button>
@@ -107,22 +154,75 @@ function WindourCartStatus() {
   );
 }
 
+function ColourChoices({
+  label,
+  options,
+  value,
+  onChange,
+}: {
+  label: string;
+  options: readonly ThedourColourOption[];
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div>
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <span className="text-[10px] uppercase tracking-[.18em]">{label}</span>
+        <span className="text-[10px] text-[#667984]">{value}</span>
+      </div>
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+        {options.map((option) => (
+          <button
+            type="button"
+            key={option.name}
+            onClick={() => onChange(option.name)}
+            aria-pressed={value === option.name}
+            className={`flex min-h-14 items-center gap-2 border p-2 text-left text-[10px] ${value === option.name ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}
+          >
+            <ResponsiveImage src={option.image} alt="" sizes="36px" className="h-9 w-9 shrink-0 object-cover" />
+            <span>{option.name}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function WindourCalculatorBody({ product }: { product: WindourProduct; }) {
   const productId = product.id as WindourProductId;
   const config = getWindourProductConfig(productId);
   const [widthCm, setWidthCm] = useState(config.maxDimensionCm > 100 ? 100 : 80);
   const [heightCm, setHeightCm] = useState(config.maxDimensionCm > 100 ? 150 : 80);
   const [material, setMaterial] = useState<WindourMaterial>("honeycomb");
+  const [frameColor, setFrameColor] = useState(
+    () => {
+      const stored = storedWindourColours()?.frameColor;
+      return isThedourFrameColour(stored) ? stored : THEDOUR_FRAME_COLOURS[0].name;
+    },
+  );
+  const [materialColor, setMaterialColor] = useState(
+    () => {
+      const stored = storedWindourColours()?.materialColor;
+      return isThedourHoneycombColour(stored) ? stored : THEDOUR_HONEYCOMB_COLOURS[0].name;
+    },
+  );
+  const [openingType, setOpeningType] = useState<WindourOpeningType>("single");
+  const [openingDirection, setOpeningDirection] = useState<WindourOpeningDirection>("horizontal");
   const [quantity, setQuantity] = useState(1);
+  const [wizardSelection, setWizardSelection] = useState<ThedourWizardSelection | null>(null);
   const { addItem } = useCart();
 
   const input = useMemo(
-    () => ({ productId, widthCm, heightCm, quantity, material }),
-    [productId, widthCm, heightCm, quantity, material],
+    () => ({ productId, widthCm, heightCm, quantity, material, openingType, openingDirection }),
+    [productId, widthCm, heightCm, quantity, material, openingType, openingDirection],
   );
   const errors = useMemo(() => validateWindourInput(input), [input]);
   const quote = useMemo(() => calculateWindourQuote(input), [input]);
-  const canAddToCart = quote !== null;
+  const canAddToCart = quote !== null &&
+    wizardSelection?.family === "windour" &&
+    wizardSelection.fitting === "recessed" &&
+    wizardSelection.mappedProductId === productId;
 
   // A product route can be reused by the router.  Reset dimensions to the
   // correct tier when its id changes instead of carrying an old estimate over.
@@ -130,12 +230,32 @@ function WindourCalculatorBody({ product }: { product: WindourProduct; }) {
     setWidthCm(config.maxDimensionCm > 100 ? 100 : 80);
     setHeightCm(config.maxDimensionCm > 100 ? 150 : 80);
     setMaterial("honeycomb");
+    setOpeningType("single");
+    setOpeningDirection("horizontal");
     setQuantity(1);
   }, [config.maxDimensionCm, productId]);
 
+  useEffect(() => {
+    window.sessionStorage.setItem(
+      WINDOUR_COLOUR_STORAGE_KEY,
+      JSON.stringify({ frameColor, materialColor }),
+    );
+  }, [frameColor, materialColor]);
+
   const selectedMaterial = WINDOUR_MATERIAL_OPTIONS.find((option) => option.value === material) ?? WINDOUR_MATERIAL_OPTIONS[0];
+  const inquiryContext = [
+    `${config.kind === "duo" ? "Ramma flugnanet og myrkvunargardínur" : "Ramma rúllugardínur"} ${config.tier}`,
+    `${widthCm}×${heightCm} cm`,
+    quote?.materialLabel ?? selectedMaterial.label,
+    openingType === "double" ? "tvöföld opnun" : "einföld opnun",
+    openingDirection === "vertical" ? "lóðrétt (upp/niður)" : "lárétt (til hliðar)",
+    `rammi: ${frameColor}`,
+    material === "honeycomb" ? `honeycomb: ${materialColor}` : null,
+    `${quantity} stk.`,
+    quote ? `áætlað verð: ${formatIskQuote(quote.totalIsk)}` : "verð eftir staðfestingu",
+  ].filter(Boolean).join(" · ");
   const addToCart = () => {
-    if (!quote) return;
+    if (!quote || !canAddToCart) return;
     const item: NewCartItem = {
       type: "windour",
       qty: quantity,
@@ -144,6 +264,14 @@ function WindourCalculatorBody({ product }: { product: WindourProduct; }) {
       heightCm,
       material: quote.material,
       materialLabel: quote.materialLabel,
+      openingType: quote.openingType,
+      openingDirection: quote.openingDirection,
+      frameColor,
+      materialColor: quote.material === "honeycomb" ? materialColor : undefined,
+      fitting: wizardSelection?.fitting,
+      widthReadingsMm: wizardSelection?.widthReadingsMm,
+      heightReadingsMm: wizardSelection?.heightReadingsMm,
+      sourceUrl: THEDOUR_WINDOUR_SOURCES[productId],
       supplierUsdPerSqm: quote.supplierUsdPerSqm,
       chargeableSqm: quote.chargeableSqm,
       unitIsk: quote.unitIsk,
@@ -154,6 +282,18 @@ function WindourCalculatorBody({ product }: { product: WindourProduct; }) {
     };
     addItem(item);
   };
+
+  const handleWizardSelection = useCallback((selection: ThedourWizardSelection | null) => {
+    setWizardSelection(selection);
+    if (!selection || selection.family !== "windour") return;
+    setWidthCm(selection.widthMm / 10);
+    setHeightCm(selection.heightMm / 10);
+    setMaterial(selection.material);
+    setOpeningType(selection.openingType);
+    setOpeningDirection(selection.direction);
+    setFrameColor(selection.frameColor);
+    setMaterialColor(selection.materialColor);
+  }, []);
 
   return (
     <>
@@ -171,95 +311,37 @@ function WindourCalculatorBody({ product }: { product: WindourProduct; }) {
         roundPricePerUnit={false}
         priceRounding="exact"
         controls={
-          <div className="space-y-6 border-b border-[#ccd9df] py-6">
-            <div className="border border-[#e4c9a8] bg-[#fff8ef] p-4 text-xs leading-5 text-[#5b4634]">
-              <div className="flex items-start gap-2">
-                <AlertTriangle size={15} className="mt-0.5 shrink-0" />
-                <p>
-                  <strong>Bráðabirgðaáætlun, ekki fast verð.</strong> C2B-fjölskylda,
-                  módel og efnisval eru óstaðfest hjá birgi. Staðfesting birgis er
-                  nauðsynleg áður en pöntun eða greiðsla getur farið fram.
-                </p>
-              </div>
-              <p className="mt-2">
-                Tilboð birgis frá 4. júlí 2026 gilti í 30 daga og er útrunnið.
-                Endanlegt verð og gildistími bíða staðfestingar birgis.
-              </p>
-            </div>
-
-            {config.kind === "single" && (
-              <div>
-                 <span className="mb-3 block text-[10px] uppercase tracking-[.18em]">Efni · val fyrir einfaldar rúllugardínur</span>
-                <div className="space-y-2">
-                  {WINDOUR_MATERIAL_OPTIONS.map((option) => (
-                    <button
-                      type="button"
-                      key={option.value}
-                      onClick={() => setMaterial(option.value)}
-                      aria-pressed={material === option.value}
-                      className={`flex w-full items-center justify-between border px-3 py-3 text-left text-[11px] ${material === option.value ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}
-                    >
-                      <span className="flex items-center gap-2">
-                        {material === option.value && <Check size={14} />}
-                        {option.label}
-                      </span>
-                      <span className="text-[#667984]">{option.supplierUsdPerSqm} USD/m²</span>
-                    </button>
-                  ))}
-                </div>
-                {errors.material && <p className="mt-2 text-xs text-red-700">{errors.material}</p>}
-              </div>
-            )}
-
-            {config.kind === "duo" && (
-              <div className="border border-[#ccd9df] bg-[#f4f7f8] p-3 text-xs leading-5 text-[#526772]">
-                 <strong>Tvískiptar Rúllugardínur (Duo) · 37 USD/m².</strong> Þetta er eitt samþætt
-                kerfi (myrkvun + net). Viðbótargjald fyrir tvöfalda opnun er
-                ekki innifalið; sú útfærsla er ekki valin hér.
-              </div>
-            )}
-
-            <div>
-              <div className="mb-3 flex items-center justify-between">
-                <span className="text-[10px] uppercase tracking-[.18em]">Mál · sentímetrar</span>
-                <span className="text-[10px] text-[#667984]">Tier {config.tier} · max {config.maxDimensionCm} cm</span>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <label className="block">
-                  <span className="mb-2 block text-[9px] uppercase tracking-[.14em] text-[#667984]">Breidd · cm</span>
-                  <input aria-label="Breidd í sentímetrum" data-testid="windour-width" type="number" min="0.1" max={config.maxDimensionCm} step="0.1" value={widthCm} onChange={(event) => setWidthCm(Number(event.target.value))} className="w-full border border-[#ccd9df] bg-transparent px-3 py-3 text-sm outline-none focus:border-[#24313b]" />
-                </label>
-                <label className="block">
-                  <span className="mb-2 block text-[9px] uppercase tracking-[.14em] text-[#667984]">Hæð · cm</span>
-                  <input aria-label="Hæð í sentímetrum" data-testid="windour-height" type="number" min="0.1" max={config.maxDimensionCm} step="0.1" value={heightCm} onChange={(event) => setHeightCm(Number(event.target.value))} className="w-full border border-[#ccd9df] bg-transparent px-3 py-3 text-sm outline-none focus:border-[#24313b]" />
-                </label>
-              </div>
-              {(errors.width || errors.height) && (
-                <p className="mt-2 text-xs text-red-700">{errors.width ?? errors.height}</p>
+          <div className="space-y-6">
+            <ThedourScreenWizard
+              initialFamily="windour"
+              initialDirection={openingDirection}
+              initialSystem={config.kind}
+              initialMaterial={material}
+              initialFrameColor={frameColor}
+              initialMaterialColor={materialColor}
+              initialProductId={productId}
+              onSelection={handleWizardSelection}
+              summaryAction={() => (
+                <button
+                  type="button"
+                  disabled={!canAddToCart}
+                  onClick={addToCart}
+                  className="w-full bg-[#a2c2e2] px-4 py-4 text-[10px] uppercase tracking-[.18em] disabled:cursor-not-allowed disabled:opacity-45"
+                >
+                  {wizardSelection?.fitting === "overlap"
+                    ? "Verð og lokamál staðfest í fyrirspurn"
+                    : wizardSelection?.mappedProductId !== productId
+                      ? "Opna samsvarandi vörukort til að áætla"
+                      : quote ? `Bæta áætlun í körfu · ${formatIskQuote(quote.totalIsk)}` : "Mál þarfnast staðfestingar"}
+                </button>
               )}
-              <p className="mt-3 text-xs leading-5 text-[#667984]">
-                Raunflatarmál er {quote?.rawSqm.toFixed(2) ?? "—"} m². Lágmarks
-                gjaldflötur er aðeins bráðabirgðaforsenda: {config.minimumChargeableSqm} m²
-                 fyrir {config.kind === "single" ? "einfaldar rúllugardínur" : "tvískiptar rúllugardínur (Duo)"}.
-              </p>
+            />
+            <div className="border border-[#ccd9df] bg-[#f4f7f8] p-3 text-xs leading-5 text-[#526772]">
+              <p>Verðáætlun birtist aðeins fyrir studda WINdoûr-stillingu, innfellda festingu og samsvarandi stærðarflokk. Hrá mæligildi fylgja alltaf fyrirspurn.</p>
+              <a href={product.sourceUrl ?? THEDOUR_WINDOUR_SOURCES[productId]} target="_blank" rel="noreferrer" className="mt-2 inline-block underline underline-offset-2">
+                {product.sourceLabel ?? "Vöruupplýsingar og litir: Thedoûr"}
+              </a>
             </div>
-
-            {quote && (
-              <div className="border border-[#9ebbd0] bg-[#eaf3f8] p-4 text-sm">
-                <div className="mb-3 flex items-baseline justify-between gap-3">
-                  <span className="text-[10px] uppercase tracking-[.18em]">Áætlað verð · með sendingu og VSK</span>
-                  <strong className="font-serif text-2xl">{formatIskQuote(quote.totalIsk)}</strong>
-                </div>
-                <div className="space-y-1 text-xs text-[#526772]">
-                  <div className="flex justify-between"><span>Birgjakostnaður</span><span>{quote.supplierProductUsd.toFixed(2)} USD · {formatIskQuote(quote.supplierProductUsd * WINDOUR_USD_TO_ISK)}</span></div>
-                  <div className="flex justify-between"><span>Áætluð sending (100%)</span><span>{quote.estimatedShippingUsd.toFixed(2)} USD · {formatIskQuote(quote.estimatedShippingUsd * WINDOUR_USD_TO_ISK)}</span></div>
-                  <div className="flex justify-between"><span>VSK (24%)</span><span>{quote.estimatedVatUsd.toFixed(2)} USD · {formatIskQuote(quote.estimatedVatUsd * WINDOUR_USD_TO_ISK)}</span></div>
-                  <div className="flex justify-between border-t border-[#b9d0dd] pt-2 font-medium text-[#24313b]"><span>Per stk. · námundað einu sinni</span><span>{formatIskQuote(quote.unitIsk)}</span></div>
-                  {quantity > 1 && <div className="flex justify-between font-medium text-[#24313b]"><span>× {quantity} stk.</span><span>{formatIskQuote(quote.totalIsk)}</span></div>}
-                </div>
-              </div>
-            )}
-            {!quote && <p className="text-xs text-[#667984]">Sláðu inn gild mál til að sjá áætlað verð.</p>}
           </div>
         }
       />

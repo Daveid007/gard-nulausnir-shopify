@@ -24,13 +24,18 @@ export const WINDOUR_PRODUCT_IDS = [
 export type WindourProductId = (typeof WINDOUR_PRODUCT_IDS)[number];
 export type WindourKind = "single" | "duo";
 export type WindourMaterial = "honeycomb" | "polyester-net" | "taiwan-pet-net";
+export type WindourOpeningType = "single" | "double";
+export type WindourOpeningDirection = "horizontal" | "vertical";
+
+// The C2 supplier quotation lists this separately from the screen/material
+// rate. It is an opening-arrangement surcharge, not a DUO product surcharge.
+export const WINDOUR_DOUBLE_OPENING_USD_PER_SQM = 2.5;
 
 export type WindourProductConfig = {
   id: WindourProductId;
   kind: WindourKind;
   tier: "999" | "2000";
   maxDimensionCm: number;
-  minimumChargeableSqm: number;
 };
 
 export type WindourMaterialOption = {
@@ -63,28 +68,24 @@ const PRODUCT_CONFIGS: Record<WindourProductId, WindourProductConfig> = {
     kind: "single",
     tier: "999",
     maxDimensionCm: 99.9,
-    minimumChargeableSqm: 1,
   },
   "windour-single-2000": {
     id: "windour-single-2000",
     kind: "single",
     tier: "2000",
     maxDimensionCm: 200,
-    minimumChargeableSqm: 1,
   },
   "windour-duo-999": {
     id: "windour-duo-999",
     kind: "duo",
     tier: "999",
     maxDimensionCm: 99.9,
-    minimumChargeableSqm: 1.2,
   },
   "windour-duo-2000": {
     id: "windour-duo-2000",
     kind: "duo",
     tier: "2000",
     maxDimensionCm: 200,
-    minimumChargeableSqm: 1.2,
   },
 };
 
@@ -100,12 +101,18 @@ export function materialOption(value: WindourMaterial): WindourMaterialOption {
   return WINDOUR_MATERIAL_OPTIONS.find((option) => option.value === value) ?? WINDOUR_MATERIAL_OPTIONS[0];
 }
 
+export function getWindourMinimumChargeableSqm(openingType: WindourOpeningType): number {
+  return openingType === "double" ? 1.2 : 1;
+}
+
 export type WindourQuoteInput = {
   productId: WindourProductId;
   widthCm: number;
   heightCm: number;
   quantity: number;
   material?: WindourMaterial;
+  openingType?: WindourOpeningType;
+  openingDirection?: WindourOpeningDirection;
 };
 
 export type WindourInputErrors = {
@@ -113,6 +120,8 @@ export type WindourInputErrors = {
   height?: string;
   quantity?: string;
   material?: string;
+  openingType?: string;
+  openingDirection?: string;
 };
 
 export type WindourQuote = {
@@ -121,7 +130,10 @@ export type WindourQuote = {
   tier: "999" | "2000";
   material: WindourMaterial;
   materialLabel: string;
+  openingType: WindourOpeningType;
+  openingDirection: WindourOpeningDirection;
   supplierUsdPerSqm: number;
+  openingSurchargeUsd: number;
   rawSqm: number;
   chargeableSqm: number;
   supplierProductUsd: number;
@@ -158,8 +170,20 @@ export function validateWindourInput(input: WindourQuoteInput): WindourInputErro
   if (config.kind === "single") {
     const selectedMaterial = input.material;
     if (!selectedMaterial || !WINDOUR_MATERIAL_OPTIONS.some((option) => option.value === selectedMaterial)) {
-       errors.material = "Veldu eitt efni fyrir einfaldar rúllugardínur.";
+       errors.material = "Veldu eitt efni fyrir Ramma rúllugardínur.";
     }
+  }
+
+  if (input.openingType !== undefined && input.openingType !== "single" && input.openingType !== "double") {
+    errors.openingType = "Veldu einfalda eða tvöfalda opnun.";
+  }
+
+  if (
+    input.openingDirection !== undefined &&
+    input.openingDirection !== "horizontal" &&
+    input.openingDirection !== "vertical"
+  ) {
+    errors.openingDirection = "Veldu lárétta eða lóðrétta opnun.";
   }
 
   return errors;
@@ -170,14 +194,19 @@ export function calculateWindourQuote(input: WindourQuoteInput): WindourQuote | 
   if (Object.keys(errors).length > 0) return null;
 
   const config = PRODUCT_CONFIGS[input.productId];
-  // Duo is one integrated system.  It is deliberately not multiplied by two
-  // and does not receive the separate dual-opening surcharge.
+  // Duo is one integrated system and is deliberately not multiplied by two.
+  // The surcharge and minimum below depend only on the selected opening type.
   const material = config.kind === "duo"
-     ? { value: "honeycomb" as const, label: "Tvískiptar Rúllugardínur (Duo) · myrkvun + net", supplierUsdPerSqm: 37 }
+     ? { value: "honeycomb" as const, label: "Ramma flugnanet og myrkvunargardínur · myrkvun + net", supplierUsdPerSqm: 37 }
     : materialOption(input.material as WindourMaterial);
   const rawSqm = (input.widthCm * input.heightCm) / 10000;
-  const chargeableSqm = Math.max(rawSqm, config.minimumChargeableSqm);
-  const supplierProductUsd = material.supplierUsdPerSqm * chargeableSqm;
+  const openingType = input.openingType ?? "single";
+  const chargeableSqm = Math.max(rawSqm, getWindourMinimumChargeableSqm(openingType));
+  const openingDirection = input.openingDirection ?? "horizontal";
+  const openingSurchargeUsd = openingType === "double"
+    ? WINDOUR_DOUBLE_OPENING_USD_PER_SQM * chargeableSqm
+    : 0;
+  const supplierProductUsd = material.supplierUsdPerSqm * chargeableSqm + openingSurchargeUsd;
   const estimatedShippingUsd = supplierProductUsd * (WINDOUR_SHIPPING_MULTIPLIER - 1);
   const beforeVatUsd = supplierProductUsd * WINDOUR_SHIPPING_MULTIPLIER * WINDOUR_MARKUP_MULTIPLIER;
   const estimatedVatUsd = beforeVatUsd * (WINDOUR_VAT_MULTIPLIER - 1);
@@ -190,7 +219,10 @@ export function calculateWindourQuote(input: WindourQuoteInput): WindourQuote | 
     tier: config.tier,
     material: material.value,
     materialLabel: material.label,
+    openingType,
+    openingDirection,
     supplierUsdPerSqm: material.supplierUsdPerSqm,
+    openingSurchargeUsd,
     rawSqm,
     chargeableSqm,
     supplierProductUsd,
