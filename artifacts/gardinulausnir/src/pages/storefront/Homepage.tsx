@@ -16,7 +16,7 @@ const collectionHref = "/collection";
 const collections = [
   { id: "curtains", href: `${collectionHref}#curtains`, title: "Gluggatjöld", description: "1000, 2828 og 2883 · 14 + 17 + 6 litasýnishorn.", image: curtainProductCoverImage("curtains-1000") },
   { id: "honeycomb", href: `${collectionHref}#honeycomb`, title: "Myrkvunargardínur", description: "Gardínur eftir máli sem loka birtuna úti.", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-honeycomb-45mm.png?v=1787921250" },
-  { id: "roller", href: `${collectionHref}#roller`, title: "Rúllugardínur", description: "Vandaðar gardínur eftir máli fyrir algjört myrkur.", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-square-cassette.png?v=1787921305" },
+  { id: "roller", href: `${collectionHref}#roller`, title: "Rúllugardínur", description: "Rúllugardínur eftir máli — hægt að velja með hliðarlistum eða án.", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-square-cassette.png?v=1787921305" },
   { id: "sheer-shades", href: `${collectionHref}#sheer-shades`, title: "Sheer Shades", description: "Láréttar Sheer Shades fyrir stillanlega dagsbirtu og næði.", image: "" },
   { id: "butterfly", href: `${collectionHref}#butterfly`, title: "Fiðrildagardínur", description: "Lárétt Butterfly-kerfi með mjúkri ljósstýringu.", image: "" },
   { id: "vertical-sheer", href: `${collectionHref}#vertical-sheer-shades`, title: "Lóðréttar vefgardínur", description: "Vertical Sheer Shades / Dream Shades · 17 efni.", image: new URL("../../assets/vertical-sheer-shades/cases/Vertical sheer shades (2).jpg", import.meta.url).href },

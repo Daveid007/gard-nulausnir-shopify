@@ -60,7 +60,7 @@ export const COLLECTION_CATEGORY_DEFINITIONS: readonly CollectionCategoryDefinit
     key: "roller",
     label: "Rúllugardínur",
     english: "HANDE / ROLLER",
-    description: "Vandaðar gardínur eftir máli fyrir algjört myrkur.",
+    description: "Rúllugardínur eftir máli — hægt að velja með hliðarlistum eða án. Hliðarlistar hjálpa til við að draga úr birtu meðfram hliðum gardínunnar.",
     hash: "roller",
   },
   {

@@ -247,6 +247,12 @@ export function RollerWorkbookCalculator({
       onAddToCart={addToCart}
       controls={
         <>
+          {family === "roller" && (
+            <aside className="my-5 rounded border border-[#9ebbd0] bg-[#eaf3f8] p-4 text-sm leading-6 text-[#344b59]" aria-label="Rúllugardínur með hliðarlistum">
+              <strong className="block text-[#24313b]">Hægt að velja hliðarlista með rúllugardínum</strong>
+              <p className="mt-1">Hliðarlistar hjálpa til við að draga úr birtu meðfram hliðum gardínunnar. Veldu með hliðarlistum eða án í valinu hér fyrir neðan. Þeir eru valfrjálsir og verð þeirra bætist aðeins við ef þeir eru valdir.</p>
+            </aside>
+          )}
           <section className="border-b border-[#ccd9df] py-6">
             <div className="mb-3 flex items-center justify-between gap-3">
               <p className="text-[10px] uppercase tracking-[.18em]">Efni · {FAMILY_LABELS[family]}</p>
