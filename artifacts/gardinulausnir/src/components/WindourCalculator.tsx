@@ -64,6 +64,7 @@ function formatIskQuote(value: number) {
 }
 
 const WINDOUR_COLOUR_STORAGE_KEY = "gardinulausnir.windour.colours";
+const WINDOUR_SELECTION_STORAGE_KEY = "gardinulausnir.windour.selection";
 
 function storedWindourColours() {
   if (typeof window === "undefined") return null;
@@ -72,6 +73,24 @@ function storedWindourColours() {
       frameColor?: string;
       materialColor?: string;
     } | null;
+  } catch {
+    return null;
+  }
+}
+
+function storedWindourSelection(): ThedourWizardSelection | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const value = JSON.parse(window.sessionStorage.getItem(WINDOUR_SELECTION_STORAGE_KEY) ?? "null") as Partial<ThedourWizardSelection> | null;
+    if (
+      value?.family !== "windour" ||
+      !isWindourProductId(value.mappedProductId) ||
+      typeof value.widthMm !== "number" ||
+      typeof value.heightMm !== "number" ||
+      value.widthMm <= 0 ||
+      value.heightMm <= 0
+    ) return null;
+    return value as ThedourWizardSelection;
   } catch {
     return null;
   }
@@ -193,25 +212,31 @@ function ColourChoices({
 function WindourCalculatorBody({ product }: { product: WindourProduct; }) {
   const productId = product.id as WindourProductId;
   const config = getWindourProductConfig(productId);
-  const [widthCm, setWidthCm] = useState(config.maxDimensionCm > 100 ? 100 : 80);
-  const [heightCm, setHeightCm] = useState(config.maxDimensionCm > 100 ? 150 : 80);
-  const [material, setMaterial] = useState<WindourMaterial>("honeycomb");
+  const [restoredSelection] = useState(() => {
+    const stored = storedWindourSelection();
+    return stored?.mappedProductId === productId ? stored : null;
+  });
+  const [widthCm, setWidthCm] = useState(restoredSelection ? restoredSelection.widthMm / 10 : config.maxDimensionCm > 100 ? 100 : 80);
+  const [heightCm, setHeightCm] = useState(restoredSelection ? restoredSelection.heightMm / 10 : config.maxDimensionCm > 100 ? 150 : 80);
+  const [material, setMaterial] = useState<WindourMaterial>(restoredSelection?.material ?? "honeycomb");
   const [frameColor, setFrameColor] = useState(
     () => {
+      if (restoredSelection) return restoredSelection.frameColor;
       const stored = storedWindourColours()?.frameColor;
       return isThedourFrameColour(stored) ? stored : THEDOUR_FRAME_COLOURS[0].name;
     },
   );
   const [materialColor, setMaterialColor] = useState(
     () => {
+      if (restoredSelection) return restoredSelection.materialColor;
       const stored = storedWindourColours()?.materialColor;
       return isThedourHoneycombColour(stored) ? stored : THEDOUR_HONEYCOMB_COLOURS[0].name;
     },
   );
-  const [openingType, setOpeningType] = useState<WindourOpeningType>("single");
-  const [openingDirection, setOpeningDirection] = useState<WindourOpeningDirection>("horizontal");
+  const [openingType, setOpeningType] = useState<WindourOpeningType>(restoredSelection?.openingType ?? "single");
+  const [openingDirection, setOpeningDirection] = useState<WindourOpeningDirection>(restoredSelection?.direction ?? "horizontal");
   const [quantity, setQuantity] = useState(1);
-  const [wizardSelection, setWizardSelection] = useState<ThedourWizardSelection | null>(null);
+  const [wizardSelection, setWizardSelection] = useState<ThedourWizardSelection | null>(restoredSelection);
   const { addItem } = useCart();
 
   const input = useMemo(
@@ -226,17 +251,6 @@ function WindourCalculatorBody({ product }: { product: WindourProduct; }) {
     wizardSelection.fitting === "recessed" &&
     !wizardSelection.requiresCustomQuote &&
     wizardSelection.mappedProductId === productId;
-
-  // A product route can be reused by the router.  Reset dimensions to the
-  // correct tier when its id changes instead of carrying an old estimate over.
-  useEffect(() => {
-    setWidthCm(config.maxDimensionCm > 100 ? 100 : 80);
-    setHeightCm(config.maxDimensionCm > 100 ? 150 : 80);
-    setMaterial("honeycomb");
-    setOpeningType("single");
-    setOpeningDirection("horizontal");
-    setQuantity(1);
-  }, [config.maxDimensionCm, productId]);
 
   useEffect(() => {
     window.sessionStorage.setItem(
@@ -305,6 +319,7 @@ function WindourCalculatorBody({ product }: { product: WindourProduct; }) {
   const handleWizardSelection = useCallback((selection: ThedourWizardSelection | null) => {
     setWizardSelection(selection);
     if (!selection || selection.family !== "windour") return;
+    window.sessionStorage.setItem(WINDOUR_SELECTION_STORAGE_KEY, JSON.stringify(selection));
     setWidthCm(selection.widthMm / 10);
     setHeightCm(selection.heightMm / 10);
     setMaterial(selection.material);
@@ -340,6 +355,7 @@ function WindourCalculatorBody({ product }: { product: WindourProduct; }) {
               initialFrameColor={frameColor}
               initialMaterialColor={materialColor}
               initialProductId={productId}
+              initialSelection={restoredSelection}
               onSelection={handleWizardSelection}
               summaryAction={() => (
                 <button

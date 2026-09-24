@@ -22,7 +22,7 @@ const collections = [
   { id: "vertical-sheer", href: `${collectionHref}#vertical-sheer-shades`, title: "Lóðréttar vefgardínur", description: "Vertical Sheer Shades / Dream Shades · 17 efni.", image: new URL("../../assets/vertical-sheer-shades/cases/Vertical sheer shades (2).jpg", import.meta.url).href },
   { id: "windour", href: `${collectionHref}#windour`, title: "WINdoûr — Rammagardínur", description: "Meira en gardína — eins og húsgagn í rýminu. Skoðaðu öll single- og duo-kerfin.", image: "https://cdn.shopify.com/s/files/1/0513/7589/8773/files/Gemini_Generated_Image_pg9wzppg9wzppg9w.png?v=1768448444" },
   { id: "roldour", href: `${collectionHref}#roldour`, title: "ROLdoûr — Rúllukerfi í ramma", description: "Sérsmíðuð rúllukerfi í ramma fyrir glugga og hurðir.", image: "https://cdn.shopify.com/s/files/1/0513/7589/8773/files/Gemini_Generated_Image_y9o0pcy9o0pcy9o0.png?v=1769688460" },
-  { id: "thedour-doors", href: `${collectionHref}#thedour-doors`, title: "Flugnanet og rammar", description: "Flugnanet fyrir hurðir sem halda skordýrum úti.", image: "https://cdn.shopify.com/s/files/1/0513/7589/8773/files/e6f45daa-cfd5-408a-88fe-c5eafba3034b.jpg?v=1769688238" },
+  { id: "thedour-doors", href: `${collectionHref}#thedour-doors`, title: "Hurðagardínur og flugnanet", description: "BLINDdoûr myrkvunarhurð og NETdoûr flugnanet fyrir hurðir — tvö ólík kerfi.", image: "https://cdn.shopify.com/s/files/1/0513/7589/8773/files/unnamed.jpg?v=1769688545" },
 ] as const;
 
 function HomepageHeader() {
