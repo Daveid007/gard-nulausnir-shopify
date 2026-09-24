@@ -9,6 +9,7 @@ import Collection from '@/pages/storefront/Collection';
 import ProductDetail from '@/pages/storefront/ProductDetail';
 import MeasurementPage from '@/pages/storefront/MeasurementPage';
 import AboutPage from '@/pages/storefront/AboutPage';
+import HomeOfficePage from '@/pages/storefront/HomeOfficePage';
 import {
   Route,
   Switch,
@@ -28,6 +29,7 @@ function Router() {
         <Route path="/maelingar" component={MeasurementPage} />
         <Route path="/collection" component={Collection} />
         <Route path="/um-okkur" component={AboutPage} />
+        <Route path="/heimili-og-skrifstofur" component={HomeOfficePage} />
         <Route path="/products/:id" component={ProductDetail} />
         <Route component={NotFound} />
       </Switch>
