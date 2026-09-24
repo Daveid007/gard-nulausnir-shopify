@@ -58,6 +58,7 @@ type Props = {
   initialFrameColor: string;
   initialMaterialColor: string;
   initialProductId?: string;
+  initialSelection?: ThedourWizardSelection | null;
   onSelection: (selection: ThedourWizardSelection | null) => void;
   summaryAction?: (selection: ThedourWizardSelection) => ReactNode;
 };
@@ -131,23 +132,28 @@ function Swatches({ options, value, onChange, label }: {
 }
 
 export function ThedourScreenWizard(props: Props) {
+  const restored = props.initialSelection?.family === props.initialFamily
+    ? props.initialSelection
+    : null;
   const [step, setStep] = useState(0);
   // Product families have separate entry points; selections cannot cross families.
   const family = props.initialFamily;
-  const [direction, setDirection] = useState(props.initialDirection);
-  const [system, setSystem] = useState<System>(props.initialSystem);
-  const [material, setMaterial] = useState<WindourMaterial>(props.initialMaterial ?? "honeycomb");
-  const [openingType, setOpeningType] = useState<WindourOpeningType>("single");
-  const [fitting, setFitting] = useState<Fitting>("recessed");
-  const [widths, setWidths] = useState(["", "", ""]);
-  const [heights, setHeights] = useState(["", "", ""]);
-  const [measurementMode, setMeasurementMode] = useState<WindourMeasurementMode>("opening");
-  const [outerWidth, setOuterWidth] = useState("");
-  const [outerHeight, setOuterHeight] = useState("");
-  const [frameColor, setFrameColor] = useState(props.initialFrameColor);
-  const [materialColor, setMaterialColor] = useState(props.initialMaterialColor);
-  const [duoPanelChoices, setDuoPanelChoices] = useState<string[]>([props.initialMaterialColor, WINDOUR_PLEATED_NET]);
-  const [additionalNotes, setAdditionalNotes] = useState("");
+  const [direction, setDirection] = useState(restored?.direction ?? props.initialDirection);
+  const [system, setSystem] = useState<System>(restored?.system ?? props.initialSystem);
+  const [material, setMaterial] = useState<WindourMaterial>(restored?.material ?? props.initialMaterial ?? "honeycomb");
+  const [openingType, setOpeningType] = useState<WindourOpeningType>(restored?.openingType ?? "single");
+  const [fitting, setFitting] = useState<Fitting>(restored?.fitting ?? "recessed");
+  const [widths, setWidths] = useState(() => restored?.widthReadingsMm?.map(String) ?? ["", "", ""]);
+  const [heights, setHeights] = useState(() => restored?.heightReadingsMm?.map(String) ?? ["", "", ""]);
+  const [measurementMode, setMeasurementMode] = useState<WindourMeasurementMode>(restored?.measurementMode ?? "opening");
+  const [outerWidth, setOuterWidth] = useState(() => restored?.measurementMode === "outer-frame" ? String(restored.widthMm) : "");
+  const [outerHeight, setOuterHeight] = useState(() => restored?.measurementMode === "outer-frame" ? String(restored.heightMm) : "");
+  const [frameColor, setFrameColor] = useState(restored?.frameColor ?? props.initialFrameColor);
+  const [materialColor, setMaterialColor] = useState(restored?.materialColor ?? props.initialMaterialColor);
+  const [duoPanelChoices, setDuoPanelChoices] = useState<string[]>(
+    restored?.duoPanelChoices ?? [restored?.materialColor ?? props.initialMaterialColor, WINDOUR_PLEATED_NET],
+  );
+  const [additionalNotes, setAdditionalNotes] = useState(restored?.additionalNotes ?? "");
   const [measurementError, setMeasurementError] = useState("");
   const [duoChoiceError, setDuoChoiceError] = useState("");
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -183,11 +189,12 @@ export function ThedourScreenWizard(props: Props) {
     : 0;
   const maxMm = family === "windour" ? 2000 : null;
   const duoChoicesValid = family !== "windour" || system !== "duo" || duoPanelChoices.length === 2;
-  const inSupportedRange = measurementsValid && duoChoicesValid &&
+  const measurementsInSupportedRange = measurementsValid &&
     (maxMm === null || (widthMm <= maxMm && heightMm <= maxMm));
+  const configurationValid = measurementsInSupportedRange && duoChoicesValid;
 
   const selection = useMemo<ThedourWizardSelection | null>(() => {
-    if (!inSupportedRange) return null;
+    if (!configurationValid) return null;
     const base = {
       family,
       direction,
@@ -216,7 +223,7 @@ export function ThedourScreenWizard(props: Props) {
       ...base,
       mappedProductId: initialRoldourStillCompatible ? props.initialProductId! : chooseProduct(base),
     };
-  }, [additionalNotes, direction, duoPanelChoices, family, fitting, frameColor, heightMm, inSupportedRange, material, materialColor, measurementMode, numericHeights, numericWidths, openingType, props.initialFamily, props.initialProductId, system, widthMm]);
+  }, [additionalNotes, configurationValid, direction, duoPanelChoices, family, fitting, frameColor, heightMm, material, materialColor, measurementMode, numericHeights, numericWidths, openingType, props.initialFamily, props.initialProductId, system, widthMm]);
 
   useEffect(() => {
     props.onSelection(selection);
@@ -238,17 +245,40 @@ export function ThedourScreenWizard(props: Props) {
     }
   };
 
+  const setMeasurementValidationError = () => {
+    setMeasurementError(measurementsValid && maxMm !== null
+      ? `Breidd og hæð mega ekki fara yfir ${maxMm} mm fyrir þessa vörufjölskyldu.`
+      : measurementMode === "outer-frame"
+        ? "Skráðu nákvæm ytri mál rammans sem jákvæðar tölur."
+        : "Skráðu öll sex mál opsins sem jákvæðar tölur.");
+  };
+
+  const goToStep = (target: number) => {
+    if (target === 8 && !measurementsInSupportedRange) {
+      setMeasurementValidationError();
+      setStep(6);
+      return;
+    }
+    if (target === 8 && !duoChoicesValid) {
+      setDuoChoiceError("Veldu nákvæmlega tvo DUO-efnisfleti áður en þú ferð í yfirlitið.");
+      setStep(7);
+      return;
+    }
+    setStep(target);
+  };
+
   const next = () => {
-    if (step === 6 && !inSupportedRange) {
-      setMeasurementError(measurementsValid && maxMm !== null
-        ? `Breidd og hæð mega ekki fara yfir ${maxMm} mm fyrir þessa vörufjölskyldu.`
-        : measurementMode === "outer-frame"
-          ? "Skráðu nákvæm ytri mál rammans sem jákvæðar tölur."
-          : "Skráðu öll sex mál opsins sem jákvæðar tölur.");
+    if (step === 6 && !measurementsInSupportedRange) {
+      setMeasurementValidationError();
       return;
     }
     if (step === 7 && family === "windour" && system === "duo" && duoPanelChoices.length !== 2) {
       setDuoChoiceError("Veldu nákvæmlega tvo DUO-efnisfleti áður en þú heldur áfram.");
+      return;
+    }
+    if (step === 7 && !measurementsInSupportedRange) {
+      setMeasurementError("Veldu mæliaðferð og skráðu gild mál áður en þú ferð í yfirlitið.");
+      setStep(6);
       return;
     }
     setStep((current) => Math.min(STEP_LABELS.length - 1, current + 1));
@@ -303,6 +333,23 @@ export function ThedourScreenWizard(props: Props) {
         <span className="text-xs text-[#667984]">{step + 1} / {STEP_LABELS.length}</span>
       </div>
       <div className="mb-7 h-1 overflow-hidden bg-[#dde6ea]" aria-hidden="true"><div className="h-full bg-[#6892b8] transition-all" style={{ width: `${((step + 1) / STEP_LABELS.length) * 100}%` }} /></div>
+      <nav aria-label="Skref í vöruvali" className="mb-7">
+        <ol className="grid grid-cols-3 gap-1 sm:grid-cols-5">
+          {STEP_LABELS.map((label, index) => (
+            <li key={label}>
+              <button
+                type="button"
+                aria-current={step === index ? "step" : undefined}
+                onClick={() => goToStep(index)}
+                className={`min-h-10 w-full border px-2 py-1 text-[10px] ${step === index ? "border-[#24313b] bg-[#e2edf1] font-medium" : "border-[#ccd9df] bg-transparent"}`}
+              >
+                {index + 1}. {label}
+              </button>
+            </li>
+          ))}
+        </ol>
+        <p className="mt-2 text-[10px] leading-4 text-[#667984]">Þú getur farið beint í Litir án þess að skrá mál fyrst. Yfirlit krefst fullgildra mála og efnisvals.</p>
+      </nav>
 
       <h2 ref={headingRef} tabIndex={-1} className="font-serif text-2xl outline-none">
         {[
@@ -352,6 +399,10 @@ export function ThedourScreenWizard(props: Props) {
         </>}
         {step === 6 && (
           <div>
+            <button type="button" onClick={() => setStep(7)}
+              className="mb-5 w-full border border-[#8ca9b8] bg-[#f4f7f8] px-4 py-3 text-xs">
+              Velja liti fyrst
+            </button>
             {family === "windour" && <fieldset className="mb-5">
               <legend className="mb-2 text-xs font-medium">Hvaða mál ertu að skrá?</legend>
               <div className="grid gap-2 sm:grid-cols-2">
@@ -420,6 +471,9 @@ export function ThedourScreenWizard(props: Props) {
           </div>
         )}
         {step === 7 && <>
+          <p className="mb-4 border border-[#ccd9df] bg-[#f4f7f8] p-3 text-xs leading-5 text-[#526772]">
+            Litavalið hér skráir valið með stillingunni og fyrirspurninni. Það endurlitar ekki aðalvörumyndina; litir á skjá eru aðeins sjónræn viðmiðun.
+          </p>
           <Swatches label="Litur á álramma" options={THEDOUR_FRAME_COLOURS} value={frameColor} onChange={setFrameColor} />
           {hasMaterialColour && (system !== "duo" || family === "roldour") && <div className="pt-4"><Swatches label={materialLabel}
             options={family === "roldour" ? THEDOUR_ROLDOUR_FABRIC_COLOURS : THEDOUR_HONEYCOMB_COLOURS}
@@ -464,7 +518,7 @@ export function ThedourScreenWizard(props: Props) {
             </dl>
             {selection.requiresCustomQuote && <p className="border border-[#d8c79f] bg-[#fffaf0] p-3 text-xs leading-5">Þessi DUO samsetning er skráð í fyrirspurn en hefur ekki staðfest verðlíkan. Hún verður ekki sett í áætlunarkörfu.</p>}
             {fitting === "overlap" && <p className="border border-[#d8c79f] bg-[#fffaf0] p-3 text-xs leading-5">Utanáliggjandi festing er send til staðfestingar. Engin frádráttur eða skörun hefur verið ágiskuð og mælimál eru ekki notuð sem framleiðslumál.</p>}
-            {family !== props.initialFamily && <Link href={`/products/${selection.mappedProductId}`} className="block border border-[#8ca9b8] px-4 py-3 text-center text-xs">Skoða samsvarandi vörusíðu</Link>}
+            {selection.mappedProductId !== props.initialProductId && <Link href={`/products/${selection.mappedProductId}`} className="block border border-[#8ca9b8] px-4 py-3 text-center text-xs">Opna samsvarandi vörukort án þess að tapa valinu</Link>}
             {props.summaryAction?.(selection)}
             <BusinessInquiryButton label="Senda allt valið í fyrirspurn" productContext={summaryText}
               className="block w-full border border-[#8ca9b8] px-4 py-3 text-center text-[10px] uppercase tracking-[.16em]" />

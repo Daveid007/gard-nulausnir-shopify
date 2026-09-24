@@ -56,4 +56,17 @@ for (const field of ["measurementMode", "widthBand", "heightBand", "duoPanelChoi
 assert.match(cartSource, /measurementMode: item\.measurementMode \?\? "opening"/, "legacy cart lines must default to opening mode");
 assert.match(cartSource, /isStandardWindourDuoChoice/, "unverified DUO combinations must not reload as priced lines");
 
+const wizardSource = await readFile(new URL("../src/components/ThedourScreenWizard.tsx", import.meta.url), "utf8");
+assert.match(wizardSource, /measurementsInSupportedRange = measurementsValid/, "measurement gating must be independent of DUO colour validity");
+assert.match(wizardSource, /step === 6 && !measurementsInSupportedRange/, "DUO colour changes must not make the measurement step report a false measurement error");
+assert.match(wizardSource, /Velja liti fyrst/, "colour controls must be reachable before measurements are complete");
+assert.match(wizardSource, /aria-label="Skref í vöruvali"/, "wizard steps must be directly and accessibly navigable");
+assert.match(wizardSource, /target === 8 && !measurementsInSupportedRange/, "direct summary navigation must still validate measurements");
+assert.match(wizardSource, /endurlitar ekki aðalvörumyndina/, "swatches must clearly explain that they record a selection rather than recolour the product photo");
+assert.match(wizardSource, /selection\.mappedProductId !== props\.initialProductId/, "the mapped size tier must provide a usable navigation link");
+
+const calculatorSource = await readFile(new URL("../src/components/WindourCalculator.tsx", import.meta.url), "utf8");
+assert.match(calculatorSource, /WINDOUR_SELECTION_STORAGE_KEY/, "a valid wizard selection must survive mapped-tier navigation");
+assert.match(calculatorSource, /initialSelection=\{restoredSelection\}/, "the mapped product must restore the wizard selection");
+
 console.log("PASS WINdoûr size bands, outer-frame validation, DUO inquiry gate, notes and persistence contract");

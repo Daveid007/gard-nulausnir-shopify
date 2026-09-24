@@ -1,4 +1,5 @@
 import { Magnet, Ruler, Layers, Shield, Palette, Frame } from "lucide-react";
+import { Link } from "wouter";
 
 const features = [
   { icon: Magnet, title: "Segullokun", detail: "Segullokun heldur gardínu eða neti lokuðu og auðveldar daglega notkun." },
@@ -18,6 +19,16 @@ export function WindourProductInfo({ tier }: { tier: "999" | "2000" }) {
         WINdoûr sameinar sérsmíðaðan álramma, segullokun og val um fellda honeycomb-myrkvun eða flugnanet.
         Lausnin hentar meðal annars heimilum, húsbílum og ferðabílum þar sem næði, birtustýring og vörn gegn skordýrum skipta máli.
       </p>
+      <div className="mt-4 grid gap-2 sm:grid-cols-2">
+        <Link href="/products/blinddour-trackless-door" className="border border-[#9ebbd0] bg-[#eaf3f8] px-4 py-3 text-sm font-medium text-[#24313b] transition-colors hover:bg-[#dcecf4]">
+          BLINDdoûr — myrkvunarhurð
+          <span className="mt-1 block text-xs font-normal leading-5 text-[#667984]">Sérstakt brautalaust hurðakerfi fyrir myrkvun.</span>
+        </Link>
+        <Link href="/products/netdour-trackless-door" className="border border-[#9ebbd0] bg-[#eaf3f8] px-4 py-3 text-sm font-medium text-[#24313b] transition-colors hover:bg-[#dcecf4]">
+          NETdoûr — flugnanet fyrir hurð
+          <span className="mt-1 block text-xs font-normal leading-5 text-[#667984]">Sérstakt brautalaust hurðakerfi sem heldur skordýrum úti.</span>
+        </Link>
+      </div>
       <div className="mt-4 rounded border border-[#9ebbd0] bg-[#eaf3f8] p-4 text-sm leading-6">
         <strong className="text-[#24313b]">Hvað merkir {tier}?</strong>
         <p>{tier === "999"

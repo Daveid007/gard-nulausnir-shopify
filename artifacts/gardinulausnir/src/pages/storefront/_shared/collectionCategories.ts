@@ -107,8 +107,8 @@ export const COLLECTION_CATEGORY_DEFINITIONS: readonly CollectionCategoryDefinit
   },
   {
     key: "thedour-doors",
-    label: "Flugnanet og rammar",
-    english: "FLUGNANET OG RAMMAR",
+    label: "Hurðagardínur og flugnanet",
+    english: "HURÐAGARDÍNUR OG FLUGNANET",
     description: "Hurðakerfi, brautalaus net og mý-/skordýravörn úr Shopify-vörulistanum.",
     hash: "thedour-doors",
   },
