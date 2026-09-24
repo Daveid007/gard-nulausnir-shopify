@@ -63,7 +63,7 @@ export function ProductDetail() {
     return <CurtainsProductDetail key={product.id} productId={product.id} />;
   }
   const isRoller = product.category === "Rúllugardínur";
-  const isHoneycomb = product.category === "Myrkvunargardínur";
+  const isHoneycomb = product.category === "Honeycomb";
   const isWindour = isWindourProductId(product.id);
   const isVerticalSheer = product.id === "vertical-sheer-shades";
   const isThedourDoor = product.id === "netdour-trackless-door" || product.id === "blinddour-trackless-door";
@@ -244,10 +244,10 @@ export function ProductDetail() {
           ) : (
              <div data-testid="product-box" className="grid min-w-0 md:grid-cols-[minmax(0,1.12fr)_minmax(370px,.88fr)] gap-8 md:gap-14">
                <div data-testid="gallery" className="grid min-w-0 grid-cols-[minmax(0,.27fr)_minmax(0,.73fr)] gap-3 md:gap-5 h-fit">
-                <div className="flex min-w-0 flex-col gap-3 md:gap-5">
-                  <button onClick={() => setImageView("primary")} className={`relative flex aspect-[4/3] max-h-[160px] items-center justify-center overflow-hidden border-2 bg-[#e8eef1] ${imageView === "primary" ? "border-[#24313b]" : "border-transparent opacity-65"}`}><ResponsiveImage src={product.image} alt={product.title} sizes="120px" className="max-h-full max-w-full object-contain p-2" /></button>
-                  <button onClick={() => setImageView("secondary")} className={`relative flex aspect-[4/3] max-h-[160px] items-center justify-center overflow-hidden border-2 bg-[#e8eef1] transition hover:opacity-100 ${imageView === "secondary" ? "border-[#24313b]" : "border-transparent opacity-65"}`}><ResponsiveImage src={product.secondary} alt={`${product.title}, önnur sýn`} sizes="120px" className="max-h-full max-w-full object-contain p-2" /></button>
-                </div>
+                 <div className="flex min-w-0 flex-col gap-3 md:gap-5">
+                   <button onClick={() => setImageView("primary")} className={`relative flex aspect-[4/3] max-h-[160px] items-center justify-center overflow-hidden border-2 bg-[#e8eef1] ${imageView === "primary" ? "border-[#24313b]" : "border-transparent opacity-65"}`}><ResponsiveImage src={product.image} alt={product.title} sizes="120px" className="max-h-full max-w-full object-contain p-2" /></button>
+                   <button onClick={() => setImageView("secondary")} className={`relative flex aspect-[4/3] max-h-[160px] items-center justify-center overflow-hidden border-2 bg-[#e8eef1] transition hover:opacity-100 ${imageView === "secondary" ? "border-[#24313b]" : "border-transparent opacity-65"}`}><ResponsiveImage src={product.secondary} alt={`${product.title}, önnur sýn`} sizes="120px" className="max-h-full max-w-full object-contain p-2" /></button>
+                 </div>
                   <div className="min-w-0">
                     <div className="relative flex w-full aspect-[4/3] max-h-[500px] items-center justify-center overflow-hidden bg-[#c8d6dc] p-4">
                       <ResponsiveImage src={activeImage} alt={product.title} sizes="(min-width: 768px) 55vw, 100vw" className="max-h-full max-w-full object-contain transition-opacity duration-300" />
@@ -372,7 +372,7 @@ export function ProductDetail() {
                   <div className="border-b border-[#ccd9df] py-6">
                     <div className="mb-4 text-[10px] uppercase tracking-[.18em]">Stýring & aukahlutir</div>
                     <div className="space-y-2">{mechanisms.map((item, index) => <button key={item} onClick={() => setMechanism(index)} className={`flex w-full justify-between border px-3 py-3 text-left text-[10px] ${mechanism === index ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}><span>{item}</span><span>{index === 1 ? "+4.500 kr." : index === 2 ? "+24.900 kr." : "Innifalið"}</span></button>)}</div>
-                    <label className="mt-3 flex cursor-pointer items-center justify-between border border-[#ccd9df] px-3 py-3 text-[10px]"><span>Hliðarspor</span><input type="checkbox" checked={sideRails} onChange={(event) => setSideRails(event.target.checked)} /></label>
+                    <label className="mt-3 flex cursor-pointer items-center justify-between border border-[#ccd9df] px-3 py-3 text-[10px]"><span>Hliðarlisti</span><input type="checkbox" checked={sideRails} onChange={(event) => setSideRails(event.target.checked)} /></label>
                     <div className="mt-3"><p className="mb-2 text-[9px] uppercase tracking-[.14em] text-[#667984]">Lásahaldari</p><div className="grid grid-cols-4 gap-2">{holders.map((item, index) => <button key={item} onClick={() => setHolder(index)} className={`overflow-hidden border p-2 text-[9px] ${holder === index ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{holderImages[index] ? <img src={holderImages[index] ?? undefined} alt={`${item} lásahaldari`} className="mb-2 h-14 w-full bg-white object-contain" /> : <span className="mb-2 grid h-14 place-items-center bg-[#eef3f5] text-[8px] uppercase tracking-[.12em] text-[#667984]">Án</span>}<span>{item}</span></button>)}</div></div>
                   </div>
                 </>}

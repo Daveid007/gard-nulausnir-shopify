@@ -96,7 +96,7 @@ assert.equal(catalog.liveCount, 5);
 
 const direct = catalog.products.find(({ id }) => id === "honeycomb-45mm");
 assert.ok(direct);
-assert.equal(direct.title, "Myrkvunargardína 45 mm");
+assert.equal(direct.title, "Honeycomb 45 mm");
 assert.equal(direct.subtitle, "Álfilma · algjör myrkvun");
 assert.equal(direct.price, currency.format(123450));
 assert.equal(direct.image, "https://shopify.test/direct-featured.jpg");

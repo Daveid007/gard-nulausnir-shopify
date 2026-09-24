@@ -27,7 +27,7 @@ function swatchForWorkbookFabric(fabric: RollerWorkbookFabric): string | undefin
 const FAMILY_LABELS: Record<RollerWorkbookFamily, string> = {
   roller: "Rúllugardína",
   zebra: "Sebragardína",
-  sheer: "Sheer Shades",
+  sheer: "Strimlar",
   butterfly: "Fiðrildagardína",
 };
 
@@ -216,7 +216,7 @@ export function RollerWorkbookCalculator({
               Hafðu samband til að fá tilboð áður en hægt er að bæta vörunni í körfu.
             </p>
             <p className="mt-3 text-sm leading-6 text-[#526772]">Hliðarlistar eru valfrjálsir. Láttu vita í tilboðsbeiðninni ef þú vilt bæta þeim við.</p>
-            <a className="mt-4 inline-flex border border-[#24313b] px-4 py-3 text-[10px] uppercase tracking-[.16em]" href="mailto:info@gardinulausnir.is?subject=Tilboð%20í%20opið%20rúllukerfi">
+            <a className="mt-4 inline-flex border border-[#24313b] px-4 py-3 text-[10px] uppercase tracking-[.16em]" href="mailto:sala@gardinulausnir.is?subject=Tilboð%20í%20opið%20rúllukerfi">
               Óska eftir tilboði
             </a>
           </div>

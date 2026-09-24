@@ -1,4 +1,4 @@
-export const BUSINESS_INQUIRY_RECIPIENT = "hallo@gardinulausnir.is";
+export const BUSINESS_INQUIRY_RECIPIENT = "sala@gardinulausnir.is";
 
 export type BusinessInquiryFields = {
   company: string;

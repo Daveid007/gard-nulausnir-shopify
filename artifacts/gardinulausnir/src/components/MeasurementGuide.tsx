@@ -171,7 +171,7 @@ function MeasurementGuideBody({ compact = false }: { compact?: boolean }) {
 
       <div className="border-t border-[#ccd9df] pt-7">
         <a
-          href="mailto:hallo@gardinulausnir.is"
+          href="mailto:sala@gardinulausnir.is"
           className="inline-flex items-center border-b border-[#557b9e] pb-1 text-sm font-medium text-[#557b9e] transition-colors hover:border-[#24313b] hover:text-[#24313b]"
         >
           Hafðu samband ef þú ert í vafa

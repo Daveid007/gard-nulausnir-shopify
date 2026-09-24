@@ -34,7 +34,6 @@ const MIN_SQM_PER_PIECE = 1;
 
 const CORDLESS_ISK_PER_SQM = Math.round(CORDLESS_USD_PER_SQM * USD_TO_ISK_COST);
 const MOTOR_ISK = Math.round((MOTOR_USD + REMOTE_USD) * USD_TO_ISK_COST);
-const SIDETRACK_ISK_PER_M = Math.round(SIDETRACK_USD_PER_M * USD_TO_ISK_COST);
 
 type Operation = "manual" | "cordless" | "motor";
 
@@ -71,7 +70,7 @@ export const DAYNIGHT_COMBOS: Record<DayNightComboKey, {
 };
 
 function fmtISK(v: number) {
-  return v.toLocaleString("is-IS", { maximumFractionDigits: 0 }) + " kr";
+  return v.toLocaleString("is-IS", { maximumFractionDigits: 0 }) + " kr.";
 }
 
 
@@ -219,7 +218,7 @@ export default function DayNightCalculator({ product }: { product?: any }) {
               </div>
             {!validSize && <p className="text-xs text-red-600">Stærð er utan marka fyrir valda stýringu ({DAYNIGHT_45_LIMITS[operation].minWidthMm}–{DAYNIGHT_45_LIMITS[operation].maxWidthMm} × {DAYNIGHT_45_LIMITS[operation].minHeightMm}–{DAYNIGHT_45_LIMITS[operation].maxHeightMm} mm, hám. {DAYNIGHT_45_LIMITS[operation].maxAreaSqm} m²).</p>}
           <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Stýring</span><div className="grid grid-cols-3 gap-2">{(["manual", "cordless", "motor"] as Operation[]).map((item) => <button type="button" key={item} onClick={() => handleOperationChange(item)} className={`border px-2 py-3 text-[10px] uppercase ${operation === item ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{item === "manual" ? "Handvirk" : item === "cordless" ? "Þráðlaus" : "Mótor"}</button>)}</div></div>
-          <label className="flex items-center justify-between border border-[#ccd9df] px-3 py-3 text-[10px] uppercase"><span>Hliðarspor</span><input type="checkbox" checked={sideTrack} onChange={(e) => setSideTrack(e.target.checked)} /></label>
+          <label className="flex items-center justify-between border border-[#ccd9df] px-3 py-3 text-[10px] uppercase"><span>Hliðarlisti</span><input type="checkbox" checked={sideTrack} onChange={(e) => setSideTrack(e.target.checked)} /></label>
           <HoneycombOptions idPrefix="dn" sideTrack={sideTrack} sideTrackType={sideTrackType} setSideTrackType={setSideTrackType} mountPosition={mountPosition} setMountPosition={setMountPosition} noDrill={noDrill} setNoDrill={setNoDrill} />
            <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Finish · litur á brautum</span><div className="flex flex-wrap gap-2">{(operation === "motor" ? MOTORIZED_RAIL_COLORS : CASSETTE_RAIL_COLORS).map((item) => <button type="button" key={item.value} onClick={() => setRailColor(item.value)} className={`border px-3 py-2 text-[10px] ${railColor === item.value ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{item.value}</button>)}</div></div>
         </div>
@@ -388,25 +387,25 @@ export default function DayNightCalculator({ product }: { product?: any }) {
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="manual">Handvirk með snæri</SelectItem>
-                    <SelectItem value="cordless">Snærislaust (+{CORDLESS_ISK_PER_SQM.toLocaleString("is-IS")} kr/m²)</SelectItem>
-                    <SelectItem value="motor">Mótor + fjarstýring (+{MOTOR_ISK.toLocaleString("is-IS")} kr)</SelectItem>
+                    <SelectItem value="cordless">Snærislaust (+{CORDLESS_ISK_PER_SQM.toLocaleString("is-IS")} kr./m²)</SelectItem>
+                    <SelectItem value="motor">Mótor + fjarstýring (+{MOTOR_ISK.toLocaleString("is-IS")} kr.)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="flex items-center justify-between rounded-lg border border-border/40 px-3 py-2">
                 <div>
-                  <Label htmlFor="dn-sidetrack" className="text-xs font-semibold block">Hliðarspor</Label>
-                  <p className="text-[10px] text-muted-foreground">+{SIDETRACK_ISK_PER_M.toLocaleString("is-IS")} kr/m</p>
+                  <Label htmlFor="dn-sidetrack" className="text-xs font-semibold block">Hliðarlisti</Label>
+                  <p className="text-[10px] text-muted-foreground">+{Math.round((sideTrackType === "l" ? 5 : SIDETRACK_USD_PER_M) * USD_TO_ISK_COST).toLocaleString("is-IS")} kr./m</p>
                 </div>
                 <Switch id="dn-sidetrack" checked={sideTrack} onCheckedChange={setSideTrack} />
               </div>
               <div>
-                <Label htmlFor="dn-track-type" className="text-xs font-semibold mb-1.5 block">Hliðarspor / Track</Label>
+                <Label htmlFor="dn-track-type" className="text-xs font-semibold mb-1.5 block">Gerð hliðarlista / Track</Label>
                 <Select value={sideTrackType} onValueChange={(v) => setSideTrackType(v as "u" | "l")}>
                   <SelectTrigger id="dn-track-type"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="u">U-spor (+10 USD/m)</SelectItem>
-                    <SelectItem value="l">L-spor (+5 USD/m)</SelectItem>
+                    <SelectItem value="u">U-spor</SelectItem>
+                    <SelectItem value="l">L-spor</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -484,7 +483,7 @@ export default function DayNightCalculator({ product }: { product?: any }) {
               </div>
               {calc.cordlessUSD > 0 && <div className="flex justify-between"><span>Snærislaust</span><span>{fmtISK(calc.cordlessUSD * USD_TO_ISK_COST)}</span></div>}
               {calc.motorUSD > 0 && <div className="flex justify-between"><span>Mótor + fjarstýring</span><span>{fmtISK((calc.motorUSD + calc.remoteUSD) * USD_TO_ISK_COST)}</span></div>}
-              {calc.sidetrackUSD > 0 && <div className="flex justify-between"><span>Hliðarspor</span><span>{fmtISK(calc.sidetrackUSD * USD_TO_ISK_COST)}</span></div>}
+              {calc.sidetrackUSD > 0 && <div className="flex justify-between"><span>Hliðarlisti</span><span>{fmtISK(calc.sidetrackUSD * USD_TO_ISK_COST)}</span></div>}
               <div className="flex justify-between pt-3 border-t border-primary-foreground/20"><span>Verð per stk</span><span className="font-medium">{fmtISK(calc.perPieceISK)}</span></div>
               {quantity > 1 && <div className="flex justify-between"><span>× {quantity} stk</span><span className="font-medium">{fmtISK(calc.totalISK)}</span></div>}
             </div>

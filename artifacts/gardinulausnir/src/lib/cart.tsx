@@ -519,7 +519,7 @@ export function describeCartItem(item: CartItem): { title: string; sub: string }
           ? "snærislaust"
           : "keðja";
     const holderSuffix = item.holder ? ` · Lásahaldari · ${HOLDER_LABEL[item.holder]}` : "";
-    const sub = `${item.width}×${item.height}mm · ${item.cassette} · ${item.rail} · ${opLabel}${item.sideTrack ? " · hliðarspor" : ""}${holderSuffix}`;
+    const sub = `${item.width}×${item.height}mm · ${item.cassette} · ${item.rail} · ${opLabel}${item.sideTrack ? " · með hliðarlista" : ""}${holderSuffix}`;
     return {
       title: `Rúllugardína · ${item.fabricName}`,
       sub,
@@ -531,20 +531,20 @@ export function describeCartItem(item: CartItem): { title: string; sub: string }
     const holderSuffix = item.holder ? ` · Lásahaldari · ${HOLDER_LABEL[item.holder]}` : "";
     return {
       title: `Myrkvunargardína 45 mm · ${item.fabricName}`,
-       sub: `${item.width}×${item.height}mm · ${item.fabricCode} · ${opLabel}${item.sideTrack ? " · hliðarspor" : ""} · ${item.railColor}${holderSuffix}${mountingSuffix}`,
+       sub: `${item.width}×${item.height}mm · ${item.fabricCode} · ${opLabel}${item.sideTrack ? " · með hliðarlista" : ""} · ${item.railColor}${holderSuffix}${mountingSuffix}`,
     };
   }
   if (item.type === "honeycomb-25") {
     const holderSuffix = item.holder ? ` · Lásahaldari · ${HOLDER_LABEL[item.holder]}` : "";
     return {
       title: `Myrkvunargardína 25 mm · ${item.fabricName}`,
-       sub: `${item.width}×${item.height}mm · ${item.fabricCode} · ${opLabel}${item.sideTrack ? " · hliðarspor" : ""} · ${item.railColor}${holderSuffix}${mountingSuffix}`,
+       sub: `${item.width}×${item.height}mm · ${item.fabricCode} · ${opLabel}${item.sideTrack ? " · með hliðarlista" : ""} · ${item.railColor}${holderSuffix}${mountingSuffix}`,
     };
   }
   if (item.type === "tdbu") {
     return {
       title: `TDBU · ${item.fabricName}`,
-       sub: `${item.width}×${item.height}mm · ${item.fabricCode} · ${opLabel}${item.sideTrack ? " · hliðarspor" : ""} · ${item.railColor}${mountingSuffix}`,
+       sub: `${item.width}×${item.height}mm · ${item.fabricCode} · ${opLabel}${item.sideTrack ? " · með hliðarlista" : ""} · ${item.railColor}${mountingSuffix}`,
     };
   }
   if (item.type === "vertical") {
@@ -572,7 +572,7 @@ export function describeCartItem(item: CartItem): { title: string; sub: string }
   if (item.type === "dualroller") {
     return {
       title: `Tvöfalt rúll · ${item.frontName} + ${item.backName}`,
-       sub: `${item.width}×${item.height}mm · ${item.frontCode}+${item.backCode} · ${opLabel}${item.sideTrack ? " · hliðarspor" : ""} · ${item.railColor}`,
+       sub: `${item.width}×${item.height}mm · ${item.frontCode}+${item.backCode} · ${opLabel}${item.sideTrack ? " · með hliðarlista" : ""} · ${item.railColor}`,
     };
   }
   if (item.type === "zebra") {
@@ -584,7 +584,7 @@ export function describeCartItem(item: CartItem): { title: string; sub: string }
   }
   return {
     title: `Day & Night · ${item.frontName} + ${item.backName}`,
-    sub: `${item.width}×${item.height}mm · ${item.frontCode}+${item.backCode} · ${opLabel}${item.sideTrack ? " · hliðarspor" : ""} · ${item.railColor}`,
+    sub: `${item.width}×${item.height}mm · ${item.frontCode}+${item.backCode} · ${opLabel}${item.sideTrack ? " · með hliðarlista" : ""} · ${item.railColor}`,
   };
 }
 
@@ -1016,5 +1016,5 @@ export function useCart(): CartContextValue {
 }
 
 export function formatIsk(value: number): string {
-  return new Intl.NumberFormat("is-IS").format(Math.round(value)) + " kr";
+  return new Intl.NumberFormat("is-IS").format(Math.round(value)) + " kr.";
 }

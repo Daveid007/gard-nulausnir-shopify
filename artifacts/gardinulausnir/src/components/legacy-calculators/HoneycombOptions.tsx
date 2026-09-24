@@ -30,16 +30,16 @@ export function HoneycombOptions({
     <div data-testid={`${idPrefix}-honeycomb-options`} className="space-y-3">
       {sideTrack && (
         <label className="block">
-          <span className="mb-2 block text-[9px] uppercase tracking-[.14em] text-[#667984]">Hliðarspor / Track</span>
+          <span className="mb-2 block text-[9px] uppercase tracking-[.14em] text-[#667984]">Gerð hliðarlista / Track</span>
           <select
-            aria-label="Hliðarspor / Track"
+            aria-label="Gerð hliðarlista / Track"
             data-testid={`${idPrefix}-track-type`}
             value={sideTrackType}
             onChange={(event) => setSideTrackType(event.target.value as "u" | "l")}
             className="w-full border border-[#ccd9df] bg-transparent px-3 py-3 text-sm"
           >
-            <option value="u">U-spor (+10 USD/m)</option>
-            <option value="l">L-spor (+5 USD/m)</option>
+            <option value="u">U-spor</option>
+            <option value="l">L-spor</option>
           </select>
         </label>
       )}

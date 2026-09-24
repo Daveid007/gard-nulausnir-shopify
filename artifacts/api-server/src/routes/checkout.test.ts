@@ -141,6 +141,14 @@ test("Shopify Draft Order lines keep product links, exact prices, and configurat
   assert.equal(lines.at(-1)?.requiresShipping, false);
 });
 
+test("Shopify Draft Order descriptions use hliðarlisti terminology", () => {
+  const parsed = checkoutRequestSchema.parse({
+    items: [{ ...cartItems[3], sideTrack: true }],
+  });
+  const [line] = buildShopifyDraftOrderLines(parsed.items);
+  assert.match(line?.attributes.find((attribute) => attribute.key === "Samantekt")?.value ?? "", /með hliðarlista/);
+});
+
 test("unknown Zebra fabrics and unsupported operation sizes are rejected", () => {
   const unknownFabric = { ...cartItems[7], fabricCode: "ZT-NOT-REAL" };
   const parsedUnknown = checkoutRequestSchema.safeParse({
@@ -177,7 +185,7 @@ test("roller workbook checkout accepts optional tracks and prices selected track
   };
   const parsed = checkoutRequestSchema.parse({ items: [rollerItem] });
   const [line] = buildShopifyDraftOrderLines(parsed.items);
-  assert.equal(line?.attributes.find((attribute) => attribute.key === "Hliðarspor")?.value, "l-white");
+  assert.equal(line?.attributes.find((attribute) => attribute.key === "Hliðarlisti")?.value, "l-white");
   assert.match(line?.attributes.find((attribute) => attribute.key === "Samantekt")?.value ?? "", /track: l-white/);
   const selectedTrackPrice = line?.unitPriceIsk;
 
@@ -187,7 +195,7 @@ test("roller workbook checkout accepts optional tracks and prices selected track
     else configuration.track = track;
     const optional = checkoutRequestSchema.parse({ items: [{ ...rollerItem, configuration }] });
     const [optionalLine] = buildShopifyDraftOrderLines(optional.items);
-    assert.equal(optionalLine?.attributes.find((attribute) => attribute.key === "Hliðarspor")?.value, "none");
+    assert.equal(optionalLine?.attributes.find((attribute) => attribute.key === "Hliðarlisti")?.value, "none");
     assert.match(optionalLine?.attributes.find((attribute) => attribute.key === "Samantekt")?.value ?? "", /track: none/);
     assert.ok((selectedTrackPrice ?? 0) > (optionalLine?.unitPriceIsk ?? 0));
   }

@@ -17,7 +17,7 @@ assert.ok(validateBusinessInquiry({ ...valid, company: "", email: "rangt", quant
 assert.ok(validateBusinessInquiry({ ...valid, company: "", email: "rangt", quantity: "1.5" }).quantity);
 
 const formatted = formatBusinessInquiry(valid, "Rúllugardína – blá");
-assert.match(formatted.mailto, /^mailto:hallo@gardinulausnir\.is\?/);
+assert.match(formatted.mailto, /^mailto:sala@gardinulausnir\.is\?/);
 assert.equal(decodeURIComponent(formatted.mailto.split("subject=")[1].split("&body=")[0]), "Tilboðsbeiðni fyrirtækis – Próf & co.");
 const decodedBody = decodeURIComponent(formatted.mailto.split("&body=")[1]);
 for (const expected of ["Próf & co.", "Ása Jónsdóttir", "asa@example.is", "555 1234", "Gardínur í tvö rými.", "12", "Fyrir júní", "Rúllugardína – blá"]) {

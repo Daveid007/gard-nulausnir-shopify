@@ -51,7 +51,7 @@ export const COLLECTION_CATEGORY_DEFINITIONS: readonly CollectionCategoryDefinit
   },
   {
     key: "honeycomb",
-    label: "Myrkvunargardínur",
+    label: "Honeycomb",
     english: "HANDE / CELLULAR",
     description: "Gardínur eftir máli sem loka birtuna úti.",
     hash: "honeycomb",
@@ -72,9 +72,9 @@ export const COLLECTION_CATEGORY_DEFINITIONS: readonly CollectionCategoryDefinit
   },
   {
     key: "sheer-shades",
-    label: "Sheer Shades",
-    english: "SHEER SHADES / HORIZONTAL",
-    description: "Láréttar Sheer Shades eftir máli með stillanlegri dagsbirtu og næði.",
+    label: "Strimlar",
+    english: "STRIMLAR / BIRTUSTÝRING",
+    description: "Strimlar eftir máli með stillanlegri dagsbirtu og næði.",
     hash: "sheer-shades",
   },
   {
@@ -184,6 +184,7 @@ const categoryByToken = new Map<string, CollectionCategoryKey>([
   ["lodrettar-vefgardinur", "vertical-sheer"],
 
   ["sheer-shades", "sheer-shades"],
+  ["strimlar", "sheer-shades"],
   ["sheer-shade", "sheer-shades"],
   ["horizontal-sheer-shades", "sheer-shades"],
   ["horizontal-sheer", "sheer-shades"],

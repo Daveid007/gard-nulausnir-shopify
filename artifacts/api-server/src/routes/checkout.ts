@@ -690,7 +690,7 @@ function priceRollerUsd(item: RollerItem): { unitUsd: number; description: strin
       : item.operation === "cordless"
         ? "snærislaust"
         : "keðja";
-  const description = `${item.cassette} · ${item.bottomRailType} · ${item.bottomRailColor} · ${item.mountType} · ${fabricEntry.name} (${item.fabricCode}) · ${item.width}×${item.height}mm · ${opLabel}${item.sideTrack ? " · hliðarspor" : ""}${item.holder ? ` · lásahaldari-${item.holder}` : ""}`;
+  const description = `${item.cassette} · ${item.bottomRailType} · ${item.bottomRailColor} · ${item.mountType} · ${fabricEntry.name} (${item.fabricCode}) · ${item.width}×${item.height}mm · ${opLabel}${item.sideTrack ? " · með hliðarlista" : ""}${item.holder ? ` · lásahaldari-${item.holder}` : ""}`;
   return { unitUsd, description };
 }
 
@@ -720,7 +720,7 @@ function priceDualRollerUsd(item: DualRollerItem): { unitUsd: number; descriptio
       : item.operation === "cordless"
         ? "snærislaust"
         : "handvirkt";
-  const description = `Tvöfalt rúll · ${combo.label} · ${item.frontCode}+${item.backCode} · ${item.width}×${item.height}mm · ${opLabel}${item.sideTrack ? " · hliðarspor" : ""}`;
+  const description = `Tvöfalt rúll · ${combo.label} · ${item.frontCode}+${item.backCode} · ${item.width}×${item.height}mm · ${opLabel}${item.sideTrack ? " · með hliðarlista" : ""}`;
   return { unitUsd, description };
 }
 
@@ -763,7 +763,7 @@ function priceDaynightUsd(item: DaynightItem): { unitUsd: number; description: s
       : item.operation === "cordless"
         ? "snærislaust"
         : "handvirkt";
-  const description = `Day & Night 45mm · ${combo.label} · ${item.frontCode}+${item.backCode} · ${item.width}×${item.height}mm · ${opLabel}${item.sideTrack ? " · hliðarspor" : ""}`;
+  const description = `Day & Night 45mm · ${combo.label} · ${item.frontCode}+${item.backCode} · ${item.width}×${item.height}mm · ${opLabel}${item.sideTrack ? " · með hliðarlista" : ""}`;
   return { unitUsd, description };
 }
 
@@ -796,7 +796,7 @@ function priceHoneycombUsd(item: HoneycombItem): { unitUsd: number; description:
       : item.operation === "cordless"
         ? "snærislaust"
         : "handvirkt";
-  const description = `Hunangskamb 45mm · ${fabricEntry.name} (${item.fabricCode}) · ${fabricEntry.type} · ${item.width}×${item.height}mm · ${opLabel}${item.sideTrack ? " · hliðarspor" : ""}${item.holder ? ` · lásahaldari-${item.holder}` : ""}`;
+  const description = `Hunangskamb 45mm · ${fabricEntry.name} (${item.fabricCode}) · ${fabricEntry.type} · ${item.width}×${item.height}mm · ${opLabel}${item.sideTrack ? " · með hliðarlista" : ""}${item.holder ? ` · lásahaldari-${item.holder}` : ""}`;
   return { unitUsd, description };
 }
 
@@ -827,7 +827,7 @@ function priceHoneycomb25Usd(item: Honeycomb25Item): { unitUsd: number; descript
     item.operation === "cordless"
         ? "snærislaust"
         : "handvirkt";
-  const description = `Hunangskamb 25mm · ${fabricEntry.name} (${item.fabricCode}) · ${fabricEntry.type} · ${item.width}×${item.height}mm · ${opLabel}${item.sideTrack ? " · hliðarspor" : ""}${item.holder ? ` · lásahaldari-${item.holder}` : ""}`;
+  const description = `Hunangskamb 25mm · ${fabricEntry.name} (${item.fabricCode}) · ${fabricEntry.type} · ${item.width}×${item.height}mm · ${opLabel}${item.sideTrack ? " · með hliðarlista" : ""}${item.holder ? ` · lásahaldari-${item.holder}` : ""}`;
   return { unitUsd, description };
 }
 
@@ -853,7 +853,7 @@ function priceTdbuUsd(item: TdbuItem): { unitUsd: number; description: string } 
   const sideTrack = item.sideTrack ? h * (item.sideTrackType === "l" ? 5 : DN_SIDETRACK_USD_PER_M) : 0;
   const unitUsd = fabric + cordless + noDrill + sideTrack;
   const opLabel = item.operation === "cordless" ? "snærislaust" : "handvirkt";
-  const description = `TDBU 45mm · ${fabricEntry.name} (${item.fabricCode}) · ${fabricEntry.type} · ${item.width}×${item.height}mm · ${opLabel}${item.sideTrack ? " · hliðarspor" : ""}`;
+  const description = `TDBU 45mm · ${fabricEntry.name} (${item.fabricCode}) · ${fabricEntry.type} · ${item.width}×${item.height}mm · ${opLabel}${item.sideTrack ? " · með hliðarlista" : ""}`;
   return { unitUsd, description };
 }
 
@@ -981,7 +981,7 @@ function configurationAttributes(item: CartItem, description: string): Array<{ k
       { key: "Miðstöð", value: quote.hub ? "Já" : "Nei" },
       { key: "Festing", value: quote.mountPosition },
       { key: "Án borunar", value: quote.noDrill ? "Já" : "Nei" },
-      { key: "Hliðarspor", value: quote.track },
+      { key: "Hliðarlisti", value: quote.track },
       { key: "Kassetta", value: quote.cassette },
       { key: "Samantekt", value: description.slice(0, 255) },
     ];
@@ -1000,12 +1000,12 @@ function configurationAttributes(item: CartItem, description: string): Array<{ k
     mountType: "Festing",
     mountPosition: "Innfelld/utanáliggjandi festing",
     noDrill: "Án borunar",
-    sideTrackType: "Gerð hliðarspors",
+    sideTrackType: "Gerð hliðarlista",
     comboKey: "Efnasamsetning",
     frontCode: "Fremra efni",
     backCode: "Aftara efni",
     operation: "Stýring",
-    sideTrack: "Hliðarspor",
+    sideTrack: "Hliðarlisti",
     holder: "Lásahaldari",
     openingType: "Opnun",
     railColor: "Litur brautar",

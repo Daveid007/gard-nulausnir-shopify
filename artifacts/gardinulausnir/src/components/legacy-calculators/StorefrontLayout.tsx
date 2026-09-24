@@ -33,8 +33,9 @@ export function StorefrontLayout({
    action?: ReactNode;
 }) {
   const [imageView, setImageView] = useState<"primary" | "secondary">("primary");
+  const [galleryIndex, setGalleryIndex] = useState(0);
   const [openDetail, setOpenDetail] = useState<string | null>("Efni & ljós");
-  const activeImage = imageView === "secondary" ? product.secondary : product.image;
+  const activeImage = product.gallery?.[galleryIndex] ?? (imageView === "secondary" ? product.secondary : product.image);
   const [zoom, setZoom] = useState<{ src: string; alt: string } | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -62,12 +63,11 @@ export function StorefrontLayout({
       {/* LEFT COLUMN */}
       <div data-testid="gallery" className="grid min-w-0 grid-cols-[minmax(0,.27fr)_minmax(0,.73fr)] gap-3 md:gap-5">
         <div className="flex min-w-0 flex-col gap-3 md:gap-5">
-          <button type="button" onClick={() => setImageView("primary")} className={`relative flex aspect-[4/3] max-h-[160px] items-center justify-center overflow-hidden border-2 bg-[#e8eef1] ${imageView === "primary" ? "border-[#24313b]" : "border-transparent opacity-65"}`} aria-label="Skoða aðalmynd">
-            <ResponsiveImage src={product.image} alt={product.title} sizes="120px" className="max-h-full max-w-full object-contain p-2" />
-          </button>
-          <button type="button" onClick={() => setImageView("secondary")} className={`relative flex aspect-[4/3] max-h-[160px] items-center justify-center overflow-hidden border-2 bg-[#e8eef1] transition hover:opacity-100 ${imageView === "secondary" ? "border-[#24313b]" : "border-transparent opacity-65"}`} aria-label="Skoða aðra mynd">
-            <ResponsiveImage src={product.secondary} alt={`${product.title}, önnur sýn`} sizes="120px" className="max-h-full max-w-full object-contain p-2" />
-          </button>
+          {(product.gallery ?? [product.image, product.secondary]).map((photo: string, index: number) => (
+            <button key={`${photo}-${index}`} type="button" onClick={() => { setGalleryIndex(index); setImageView(index === 0 ? "primary" : "secondary"); }} className={`relative flex aspect-[4/3] max-h-[160px] items-center justify-center overflow-hidden border-2 bg-[#e8eef1] transition hover:opacity-100 ${(product.gallery ? galleryIndex === index : (index === 0 ? imageView === "primary" : imageView === "secondary")) ? "border-[#24313b]" : "border-transparent opacity-65"}`} aria-label={`Skoða mynd ${index + 1} af ${product.title}`} aria-pressed={product.gallery ? galleryIndex === index : (index === 0 ? imageView === "primary" : imageView === "secondary")}>
+              <ResponsiveImage src={photo} alt="" sizes="120px" className="max-h-full max-w-full object-contain p-2" />
+            </button>
+          ))}
           {activeFabric.image && (
             <button type="button" data-testid="swatch-zoom" onClick={() => setZoom({ src: activeFabric.image!, alt: `${activeFabric.name}, nærmynd` })} className="relative flex aspect-square items-center justify-center overflow-hidden border-2 border-transparent bg-white opacity-80 transition hover:opacity-100 group" aria-label={`Stækka sýnishorn ${activeFabric.name}`}>
               <ResponsiveImage src={activeFabric.image} alt="Nærmynd" sizes="120px" className="max-h-full max-w-full object-contain p-1" />

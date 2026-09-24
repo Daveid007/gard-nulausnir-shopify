@@ -5,6 +5,13 @@ import { CURTAIN_PRODUCT_DEFINITIONS } from "./curtains.ts";
 // Vite turns these literal URLs into hashed local assets in the browser build.
 const verticalSheerCasePrimary = new URL("../../../assets/vertical-sheer-shades/cases/Vertical sheer shades (2).jpg", import.meta.url).href;
 const verticalSheerCaseSecondary = new URL("../../../assets/vertical-sheer-shades/cases/Vertical sheer shades (1).jpg", import.meta.url).href;
+const strimlarGallery = [
+  new URL("../../../assets/strimlar/room.jpg", import.meta.url).href,
+  new URL("../../../assets/strimlar/bedroom.jpg", import.meta.url).href,
+  new URL("../../../assets/strimlar/window.jpg", import.meta.url).href,
+  new URL("../../../assets/strimlar/hall.jpg", import.meta.url).href,
+  new URL("../../../assets/strimlar/detail.jpg", import.meta.url).href,
+];
 
 export type Product = {
   id: string;
@@ -18,6 +25,7 @@ export type Product = {
   price: string;
   image: string;
   secondary: string;
+  gallery?: string[];
   colors: string[];
   swatches?: readonly { code: string; fileName: string }[];
   note?: string;
@@ -45,11 +53,11 @@ const curtainCatalogProducts: Product[] = CURTAIN_PRODUCT_DEFINITIONS.map((defin
 }));
 
 const catalogProducts: Product[] = [
-  { id: "honeycomb-45mm", title: "Myrkvunargardína 45 mm", subtitle: "Álfilma · algjör myrkvun", category: "Myrkvunargardínur", price: "Reiknast eftir máli", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-honeycomb-45mm.png?v=1787921250", secondary: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/02-honeycomb-45mm-detail.png?v=1787921252", colors: [], note: "100% myrkvun", sizes: ["60–120 cm", "121–180 cm", "181–240 cm"] },
-  { id: "honeycomb-25mm", title: "Myrkvunargardína 25 mm", subtitle: "Mjór kassi · mjúk birta", category: "Myrkvunargardínur", price: "Reiknast eftir máli", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-honeycomb-25mm.png?v=1787921264", secondary: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/02-honeycomb-25mm-detail.png?v=1787921266", colors: [], note: "Cellular", sizes: ["60–120 cm", "121–180 cm"] },
-  { id: "day-night", title: "Dagur & Nótt", subtitle: "Tvö lög · dagsbirta og myrkvun", category: "Myrkvunargardínur", price: "Reiknast eftir máli", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-day-and-night.jpg?v=1787921276", secondary: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/02-day-and-night-detail.jpg?v=1787921278", colors: [], note: "Dagur & nótt", sizes: ["60–120 cm", "121–180 cm", "181–240 cm"] },
-  { id: "top-down-bottom-up", title: "Top-Down Bottom-Up", subtitle: "Brautalaus ljósstýring", category: "Myrkvunargardínur", price: "Reiknast eftir máli", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-top-down-bottom-up.jpg?v=1787921285", secondary: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-top-down-bottom-up.jpg?v=1787921285", colors: [], note: "TDBU", sizes: ["60–120 cm", "121–180 cm"] },
-  { id: "vertical-45mm", title: "Lóðrétt 45 mm", subtitle: "Lóðrétt myrkvunarkerfi", category: "Myrkvunargardínur", price: "Reiknast eftir máli", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-vertical-45mm.png?v=1787921294", secondary: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/02-vertical-45mm-detail.png?v=1787921297", colors: [], note: "Lóðrétt", sizes: ["121–180 cm", "181–240 cm"] },
+  { id: "honeycomb-45mm", title: "Honeycomb 45 mm", subtitle: "Álfilma · algjör myrkvun", category: "Honeycomb", price: "Reiknast eftir máli", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-honeycomb-45mm.png?v=1787921250", secondary: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/02-honeycomb-45mm-detail.png?v=1787921252", colors: [], note: "100% myrkvun", sizes: ["60–120 cm", "121–180 cm", "181–240 cm"] },
+  { id: "honeycomb-25mm", title: "Honeycomb 25 mm", subtitle: "Mjór kassi · mjúk birta", category: "Honeycomb", price: "Reiknast eftir máli", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-honeycomb-25mm.png?v=1787921264", secondary: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/02-honeycomb-25mm-detail.png?v=1787921266", colors: [], note: "Cellular", sizes: ["60–120 cm", "121–180 cm"] },
+  { id: "day-night", title: "Dagur & Nótt", subtitle: "Tvö lög · dagsbirta og myrkvun", category: "Honeycomb", price: "Reiknast eftir máli", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-day-and-night.jpg?v=1787921276", secondary: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/02-day-and-night-detail.jpg?v=1787921278", colors: [], note: "Dagur & nótt", sizes: ["60–120 cm", "121–180 cm", "181–240 cm"] },
+  { id: "top-down-bottom-up", title: "Top-Down Bottom-Up", subtitle: "Brautalaus ljósstýring", category: "Honeycomb", price: "Reiknast eftir máli", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-top-down-bottom-up.jpg?v=1787921285", secondary: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-top-down-bottom-up.jpg?v=1787921285", colors: [], note: "TDBU", sizes: ["60–120 cm", "121–180 cm"] },
+  { id: "vertical-45mm", title: "Lóðrétt 45 mm", subtitle: "Lóðrétt myrkvunarkerfi", category: "Honeycomb", price: "Reiknast eftir máli", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-vertical-45mm.png?v=1787921294", secondary: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/02-vertical-45mm-detail.png?v=1787921297", colors: [], note: "Lóðrétt", sizes: ["121–180 cm", "181–240 cm"] },
   { id: "vertical-sheer-shades", title: "Lóðréttar vefgardínur", subtitle: "Vertical Sheer Shades · Dream Shades · 17 supplier swatches", category: "Lóðréttar vefgardínur", price: "Reiknast eftir máli", image: verticalSheerCasePrimary, secondary: verticalSheerCaseSecondary, colors: [], note: "17 efni", sizes: ["50–400 cm", "50–600 cm"] },
 
   { id: "square-cassette", title: "Ferningskassetta", subtitle: "Hrein lína · lokað kerfi", category: "Rúllugardínur", price: "Reiknast eftir máli", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-square-cassette.png?v=1787921305", secondary: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/02-square-cassette-detail.png?v=1787921309", colors: [], note: "Blackout", sizes: ["60–120 cm", "121–180 cm", "181–240 cm"] },
@@ -61,7 +69,7 @@ const catalogProducts: Product[] = [
   // These two workbook products intentionally have no guessed photography. The
   // workbook supplies SS/BFHLA pricing and options; until matching catalogue
   // photography is available, the storefront presents a neutral image panel.
-  { id: "sheer-shades", title: "Sheer Shades", subtitle: "Láréttar Sheer Shades · stillanleg dagsbirta og næði", category: "Sheer Shades", productType: "Sheer Shades", tags: ["sheer-shades", "SS"], collectionHandles: ["sheer-shades"], collectionTitles: ["Sheer Shades"], price: "Reiknast eftir máli", image: "", secondary: "", colors: [], note: "SS", sizes: ["50–300 cm", "50–400 cm"] },
+  { id: "sheer-shades", title: "Strimlar", subtitle: "Strimlar fyrir stillanlega dagsbirtu og næði", category: "Strimlar", productType: "Sheer Shades", tags: ["sheer-shades", "SS"], collectionHandles: ["sheer-shades"], collectionTitles: ["Sheer Shades"], price: "Reiknast eftir máli", image: strimlarGallery[0], secondary: strimlarGallery[1], gallery: strimlarGallery, colors: [], note: "SS", sizes: ["50–300 cm", "50–400 cm"] },
   { id: "butterfly-blinds", title: "Fiðrildagardína", subtitle: "Láréttar Butterfly Blinds · mjúk ljósstýring og næði", category: "Fiðrildagardínur", productType: "Butterfly Blinds", tags: ["butterfly", "BFHLA"], collectionHandles: ["butterfly"], collectionTitles: ["Fiðrildagardínur"], price: "Reiknast eftir máli", image: "", secondary: "", colors: [], note: "BFHLA", sizes: ["50–300 cm", "50–400 cm"] },
 
   ...curtainCatalogProducts,
@@ -80,20 +88,16 @@ const catalogProducts: Product[] = [
   { id: "roldour-duo-vertical-small", title: "ROLdoûr Duo Vertical 999", subtitle: "Tvöfalt lóðrétt kerfi fyrir smærri op", category: "ROLdoûr — Rúllukerfi í ramma", price: "Reiknast eftir máli", image: "https://cdn.shopify.com/s/files/1/0513/7589/8773/files/2689ee8c-4978-42b3-a6db-34f5895778c3.jpg?v=1769688240", secondary: "https://cdn.shopify.com/s/files/1/0513/7589/8773/files/e6f45daa-cfd5-408a-88fe-c5eafba3034b.jpg?v=1769688238", colors: [], note: "Myrkvun + net", sizes: ["60–120 cm"] },
   { id: "roldour-duo-vertical-large", title: "ROLdoûr Duo Vertical 2000", subtitle: "Tvöfalt lóðrétt kerfi fyrir stærri op", category: "ROLdoûr — Rúllukerfi í ramma", price: "Reiknast eftir máli", image: "https://cdn.shopify.com/s/files/1/0513/7589/8773/files/99fc39ff-f495-4788-9711-24e4fe83697a.jpg?v=1769688238", secondary: "https://cdn.shopify.com/s/files/1/0513/7589/8773/files/e6f45daa-cfd5-408a-88fe-c5eafba3034b.jpg?v=1769688238", colors: [], note: "Myrkvun + net", sizes: ["121–180 cm", "181–240 cm"] },
 
-  { id: "flexdour-three-side", shopifyHandle: "flexdour-3-side-folding-shower-enclosure-doors-with-central-opening-1850mm-height-x-reducible-width-made-in-italy", title: "FLEXdoûr Þriggja hliða", subtitle: "Samanbrjótanleg PVC sturtulausn · miðopnun", category: "Thedoûr - Baðlausnir", price: "Verð eftir staðfestingu", image: "https://cdn.shopify.com/s/files/1/0513/7589/8773/files/image.jpg?v=1769688343", secondary: "https://cdn.shopify.com/s/files/1/0513/7589/8773/files/FLEXdour-3-Side-Folding-PVC-Shower-Enclosure-Doors-0.png?v=1769688343", colors: [], note: "Vatnshelt · 100% næði", sizes: ["Sérsmíði"] },
-  { id: "flexdour-central-opening", shopifyHandle: "flexdour-round-folding-shower-enclosure-door-with-central-opening-1850mm-height-x-reducible-width-made-in-italy", title: "FLEXdoûr Miðopnun", subtitle: "Zero-Glass PVC sturtuhurð · 1850 mm", category: "Thedoûr - Baðlausnir", price: "Verð eftir staðfestingu", image: "https://cdn.shopify.com/s/files/1/0513/7589/8773/files/Gemini_Generated_Image_mmwlkommwlkommwl.png?v=1769688287", secondary: "https://cdn.shopify.com/s/files/1/0513/7589/8773/files/FLEXdour-PVC-Shower-Door-with-Central-Opening-1850.jpg?v=1769688288", colors: [], note: "Rakaþolið · 100% næði", sizes: ["Sérsmíði"] },
-  { id: "flexdour-side-opening", shopifyHandle: "copy-flexdour-round-folding-shower-enclosure-door-with-side-opening-1850mm-height-x-reducible-width-made-in-italy-2", title: "FLEXdoûr Hliðaropnun", subtitle: "Samanbrjótanleg PVC sturtuhurð · 1850 mm", category: "Thedoûr - Baðlausnir", price: "Verð eftir staðfestingu", image: "https://cdn.shopify.com/s/files/1/0513/7589/8773/files/generated-image-2026-01-22.png?v=1769688329", secondary: "https://cdn.shopify.com/s/files/1/0513/7589/8773/files/FLEXdour-PVC-Folding-Shower-Door-with-Side-Opening-0.jpg?v=1769688326", colors: [], note: "Vatnshelt · 100% næði", sizes: ["Sérsmíði"] },
-  { id: "flexdour-corner", shopifyHandle: "flexdour-corner-corner-shower-cabin-with-wide-band-central-folding-1850mm-height-x-opening-reducible-width-made-in-italy", title: "FLEXdoûr Hornlausn", subtitle: "Tveggja hliða PVC sturtulausn · miðopnun", category: "Thedoûr - Baðlausnir", price: "Verð eftir staðfestingu", image: "https://cdn.shopify.com/s/files/1/0513/7589/8773/files/Gemini_Generated_Image_n8k8f9n8k8f9n8k8.png?v=1769688393", secondary: "https://cdn.shopify.com/s/files/1/0513/7589/8773/files/FLEXdour-Corner-PVC-Shower-Door-with-central-Openi-0.jpg?v=1769688391", colors: [], note: "Rakaþolið · 100% næði", sizes: ["Sérsmíði"] },
 ];
 
-export const products = catalogProducts
-  .filter(product => product.category !== "Thedoûr - Baðlausnir")
+export const products: Product[] = catalogProducts
   .map(product => {
     const resolvedCategory = resolveProductCategory(product);
     return {
       ...product,
+      note: product.id.startsWith("windour-") ? product.note?.replace("hliðarlistar", "rammi") : product.note,
       category: resolvedCategory ? categoryLabel(resolvedCategory) : product.category,
     };
   });
 
-export const categories = ["Allt", "Myrkvunargardínur", "Rúllugardínur", "Lóðréttar vefgardínur", "Sheer Shades", "Fiðrildagardínur", "Rammagardínur", "Ramma flugnanet og myrkvunargardínur", "Flugnanet og rammar"];
+export const categories = ["Allt", "Honeycomb", "Rúllugardínur", "Lóðréttar vefgardínur", "Strimlar", "Fiðrildagardínur", "Rammagardínur", "Ramma flugnanet og myrkvunargardínur", "Flugnanet og rammar"];

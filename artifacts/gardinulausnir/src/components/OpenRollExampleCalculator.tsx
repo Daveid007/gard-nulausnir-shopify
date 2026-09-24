@@ -47,7 +47,7 @@ export default function OpenRollExampleCalculator({ product }: { product: any })
         "Vinsamlegast staðfestið raunverulegt verð og valkosti.",
       ].join("\n")
     : "Óska eftir staðfestu tilboði í opið rúllukerfi. Mál eða magn í dæmareikni þarfnast leiðréttingar.";
-  const mailto = `mailto:info@gardinulausnir.is?subject=${encodeURIComponent("Tilboðsbeiðni — opið rúllukerfi")}&body=${encodeURIComponent(mailBody)}`;
+  const mailto = `mailto:sala@gardinulausnir.is?subject=${encodeURIComponent("Tilboðsbeiðni — opið rúllukerfi")}&body=${encodeURIComponent(mailBody)}`;
 
   const optionSelect = (
     testId: string,

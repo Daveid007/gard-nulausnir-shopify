@@ -80,7 +80,7 @@ export function HomeOfficePage() {
             <div className="ho-reveal">
               <p className={`${kicker} ${muted}`}>Heimili og skrifstofur</p>
               <h1 className={`mt-5 max-w-3xl font-serif text-5xl leading-[.94] tracking-[-.06em] md:text-7xl ${ink}`}>Rétta lausnin fyrir hvern glugga og hverja hurð.</h1>
-              <p className={`mt-6 max-w-xl text-[15px] leading-7 ${muted}`}>Fimm flokkar af Thedoûr-kerfum — hér sérðu hvað hvert kerfi gerir, hvaða mál skipta máli og hvaða lausnir þú getur stillt hér og sent í fyrirspurn.</p>
+              <p className={`mt-6 max-w-xl text-[15px] leading-7 ${muted}`}>Þrír flokkar af Thedoûr-kerfum — hér sérðu hvað hvert kerfi gerir, hvaða mál skipta máli og hvaða lausnir þú getur stillt hér og sent í fyrirspurn.</p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <a href="#yfirlit" className="sol-action inline-flex items-center gap-3 px-5 py-3.5 text-[10px] uppercase tracking-[.17em]">Finna lausn <ArrowRight size={14} aria-hidden /></a>
                 <a href="#maelingar" className="inline-flex items-center gap-2 border border-[#24313b]/25 px-5 py-3.5 text-[10px] uppercase tracking-[.17em] text-[#24313b] transition-colors hover:bg-[#f7f9fa]"><Ruler size={14} aria-hidden />Hvernig á að mæla</a>

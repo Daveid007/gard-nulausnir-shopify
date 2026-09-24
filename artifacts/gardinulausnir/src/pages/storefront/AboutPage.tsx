@@ -87,8 +87,8 @@ export function AboutPage() {
             Við erum hér til að aðstoða við val á efnum, mælingar og allt sem tengist gardínunum þínum.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <a href="mailto:hallo@gardinulausnir.is" className="inline-flex items-center justify-center min-w-[200px] gap-2 border border-[#24313b]/20 px-8 py-4 text-[10px] uppercase tracking-[.18em] text-[#24313b] hover:bg-[#eaf1f5] transition-colors">
-              hallo@gardinulausnir.is
+            <a href="mailto:sala@gardinulausnir.is" className="inline-flex items-center justify-center min-w-[200px] gap-2 border border-[#24313b]/20 px-8 py-4 text-[10px] uppercase tracking-[.18em] text-[#24313b] hover:bg-[#eaf1f5] transition-colors">
+              sala@gardinulausnir.is
             </a>
             <Link href="/maelingar" className="inline-flex items-center justify-center min-w-[200px] gap-2 bg-[#a2c2e2] px-8 py-4 text-[10px] uppercase tracking-[.18em] text-[#24313b] hover:bg-[#8eb3d6] transition-colors">
               Skoða mælingar

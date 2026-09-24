@@ -132,14 +132,14 @@ assert.equal(resolveProductCategory({ id: "unmapped", category: "Gluggatjöld" }
 assert.equal(resolveProductCategory({ id: "unmapped", category: "Flugnanet og rammar" }), "thedour-doors");
 assert.equal(resolveProductCategory({ id: "unmapped", tags: ["roller-blinds"] }), "roller");
 assert.equal(resolveProductCategory({ id: "not-a-roller-product", title: "Roller-like" }), null);
-assert.equal(categoryLabel("honeycomb"), "Myrkvunargardínur");
+assert.equal(categoryLabel("honeycomb"), "Honeycomb");
 assert.equal(categoryLabel("windour"), "WINdoûr — Rammagardínur");
 assert.equal(resolveProductCategory({ id: "unmapped", category: "Rammagardínur" }), "windour");
 assert.equal(resolveProductCategory({ id: "unmapped", category: "WINdoûr — Rammagardínur" }), "windour");
 assert.equal(categoryLabel("roldour"), "ROLdoûr — Rúllukerfi í ramma");
 assert.equal(resolveProductCategory({ id: "unmapped", category: "ROLdoûr — Rúllukerfi í ramma" }), "roldour");
 assert.equal(categoryLabel("curtains"), "Gluggatjöld");
-assert.equal(categoryLabel("thedour-doors"), "Flugnanet og rammar");
+assert.equal(categoryLabel("thedour-doors"), "Hurðagardínur og flugnanet");
 
 assert.equal(collectionCategoryFromUrl({ search: "", hash: "" }), "all");
 assert.equal(collectionCategoryFromUrl({ search: "", hash: "#cellular" }), "honeycomb");

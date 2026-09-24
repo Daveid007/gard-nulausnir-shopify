@@ -119,7 +119,7 @@ export function BusinessInquiryButton({ productContext, className = "", label = 
         </form>
         {result && (
           <section data-testid="business-inquiry-result" className="border-t border-[#b9cbd4] pt-4" aria-label="Tilbúin tilboðsbeiðni">
-            <p className="text-sm leading-6">Beiðnin er tilbúin en hefur ekki verið send. Opnaðu póstforritið og sendu hana þaðan til hallo@gardinulausnir.is.</p>
+            <p className="text-sm leading-6">Beiðnin er tilbúin en hefur ekki verið send. Opnaðu póstforritið og sendu hana þaðan til sala@gardinulausnir.is.</p>
             <div className="mt-3 flex flex-col gap-2 sm:flex-row">
               <a data-testid="business-inquiry-mailto" href={result.mailto} className="inline-flex justify-center bg-[#a2c2e2] px-5 py-3 text-[10px] uppercase tracking-[.16em] hover:bg-[#89b0d5]">Opna tölvupóst</a>
               <button type="button" data-testid="business-inquiry-copy" onClick={copyRequest} className="border border-[#8ca9b8] px-5 py-3 text-[10px] uppercase tracking-[.16em]">Afrita fyrirspurnartexta</button>

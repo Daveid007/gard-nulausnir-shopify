@@ -102,7 +102,7 @@ assert.deepEqual(thirdProduct.swatches.map(({ code }) => code), [
 const inquiry = curtainInquiryHref(GLUGGATJOLD_2828_ID, "2828.15");
 const inquiryUrl = new URL(inquiry);
 assert.equal(inquiryUrl.protocol, "mailto:");
-assert.equal(inquiryUrl.pathname, "hallo@gardinulausnir.is");
+assert.equal(inquiryUrl.pathname, "sala@gardinulausnir.is");
 assert.match(decodeURIComponent(inquiryUrl.searchParams.get("subject") ?? ""), /Gluggatjöld — 2828/);
 assert.match(decodeURIComponent(inquiryUrl.searchParams.get("body") ?? ""), /2828\.15/);
 assert.equal(decodeURIComponent(inquiryUrl.search).includes("1000"), false);

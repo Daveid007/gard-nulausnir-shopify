@@ -144,10 +144,10 @@ export function HelpDrawer() {
               </div>
             </div>
             <a 
-              href="mailto:hallo@gardinulausnir.is" 
+              href="mailto:sala@gardinulausnir.is"
               className="mt-4 flex w-full items-center justify-center bg-[#24313b] px-4 py-3 text-[10px] font-medium uppercase tracking-[.18em] text-white transition-colors hover:bg-[#1a232b]"
             >
-              hallo@gardinulausnir.is
+              sala@gardinulausnir.is
             </a>
           </div>
         </div>

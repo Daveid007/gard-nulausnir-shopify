@@ -60,7 +60,7 @@ function CollectionGuidanceDialog({
       <div className="flex flex-wrap gap-x-5 gap-y-3">
         <DialogClose asChild>
           <Link className={dialogLinkClass} href="/collection#honeycomb">
-            Myrkvunargardínur
+            Honeycomb
           </Link>
         </DialogClose>
         <DialogClose asChild>
@@ -80,7 +80,7 @@ function CollectionGuidanceDialog({
         </DialogClose>
         <DialogClose asChild>
           <Link className={dialogLinkClass} href="/collection#sheer-shades">
-            Sheer Shades
+            Strimlar
           </Link>
         </DialogClose>
         <DialogClose asChild>
@@ -149,19 +149,19 @@ function ProductGuidance() {
         Rúllugardínur
       </Link>
       <Link className={footerLinkClass} href="/collection#honeycomb">
-        Myrkvunargardínur
+        Honeycomb
       </Link>
       <Link className={footerLinkClass} href="/collection#vertical-sheer-shades">
         Lóðréttar vefgardínur
       </Link>
       <Link className={footerLinkClass} href="/collection#sheer-shades">
-        Sheer Shades
+        Strimlar
       </Link>
       <Link className={footerLinkClass} href="/collection#butterfly">
         Fiðrildagardínur
       </Link>
       <CollectionGuidanceDialog
-        label="Myrkvunargardínur"
+        label="Honeycomb"
         description="Myrkvun er eiginleiki efnis eða kerfis, ekki sérstakur vöruflokkur."
       >
         Í safninu eru myrkvunarefni og kerfi innan fleiri en eins vöruflokks. Veldu viðeigandi safn til að skoða vörur; upplýsingar um myrkvun koma fram í vörulýsingu og þegar efni er valið.
@@ -232,7 +232,7 @@ function OrderDialog() {
       <p className={dialogTextClass}>
         Fáðu staðfestingu á afhendingartíma og skilmálum fyrir þína sérpöntun áður en hún er samþykkt.
       </p>
-      <a className={dialogLinkClass} href="mailto:hallo@gardinulausnir.is?subject=Spurning%20um%20p%C3%B6ntun">
+      <a className={dialogLinkClass} href="mailto:sala@gardinulausnir.is?subject=Spurning%20um%20p%C3%B6ntun">
         Spyrja um pöntun
       </a>
     </FooterDialog>
@@ -245,7 +245,7 @@ function DeliveryDialog() {
       <p className={dialogTextClass}>
         Núverandi hjálparupplýsingar segja: 10–18 virkir dagar (sérframleitt frá grunni). Fáðu staðfestingu á afhendingartíma og skilmálum fyrir þína sérpöntun áður en hún er samþykkt.
       </p>
-      <a className={dialogLinkClass} href="mailto:hallo@gardinulausnir.is?subject=Afhending%20og%20flutningur">
+      <a className={dialogLinkClass} href="mailto:sala@gardinulausnir.is?subject=Afhending%20og%20flutningur">
         Spyrja um afhendingu
       </a>
     </FooterDialog>
@@ -260,8 +260,8 @@ function PrivacyDialog() {
       </p>
       <p className={dialogTextClass}>
         Hafðu samband við{" "}
-        <a className={dialogLinkClass} href="mailto:hallo@gardinulausnir.is?subject=Pers%C3%B3nuuppl%C3%BDsingar">
-          hallo@gardinulausnir.is
+        <a className={dialogLinkClass} href="mailto:sala@gardinulausnir.is?subject=Pers%C3%B3nuuppl%C3%BDsingar">
+          sala@gardinulausnir.is
         </a>{" "}
         vegna spurninga um réttindi eða persónuupplýsingar.
       </p>
@@ -314,8 +314,8 @@ export function Footer() {
               Hafðu samband
             </h2>
             <div className="mt-4 grid gap-3 text-sm leading-6 text-[#43515a]">
-              <a className={footerLinkClass} href="mailto:hallo@gardinulausnir.is">
-                hallo@gardinulausnir.is
+              <a className={footerLinkClass} href="mailto:sala@gardinulausnir.is">
+                sala@gardinulausnir.is
               </a>
               <p>Svarað alla virka daga (09:00 - 17:00)</p>
               <p>Svartar Nætur ehf.</p>

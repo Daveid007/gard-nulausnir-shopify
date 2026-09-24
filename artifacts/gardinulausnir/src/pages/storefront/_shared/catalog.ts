@@ -73,8 +73,8 @@ function mergeLiveProduct(live: ShopifyProduct, fallback: Product, category: Col
     price: isCurtainProductId(fallback.id)
       ? fallback.price
       : formatPrice(live.priceRange?.minVariantPrice, fallback.price),
-    image: live.featuredImage?.url || images[0]?.url || fallback.image,
-    secondary: images[1]?.url || fallback.secondary,
+    image: fallback.gallery ? fallback.image : live.featuredImage?.url || images[0]?.url || fallback.image,
+    secondary: fallback.gallery ? fallback.secondary : images[1]?.url || fallback.secondary,
     fallbackImage: fallback.image,
     fallbackSecondary: fallback.secondary,
   };

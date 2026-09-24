@@ -117,5 +117,5 @@ export function curtainInquiryHref(productIdOrCode: string, selectedCode?: strin
     "",
     "Vinsamlega sendið mér frekari upplýsingar.",
   ].join("\n");
-  return `mailto:hallo@gardinulausnir.is?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  return `mailto:sala@gardinulausnir.is?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }

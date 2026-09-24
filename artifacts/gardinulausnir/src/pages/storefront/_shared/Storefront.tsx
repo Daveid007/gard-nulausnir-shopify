@@ -13,10 +13,10 @@ import { BusinessInquiryButton } from "@/components/BusinessInquiryButton";
 
 const categoryLinks = [
   ["Gluggatjöld", collectionHref("curtains")],
-  ["Myrkvunargardínur", collectionHref("honeycomb")],
+  ["Honeycomb", collectionHref("honeycomb")],
   ["Rúllugardínur", collectionHref("roller")],
   ["Lóðréttar vefgardínur", collectionHref("vertical-sheer")],
-  ["Sheer Shades", collectionHref("sheer-shades")],
+  ["Strimlar", collectionHref("sheer-shades")],
   ["Fiðrildagardínur", collectionHref("butterfly")],
   ["WINdoûr — Rammagardínur", collectionHref("windour")],
   ["ROLdoûr — Rúllukerfi í ramma", collectionHref("roldour")],
@@ -30,7 +30,7 @@ export function Header({ cartCount = 0, categoryNav = false, onCartClick, showCa
       <div className="mx-auto flex h-[72px] max-w-[1480px] items-center justify-between px-5 md:px-10">
         <BrandLogo className="h-9 w-[182px] sm:h-10 sm:w-[202px]" />
          <nav className={`hidden min-w-0 flex-1 justify-center gap-4 px-5 text-[10px] uppercase tracking-[.16em] text-[#43515a] ${categoryNav ? "min-[1500px]:flex" : "min-[1500px]:flex"}`}>
-            {categoryNav ? <>{categoryLinks.map(([label, href]) => <Link key={label} href={href} className="transition-colors hover:text-[#6892b8]">{label}</Link>)}<Link href="/maelingar" className="transition-colors hover:text-[#6892b8]">Mælingar</Link><Link href="/heimili-og-skrifstofur" className="transition-colors hover:text-[#6892b8]">Heimili &amp; skrifstofur</Link></> : <><Link href="/collection" className="transition-colors hover:text-[#6892b8]">Safnið</Link><Link href={collectionHref("honeycomb")} className="transition-colors hover:text-[#6892b8]">Myrkvunargardínur</Link><Link href={collectionHref("windour")} className="transition-colors hover:text-[#6892b8]">WINdoûr</Link><Link href={collectionHref("roldour")} className="transition-colors hover:text-[#6892b8]">ROLdoûr</Link><Link href={collectionHref("vertical-sheer")} className="transition-colors hover:text-[#6892b8]">Lóðréttar vefgardínur</Link><Link href={collectionHref("sheer-shades")} className="transition-colors hover:text-[#6892b8]">Sheer Shades</Link><Link href={collectionHref("butterfly")} className="transition-colors hover:text-[#6892b8]">Fiðrildagardínur</Link><Link href={collectionHref("thedour-doors")} className="transition-colors hover:text-[#6892b8]">Hurðagardínur og flugnanet</Link><Link href="/maelingar" className="transition-colors hover:text-[#6892b8]">Mælingar</Link><Link href="/heimili-og-skrifstofur" className="transition-colors hover:text-[#6892b8]">Heimili &amp; skrifstofur</Link></>}
+            {categoryNav ? <>{categoryLinks.map(([label, href]) => <Link key={label} href={href} className="transition-colors hover:text-[#6892b8]">{label}</Link>)}<Link href="/maelingar" className="transition-colors hover:text-[#6892b8]">Mælingar</Link><Link href="/heimili-og-skrifstofur" className="transition-colors hover:text-[#6892b8]">Heimili &amp; skrifstofur</Link></> : <><Link href="/collection" className="transition-colors hover:text-[#6892b8]">Safnið</Link><Link href={collectionHref("honeycomb")} className="transition-colors hover:text-[#6892b8]">Honeycomb</Link><Link href={collectionHref("windour")} className="transition-colors hover:text-[#6892b8]">WINdoûr</Link><Link href={collectionHref("roldour")} className="transition-colors hover:text-[#6892b8]">ROLdoûr</Link><Link href={collectionHref("vertical-sheer")} className="transition-colors hover:text-[#6892b8]">Lóðréttar vefgardínur</Link><Link href={collectionHref("sheer-shades")} className="transition-colors hover:text-[#6892b8]">Strimlar</Link><Link href={collectionHref("butterfly")} className="transition-colors hover:text-[#6892b8]">Fiðrildagardínur</Link><Link href={collectionHref("thedour-doors")} className="transition-colors hover:text-[#6892b8]">Hurðagardínur og flugnanet</Link><Link href="/maelingar" className="transition-colors hover:text-[#6892b8]">Mælingar</Link><Link href="/heimili-og-skrifstofur" className="transition-colors hover:text-[#6892b8]">Heimili &amp; skrifstofur</Link></>}
            <BusinessInquiryButton productContext={businessContext} />
         </nav>
         <div className="flex items-center justify-end gap-4 md:min-w-[202px]">
@@ -43,7 +43,7 @@ export function Header({ cartCount = 0, categoryNav = false, onCartClick, showCa
         </div>
       </div>
       {open && <nav className={`border-t border-[#24313b]/10 px-5 py-5 ${categoryNav ? "min-[1500px]:hidden" : "min-[1500px]:hidden"}`}>
-            {(categoryNav ? [...categoryLinks, ["Mælingar", "/maelingar"] as const, ["Heimili & skrifstofur", "/heimili-og-skrifstofur"] as const] : [["Safnið", "/collection"], ["Gluggatjöld", collectionHref("curtains")], ["Myrkvunargardínur", collectionHref("honeycomb")], ["WINdoûr — Rammagardínur", collectionHref("windour")], ["ROLdoûr — Rúllukerfi í ramma", collectionHref("roldour")], ["Lóðréttar vefgardínur", collectionHref("vertical-sheer")], ["Sheer Shades", collectionHref("sheer-shades")], ["Fiðrildagardínur", collectionHref("butterfly")], ["Hurðagardínur og flugnanet", collectionHref("thedour-doors")], ["Mælingar", "/maelingar"], ["Heimili & skrifstofur", "/heimili-og-skrifstofur"]] as const).map(([label, href]) => <Link key={label} href={href} onClick={() => setOpen(false)} className="block py-2 text-[11px] uppercase tracking-[.18em]">{label}</Link>)}
+            {(categoryNav ? [...categoryLinks, ["Mælingar", "/maelingar"] as const, ["Heimili & skrifstofur", "/heimili-og-skrifstofur"] as const] : [["Safnið", "/collection"], ["Gluggatjöld", collectionHref("curtains")], ["Honeycomb", collectionHref("honeycomb")], ["WINdoûr — Rammagardínur", collectionHref("windour")], ["ROLdoûr — Rúllukerfi í ramma", collectionHref("roldour")], ["Lóðréttar vefgardínur", collectionHref("vertical-sheer")], ["Strimlar", collectionHref("sheer-shades")], ["Fiðrildagardínur", collectionHref("butterfly")], ["Hurðagardínur og flugnanet", collectionHref("thedour-doors")], ["Mælingar", "/maelingar"], ["Heimili & skrifstofur", "/heimili-og-skrifstofur"]] as const).map(([label, href]) => <Link key={label} href={href} onClick={() => setOpen(false)} className="block py-2 text-[11px] uppercase tracking-[.18em]">{label}</Link>)}
              <BusinessInquiryButton productContext={businessContext} className="block py-2 text-left text-[11px]" />
       </nav>}
       <div className="flex justify-center border-t border-[#d8e1e5] bg-[#edf3f8] px-5 py-1">
@@ -71,19 +71,19 @@ export function ProductCard({ product, accentBadge = false }: { product: Product
     image.style.display = "none";
   };
 
-  return <article className="group relative">
+  return <Link href={actionHref} className="group relative block cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#6892b8]" aria-label={`Skoða ${product.title}`}>
     <div className="relative aspect-[4/3] overflow-hidden bg-[#e8eef1]">
        <ResponsiveImage src={productImage} alt={product.title} loading="lazy" decoding="async" sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw" onError={(event) => recoverImage(event, product.fallbackImage ?? productSecondary)} className="absolute inset-0 h-full w-full object-contain p-3 transition-opacity duration-500 group-hover:opacity-0" />
        <ResponsiveImage src={productSecondary} alt="" loading="lazy" decoding="async" sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw" onError={(event) => recoverImage(event, product.fallbackSecondary ?? productImage)} className="absolute inset-0 h-full w-full object-contain p-3 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
       {product.note && <span className={`absolute left-3 top-3 px-2 py-1 text-[9px] uppercase tracking-[.16em] ${accentBadge ? "bg-[#a2c2e2] text-[#24313b]" : "bg-[#f7f9fa]/90"}`}>{product.note}</span>}
-         <Link href={actionHref} className="absolute bottom-0 left-0 right-0 translate-y-0 bg-[#a2c2e2] px-3 py-3 text-left text-[9px] font-medium uppercase tracking-[.14em] transition-transform duration-300 sm:translate-y-full sm:px-4 sm:py-4 sm:text-[10px] sm:tracking-[.18em] sm:group-hover:translate-y-0">{curtainProductId ? "Skoða liti" : "Velja stærð"} <ArrowRight size={14} className="float-right" /></Link>
+         <span className="absolute bottom-0 left-0 right-0 translate-y-0 bg-[#a2c2e2] px-3 py-3 text-left text-[9px] font-medium uppercase tracking-[.14em] transition-transform duration-300 sm:translate-y-full sm:px-4 sm:py-4 sm:text-[10px] sm:tracking-[.18em] sm:group-hover:translate-y-0">{curtainProductId ? "Skoða liti" : "Velja stærð"} <ArrowRight size={14} className="float-right" /></span>
     </div>
     <div className="flex flex-col items-start gap-1 pt-4 sm:flex-row sm:justify-between sm:gap-3">
       <div className="min-w-0"><p className="text-[8px] uppercase tracking-[.14em] text-[#71808a] sm:text-[9px] sm:tracking-[.17em]">{product.category}</p><h3 className="mt-1 font-serif text-[16px] leading-tight text-[#24313b] sm:text-[18px]">{product.title}</h3><p className="mt-1 text-[10px] leading-snug text-[#71808a] sm:text-[11px]">{product.subtitle}</p></div>
       <p className="whitespace-nowrap text-[10px] text-[#43515a] sm:pt-1 sm:text-[11px]">{product.price}</p>
     </div>
     <div className="mt-3 flex gap-1.5">{product.colors.map(color => <span key={color} className="h-3 w-3 rounded-full border border-[#24313b]/15" style={{ backgroundColor: color }} />)}</div>
-  </article>;
+  </Link>;
 }
 
 export function ProductGrid({ items, accentBadges = false, testId }: { items: Product[]; accentBadges?: boolean; testId?: string }) {

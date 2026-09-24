@@ -166,7 +166,7 @@ const TYPE_THEME: Record<FabricType, TypeTheme> = {
 };
 
 function fmtISK(v: number) {
-  return v.toLocaleString("is-IS", { maximumFractionDigits: 0 }) + " kr";
+  return v.toLocaleString("is-IS", { maximumFractionDigits: 0 }) + " kr.";
 }
 
 export default function Honeycomb25Calculator({ product }: { product?: any }) {
@@ -296,7 +296,7 @@ export default function Honeycomb25Calculator({ product }: { product?: any }) {
               ))}
             </div>
           </div>
-          <label className="flex items-center justify-between border border-[#ccd9df] px-3 py-3 text-[10px] uppercase"><span>Hliðarspor</span><input type="checkbox" checked={sideTrack} onChange={(e) => setSideTrack(e.target.checked)} /></label>
+          <label className="flex items-center justify-between border border-[#ccd9df] px-3 py-3 text-[10px] uppercase"><span>Hliðarlisti</span><input type="checkbox" checked={sideTrack} onChange={(e) => setSideTrack(e.target.checked)} /></label>
           <label className="flex items-center justify-between border border-[#ccd9df] px-3 py-3 text-[10px] uppercase"><span>Án borunar / No-drill (+3 USD/m²)</span><input type="checkbox" checked={noDrill} onChange={(e) => setNoDrill(e.target.checked)} /></label>
           <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Litur á botnlistum</span><div className="flex flex-wrap gap-2">{HONEYCOMB_BOTTOM_RAIL_COLORS.map((item) => <button type="button" key={item.value} onClick={() => setBottomRailColor(item.value)} className={`border px-3 py-2 text-[10px] ${bottomRailColor === item.value ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{item.value}</button>)}</div></div>
           <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Finish · litur á braut</span><div className="flex flex-wrap gap-2">{CASSETTE_RAIL_COLORS.map((item) => <button type="button" key={item.value} onClick={() => setRailColor(item.value)} aria-pressed={railColor === item.value} aria-label={`Velja finish lit ${item.value}`} className={`border px-3 py-2 text-[10px] ${railColor === item.value ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{item.value}</button>)}</div></div>
@@ -431,14 +431,14 @@ export default function Honeycomb25Calculator({ product }: { product?: any }) {
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="manual">Handvirk með snæri</SelectItem>
-                    <SelectItem value="cordless">Snærislaust (+{CORDLESS_ISK_PER_SQM.toLocaleString("is-IS")} kr/m²)</SelectItem>
+                    <SelectItem value="cordless">Snærislaust (+{CORDLESS_ISK_PER_SQM.toLocaleString("is-IS")} kr./m²)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="flex items-center justify-between rounded-lg border border-border/40 px-3 py-2">
                 <div>
-                  <Label htmlFor="hc25-sidetrack" className="text-xs font-semibold block">Hliðarspor</Label>
-                  <p className="text-[10px] text-muted-foreground">+{SIDETRACK_ISK_PER_M.toLocaleString("is-IS")} kr/m</p>
+                  <Label htmlFor="hc25-sidetrack" className="text-xs font-semibold block">Hliðarlisti</Label>
+                  <p className="text-[10px] text-muted-foreground">+{SIDETRACK_ISK_PER_M.toLocaleString("is-IS")} kr./m</p>
                 </div>
                 <Switch id="hc25-sidetrack" checked={sideTrack} onCheckedChange={setSideTrack} />
               </div>
@@ -568,7 +568,7 @@ export default function Honeycomb25Calculator({ product }: { product?: any }) {
                 <span>{fmtISK(calc.fabricUSD * SUPPLIER_TO_RETAIL_ISK)}</span>
               </div>
               {calc.cordlessUSD > 0 && <div className="flex justify-between"><span>Snærislaust</span><span>{fmtISK(calc.cordlessUSD * SUPPLIER_TO_RETAIL_ISK)}</span></div>}
-              {calc.sidetrackUSD > 0 && <div className="flex justify-between"><span>Hliðarspor</span><span>{fmtISK(calc.sidetrackUSD * SUPPLIER_TO_RETAIL_ISK)}</span></div>}
+              {calc.sidetrackUSD > 0 && <div className="flex justify-between"><span>Hliðarlisti</span><span>{fmtISK(calc.sidetrackUSD * SUPPLIER_TO_RETAIL_ISK)}</span></div>}
               {calc.holderUSD > 0 && <div className="flex justify-between"><span>Lásahaldari</span><span>{fmtISK(calc.holderUSD * SUPPLIER_TO_RETAIL_ISK)}</span></div>}
               <div className="flex justify-between pt-3 border-t border-primary-foreground/20"><span>Verð per stk</span><span className="font-medium">{fmtISK(calc.perPieceISK)}</span></div>
               {quantity > 1 && <div className="flex justify-between"><span>× {quantity} stk</span><span className="font-medium">{fmtISK(calc.totalISK)}</span></div>}

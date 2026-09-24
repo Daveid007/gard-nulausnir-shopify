@@ -27,7 +27,6 @@ const USD_TO_ISK_ACCESSORY = SUPPLIER_TO_RETAIL_ISK;
 const SIDETRACK_USD_PER_M = 10;
 const MIN_SQM_PER_PIECE = 1;
 
-const SIDETRACK_ISK_PER_M = Math.round(SIDETRACK_USD_PER_M * USD_TO_ISK_ACCESSORY);
 
 type Operation = "manual" | "cordless";
 type FabricType = "translucent" | "blackout";
@@ -80,7 +79,7 @@ const TYPE_LABELS: Record<FabricType, { is: string; en: string }> = {
 };
 
 function fmtISK(v: number) {
-  return v.toLocaleString("is-IS", { maximumFractionDigits: 0 }) + " kr";
+  return v.toLocaleString("is-IS", { maximumFractionDigits: 0 }) + " kr.";
 }
 
 
@@ -215,7 +214,7 @@ export default function TDBUCalculator({ product }: { product?: any }) {
             </div>
           </div>
            <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Stýring</span><div className="grid grid-cols-2 gap-2">{(["manual", "cordless"] as Operation[]).map((item) => <button type="button" key={item} onClick={() => handleOperationChange(item)} className={`border px-2 py-3 text-[10px] uppercase ${operation === item ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{item === "manual" ? "Handvirk" : "Þráðlaus"}</button>)}</div></div>
-          <label className="flex items-center justify-between border border-[#ccd9df] px-3 py-3 text-[10px] uppercase"><span>Hliðarspor</span><input type="checkbox" checked={sideTrack} onChange={(e) => setSideTrack(e.target.checked)} /></label>
+          <label className="flex items-center justify-between border border-[#ccd9df] px-3 py-3 text-[10px] uppercase"><span>Hliðarlisti</span><input type="checkbox" checked={sideTrack} onChange={(e) => setSideTrack(e.target.checked)} /></label>
            <HoneycombOptions idPrefix="tdbu" sideTrack={sideTrack} sideTrackType={sideTrackType} setSideTrackType={setSideTrackType} mountPosition={mountPosition} setMountPosition={setMountPosition} noDrill={noDrill} setNoDrill={setNoDrill} />
           <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Finish · litur á brautum</span><div className="flex flex-wrap gap-2">{CASSETTE_RAIL_COLORS.map((item) => <button type="button" key={item.value} onClick={() => setRailColor(item.value)} className={`border px-3 py-2 text-[10px] ${railColor === item.value ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{item.value}</button>)}</div></div>
         </div>
@@ -324,7 +323,7 @@ export default function TDBUCalculator({ product }: { product?: any }) {
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="manual">Handvirk með snæri / Manual cord</SelectItem>
-                   <SelectItem value="cordless">Þráðlaus / Cordless (+{Math.round(3 * USD_TO_ISK_ACCESSORY).toLocaleString("is-IS")} kr/m²)</SelectItem>
+                   <SelectItem value="cordless">Þráðlaus / Cordless (+{Math.round(3 * USD_TO_ISK_ACCESSORY).toLocaleString("is-IS")} kr./m²)</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-[11px] text-muted-foreground mt-1.5">
@@ -334,18 +333,18 @@ export default function TDBUCalculator({ product }: { product?: any }) {
 
             <div className="flex items-center justify-between pt-2 border-t border-border/40">
               <div>
-                <Label htmlFor="tdbu-sidetrack" className="text-sm font-semibold block">Hliðarspor / Side track</Label>
-                <p className="text-xs text-muted-foreground">Lokar fyrir ljósleka frá hliðum. +{SIDETRACK_ISK_PER_M.toLocaleString("is-IS")} kr/m.</p>
+                <Label htmlFor="tdbu-sidetrack" className="text-sm font-semibold block">Hliðarlisti / Side track</Label>
+                <p className="text-xs text-muted-foreground">Lokar fyrir ljósleka frá hliðum. +{Math.round((sideTrackType === "l" ? 5 : SIDETRACK_USD_PER_M) * USD_TO_ISK_ACCESSORY).toLocaleString("is-IS")} kr./m</p>
               </div>
               <Switch id="tdbu-sidetrack" checked={sideTrack} onCheckedChange={setSideTrack} />
             </div>
             <div>
-              <Label htmlFor="tdbu-track-type" className="text-sm font-semibold mb-1.5 block">Hliðarspor / Track</Label>
+              <Label htmlFor="tdbu-track-type" className="text-sm font-semibold mb-1.5 block">Gerð hliðarlista / Track</Label>
               <Select value={sideTrackType} onValueChange={(v) => setSideTrackType(v as "u" | "l")}>
                 <SelectTrigger id="tdbu-track-type"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="u">U-spor (+10 USD/m)</SelectItem>
-                  <SelectItem value="l">L-spor (+5 USD/m)</SelectItem>
+                  <SelectItem value="u">U-spor</SelectItem>
+                  <SelectItem value="l">L-spor</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -415,7 +414,7 @@ export default function TDBUCalculator({ product }: { product?: any }) {
                 <span>{fmtISK(calc.fabricUSD * USD_TO_ISK_RETAIL)}</span>
               </div>
                {calc.cordlessUSD > 0 && <div className="flex justify-between"><span>Þráðlaus</span><span>{fmtISK(calc.cordlessUSD * USD_TO_ISK_ACCESSORY)}</span></div>}
-              {calc.sidetrackUSD > 0 && <div className="flex justify-between"><span>Hliðarspor</span><span>{fmtISK(calc.sidetrackUSD * USD_TO_ISK_ACCESSORY)}</span></div>}
+              {calc.sidetrackUSD > 0 && <div className="flex justify-between"><span>Hliðarlisti</span><span>{fmtISK(calc.sidetrackUSD * USD_TO_ISK_ACCESSORY)}</span></div>}
               <div className="flex justify-between pt-3 border-t border-primary-foreground/20"><span>Verð per stk</span><span className="font-medium">{fmtISK(calc.perPieceISK)}</span></div>
               {quantity > 1 && <div className="flex justify-between"><span>× {quantity} stk</span><span className="font-medium">{fmtISK(calc.totalISK)}</span></div>}
             </div>
