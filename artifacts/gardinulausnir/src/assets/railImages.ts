@@ -2,17 +2,17 @@ import holderWhite from "@/assets/accessory-thumbs/拉坠-h_1783342729464.jpg";
 import holderNavy from "@/assets/accessory-thumbs/diaozhui06_1783342729460.jpg";
 import holderBlack from "@/assets/accessory-thumbs/拉坠-b_1783342729464.jpg";
 
-import cassette1 from "@/assets/accessory-thumbs/25&38_manual_and_motorized_+_45mm_manual_(1)_1780327800245.jpg";
-import cassette2 from "@/assets/accessory-thumbs/25&38_manual_and_motorized_+_45mm_manual_(2)_1780327800246.jpg";
-import cassette3 from "@/assets/accessory-thumbs/25&38_manual_and_motorized_+_45mm_manual_(3)_1780327800246.jpg";
-import cassette4 from "@/assets/accessory-thumbs/25&38_manual_and_motorized_+_45mm_manual_(4)_1780327800247.jpg";
-import cassette5 from "@/assets/accessory-thumbs/25&38_manual_and_motorized_+_45mm_manual_(5)_1780327800247.jpg";
+import cassette1 from "@/assets/accessory-thumbs/honeycomb-headrail-manual-sand.jpg";
+import cassette2 from "@/assets/accessory-thumbs/honeycomb-headrail-manual-white.jpg";
+import cassette3 from "@/assets/accessory-thumbs/honeycomb-headrail-manual-black.jpg";
+import cassette4 from "@/assets/accessory-thumbs/honeycomb-headrail-manual-silver.jpg";
+import cassette5 from "@/assets/accessory-thumbs/honeycomb-headrail-manual-cream.jpg";
 
-import motorized1 from "@/assets/accessory-thumbs/for_45mm_motorized_(1)_1780327800247.jpg";
-import motorized2 from "@/assets/accessory-thumbs/for_45mm_motorized_(2)_1780327800247.jpg";
-import motorized3 from "@/assets/accessory-thumbs/for_45mm_motorized_(3)_1780327800247.jpg";
-import motorized4 from "@/assets/accessory-thumbs/for_45mm_motorized_(4)_1780327800247.jpg";
-import motorized5 from "@/assets/accessory-thumbs/for_45mm_motorized_(5)_1780327800247.jpg";
+import motorized1 from "@/assets/accessory-thumbs/honeycomb-headrail-motorized-black.jpg";
+import motorized2 from "@/assets/accessory-thumbs/honeycomb-headrail-motorized-silver.jpg";
+import motorized3 from "@/assets/accessory-thumbs/honeycomb-headrail-motorized-cream.jpg";
+import motorized4 from "@/assets/accessory-thumbs/honeycomb-headrail-motorized-sand.jpg";
+import motorized5 from "@/assets/accessory-thumbs/honeycomb-headrail-motorized-white.jpg";
 
 import bottom1 from "@/assets/accessory-thumbs/16_(1)_1780327812498.jpg";
 import bottom2 from "@/assets/accessory-thumbs/16_(2)_1780327812514.jpg";
