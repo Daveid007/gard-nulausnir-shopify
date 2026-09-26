@@ -17,6 +17,7 @@ export function StorefrontLayout({
    priceText,
    priceLabel,
   action,
+  compact = false,
 }: {
   product: any;
   priceISK: number;
@@ -31,6 +32,8 @@ export function StorefrontLayout({
    priceText?: string;
    priceLabel?: string;
    action?: ReactNode;
+  /** Opt-in dense layout (currently Honeycomb 45 only). */
+  compact?: boolean;
 }) {
   const [imageView, setImageView] = useState<"primary" | "secondary">("primary");
   const [galleryIndex, setGalleryIndex] = useState(0);
@@ -59,7 +62,7 @@ export function StorefrontLayout({
       : Math.ceil(priceISK / 100) * 100;
 
   return (
-    <div data-testid="product-box" className="grid min-w-0 gap-8 md:grid-cols-[minmax(0,1.12fr)_minmax(370px,.88fr)] md:gap-14">
+    <div data-testid="product-box" className={compact ? "grid min-w-0 gap-6 md:grid-cols-[minmax(0,.9fr)_minmax(460px,1.1fr)] md:gap-8" : "grid min-w-0 gap-8 md:grid-cols-[minmax(0,1.12fr)_minmax(370px,.88fr)] md:gap-14"}>
       {/* LEFT COLUMN */}
       <div data-testid="gallery" className="grid min-w-0 grid-cols-[minmax(0,.27fr)_minmax(0,.73fr)] gap-3 md:gap-5">
         <div className="flex min-w-0 flex-col gap-3 md:gap-5">
@@ -86,7 +89,7 @@ export function StorefrontLayout({
           )}
         </div>
         <div className="min-w-0">
-          <div className="relative flex w-full aspect-[4/3] max-h-[500px] items-center justify-center overflow-hidden bg-[#c8d6dc] p-4">
+          <div className={`relative flex w-full aspect-[4/3] ${compact ? "max-h-[420px]" : "max-h-[500px]"} items-center justify-center overflow-hidden bg-[#c8d6dc] p-4`}>
             <ResponsiveImage src={activeImage} alt={product.title} sizes="(min-width: 768px) 55vw, 100vw" className="max-h-full max-w-full object-contain transition-opacity duration-300" />
 
             <div className="absolute left-4 top-4 bg-[#f7f9fa]/90 px-3 py-2 text-[9px] uppercase tracking-[.18em]">{product.note}</div>
@@ -138,11 +141,11 @@ export function StorefrontLayout({
       </div>
 
       {/* RIGHT COLUMN */}
-      <div className="pt-2 md:sticky md:top-5 md:h-[calc(100vh-40px)] md:overflow-y-auto pr-2 custom-scrollbar pb-10">
-         <p className="mb-4 text-[10px] uppercase tracking-[.26em] text-[#6892b8]">{product.category}</p>
-        <h1 className="font-serif text-[clamp(2.7rem,4.8vw,5.2rem)] leading-[.9] tracking-[-.06em]">{product.title}</h1>
-        <div className="mt-7 flex items-end justify-between gap-5 border-b border-[#ccd9df] pb-5">
-          <p className="text-sm text-[#5a6b74]">{product.subtitle}</p>
+      <div className={compact ? "min-w-0 pt-0 pr-1 pb-6" : "pt-2 md:sticky md:top-5 md:h-[calc(100vh-40px)] md:overflow-y-auto pr-2 custom-scrollbar pb-10"}>
+         <p className={`${compact ? "mb-1" : "mb-4"} text-[10px] uppercase tracking-[.26em] text-[#6892b8]`}>{product.category}</p>
+        <h1 className={compact ? "font-serif text-[clamp(1.9rem,2.6vw,2.6rem)] leading-[.95] tracking-[-.05em]" : "font-serif text-[clamp(2.7rem,4.8vw,5.2rem)] leading-[.9] tracking-[-.06em]"}>{product.title}</h1>
+        <div className={`${compact ? "mt-2 pb-2" : "mt-7 pb-5"} flex items-end justify-between gap-5 border-b border-[#ccd9df]`}>
+          <p className={compact ? "text-xs text-[#5a6b74]" : "text-sm text-[#5a6b74]"}>{product.subtitle}</p>
            <div className="text-right">
              {priceLabel && <p className="mb-1 text-[9px] uppercase tracking-[.14em] text-[#6892b8]">{priceLabel}</p>}
              <p data-testid="live-price" aria-live="polite" className="whitespace-nowrap font-serif text-2xl tracking-tight">{priceText ?? `${displayPriceISK.toLocaleString("is-IS")} kr.`}</p>
@@ -151,13 +154,13 @@ export function StorefrontLayout({
 
         <div data-testid="config-card">{controls}</div>
 
-        <div className="flex items-center gap-3 py-6 border-b border-[#ccd9df]">
-          <div className="flex h-[51px] items-center border border-[#ccd9df]">
+        <div className={`flex items-center gap-3 border-b border-[#ccd9df] ${compact ? "py-2.5" : "py-6"}`}>
+          <div className={`flex ${compact ? "h-11" : "h-[51px]"} items-center border border-[#ccd9df]`}>
             <button type="button" onClick={() => changeQuantity(safeQuantity - 1)} className="grid h-full w-10 place-items-center" aria-label="Fækka fjölda" disabled={safeQuantity <= 1}><Minus size={14} /></button>
             <span data-testid="quantity-value" className="w-7 text-center text-sm" aria-live="polite">{safeQuantity}</span>
             <button type="button" onClick={() => changeQuantity(safeQuantity + 1)} className="grid h-full w-10 place-items-center" aria-label="Auka fjölda" disabled={safeQuantity >= 99}><Plus size={14} /></button>
           </div>
-          {action ?? <button type="button" onClick={onAddToCart} disabled={!canAddToCart} data-testid="add-to-cart" className="flex h-[51px] flex-1 items-center justify-center gap-3 bg-[#a2c2e2] text-[10px] uppercase tracking-[.2em] transition hover:bg-[#89b0d5] text-[#24313b] font-medium disabled:cursor-not-allowed disabled:opacity-45">Bæta í körfu <ShoppingBag size={15} /></button>}
+          {action ?? <button type="button" onClick={onAddToCart} disabled={!canAddToCart} data-testid="add-to-cart" className={`flex ${compact ? "h-11" : "h-[51px]"} flex-1 items-center justify-center gap-3 bg-[#a2c2e2] text-[10px] uppercase tracking-[.2em] transition hover:bg-[#89b0d5] text-[#24313b] font-medium disabled:cursor-not-allowed disabled:opacity-45`}>Bæta í körfu <ShoppingBag size={15} /></button>}
         </div>
         
         <div id="upplýsingar" className="mt-4">

@@ -19,6 +19,8 @@ import { CASSETTE_RAIL_COLORS, MOTORIZED_RAIL_COLORS, HONEYCOMB_BOTTOM_RAIL_COLO
 import { normalizeQuantity } from "@/lib/quantity";
 import { StorefrontLayout } from "./StorefrontLayout";
 import { MeasurementGuideTrigger } from "@/components/MeasurementGuide";
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import sideTrackImage from "@/assets/accessory-thumbs/honeycomb-side-track.png";
 import {
   retailPriceFromSupplierUsd,
   SUPPLIER_TO_RETAIL_ISK,
@@ -27,7 +29,7 @@ import {
   validateHoneycombSize,
   type MountPosition,
 } from "@/lib/pricing";
-import { HoneycombOptions } from "./HoneycombOptions";
+import { RailColorSwatches } from "./RailColorSwatches";
 
 const MIN_SQM_PER_PIECE = 1;
 const CORDLESS_ISK_PER_SQM = Math.round(3 * SUPPLIER_TO_RETAIL_ISK);
@@ -288,41 +290,87 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
       setQuantity={(next) => setQuantity(normalizeQuantity(next))}
       canAddToCart={validSize}
       onAddToCart={addToCart}
+      compact
       controls={
-        <div className="space-y-5 border-b border-[#ccd9df] py-6">
-          <div className="mb-2 flex items-center justify-between gap-3">
-            <span className="text-[10px] uppercase tracking-[.18em]">Mál</span>
-            <MeasurementGuideTrigger />
-          </div>
-          <div className="grid grid-cols-2 gap-3" data-testid="dimensions">
-           <label><span className="mb-2 block text-[9px] uppercase tracking-[.14em] text-[#667984]">Breidd · cm</span><input data-testid="hc-width" aria-label="Breidd í sentímetrum" type="number" min="50" max="275" step="0.1" value={width / 10} onChange={(e) => setWidth((Number(e.target.value) || 0) * 10)} className="w-full border border-[#ccd9df] bg-transparent px-3 py-3 text-sm" /></label>
-             <label><span className="mb-2 block text-[9px] uppercase tracking-[.14em] text-[#667984]">Hæð · cm</span><input data-testid="hc-height" aria-label="Hæð í sentímetrum" type="number" min="50" max="300" step="0.1" value={height / 10} onChange={(e) => setHeight((Number(e.target.value) || 0) * 10)} className="w-full border border-[#ccd9df] bg-transparent px-3 py-3 text-sm" /></label>
-          </div>
-           {!validSize && <p className="text-xs text-red-600">Stærð er utan marka fyrir valda stýringu ({HONEYCOMB_45_LIMITS[operation].minWidthMm}–{HONEYCOMB_45_LIMITS[operation].maxWidthMm} × {HONEYCOMB_45_LIMITS[operation].minHeightMm}–{HONEYCOMB_45_LIMITS[operation].maxHeightMm} mm, hám. {HONEYCOMB_45_LIMITS[operation].maxAreaSqm} m²).</p>}
-          <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Stýring</span><div className="grid grid-cols-3 gap-2">{(["manual", "cordless", "motor"] as Operation[]).map((item) => <button type="button" key={item} onClick={() => handleOperationChange(item)} className={`border px-2 py-3 text-[10px] uppercase ${operation === item ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{item === "manual" ? "Handvirk" : item === "cordless" ? "Þráðlaus" : "Mótor"}</button>)}</div></div>
-          <div>
-            <span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Ljós og efni</span>
-            <div className="mb-3 grid grid-cols-2 gap-2" data-testid="honeycomb-fabric-types">
-              {(["sheer", "translucent", "blackout", "dualdeck"] as FabricType[]).map((type) => (
-                <button type="button" key={type} onClick={() => setFabricType(type)} aria-pressed={fabricType === type} data-testid={`honeycomb-fabric-type-${type}`} className={`border px-2 py-2 text-[10px] uppercase tracking-[.06em] ${fabricType === type ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>
-                  {TYPE_LABELS[type].is}
-                </button>
-              ))}
+        <div className="grid gap-x-5 gap-y-3 border-b border-[#ccd9df] py-3 sm:grid-cols-2" data-testid="hc-compact-config">
+          <div className="space-y-3">
+            <div>
+              <div className="mb-1 flex items-center justify-between gap-3">
+                <span className="text-[10px] uppercase tracking-[.16em]">Mál</span>
+                <MeasurementGuideTrigger />
+              </div>
+              <div className="grid grid-cols-2 gap-2" data-testid="dimensions">
+                <label><span className="mb-1 block text-[9px] uppercase tracking-[.14em] text-[#667984]">Breidd · cm</span><input data-testid="hc-width" aria-label="Breidd í sentímetrum" type="number" min="50" max="275" step="0.1" value={width / 10} onChange={(e) => setWidth((Number(e.target.value) || 0) * 10)} className="h-11 w-full border border-[#ccd9df] bg-transparent px-2 text-sm md:h-9" /></label>
+                <label><span className="mb-1 block text-[9px] uppercase tracking-[.14em] text-[#667984]">Hæð · cm</span><input data-testid="hc-height" aria-label="Hæð í sentímetrum" type="number" min="50" max="300" step="0.1" value={height / 10} onChange={(e) => setHeight((Number(e.target.value) || 0) * 10)} className="h-11 w-full border border-[#ccd9df] bg-transparent px-2 text-sm md:h-9" /></label>
+              </div>
+              {!validSize && <p className="mt-1 text-[11px] leading-4 text-red-600">Stærð er utan marka fyrir valda stýringu ({HONEYCOMB_45_LIMITS[operation].minWidthMm}–{HONEYCOMB_45_LIMITS[operation].maxWidthMm} × {HONEYCOMB_45_LIMITS[operation].minHeightMm}–{HONEYCOMB_45_LIMITS[operation].maxHeightMm} mm, hám. {HONEYCOMB_45_LIMITS[operation].maxAreaSqm} m²).</p>}
             </div>
-            <div data-testid="honeycomb-fabrics" className="flex flex-wrap gap-2">
-              {grouped[fabricType].map((item) => (
-                <button type="button" key={item.code} onClick={() => setFabricCode(item.code)} className={`relative h-11 w-11 overflow-hidden rounded-full border ${fabric.code === item.code ? "border-[#24313b]" : "border-transparent"}`} aria-label={`Velja ${item.is} · ${item.name} (${item.code})`} aria-pressed={fabric.code === item.code}>
-                  <img src={item.image} alt={item.is} className="h-full w-full object-contain" />
-                  {fabric.code === item.code && <Check size={13} className="absolute inset-0 m-auto" />}
+            <div role="group" aria-label="Stýring">
+              <span className="mb-1 block text-[10px] uppercase tracking-[.16em]">Stýring</span>
+              <div className="grid grid-cols-3 gap-1.5">{(["manual", "cordless", "motor"] as Operation[]).map((item) => <button type="button" key={item} aria-pressed={operation === item} onClick={() => handleOperationChange(item)} className={`h-11 border px-1 text-[10px] uppercase md:h-8 ${operation === item ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{item === "manual" ? "Handvirk" : item === "cordless" ? "Þráðlaus" : "Mótor"}</button>)}</div>
+            </div>
+            <div data-testid="hc-honeycomb-options" className="space-y-1.5">
+              <span className="block text-[10px] uppercase tracking-[.16em]">Festing</span>
+              <div className="grid grid-cols-2 gap-1.5">
+                <select aria-label="Festing / Mount" data-testid="hc-mount-position" value={mountPosition} onChange={(e) => setMountPosition(e.target.value as MountPosition)} className="h-11 w-full border border-[#ccd9df] bg-transparent px-1.5 text-xs md:h-8">
+                  <option value="outside">Utanáliggjandi</option>
+                  <option value="inside">Innfelld (−5 mm)</option>
+                </select>
+                <label className="flex h-11 items-center justify-between gap-1 border border-[#ccd9df] px-2 text-[10px] uppercase md:h-8"><span title="+3 USD/m²">Án borunar</span><input type="checkbox" aria-label="Án borunar / No-drill" data-testid="hc-no-drill" checked={noDrill} onChange={(e) => setNoDrill(e.target.checked)} /></label>
+                <label className="flex h-11 items-center justify-between gap-1 border border-[#ccd9df] px-2 text-[10px] uppercase md:h-8"><span>Hliðarlisti</span><input type="checkbox" aria-label="Hliðarlisti" checked={sideTrack} onChange={(e) => setSideTrack(e.target.checked)} /></label>
+                {sideTrack && (
+                  <select aria-label="Gerð hliðarlista / Track" data-testid="hc-track-type" value={sideTrackType} onChange={(e) => setSideTrackType(e.target.value as "u" | "l")} className="h-11 w-full border border-[#ccd9df] bg-transparent px-1.5 text-xs md:h-8">
+                    <option value="u">U-spor</option>
+                    <option value="l">L-spor</option>
+                  </select>
+                )}
+              </div>
+            </div>
+            <div role="group" aria-label="Lásahaldari">
+              <span className="mb-1 block text-[10px] uppercase tracking-[.16em]">Lásahaldari</span>
+              <div className="grid grid-cols-4 gap-1.5"><button type="button" aria-pressed={holder === null} onClick={() => setHolder(null)} className={`h-11 border px-1 text-[10px] md:h-8 ${holder === null ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>Enginn</button>{HOLDER_COLORS.map((item) => <button type="button" key={item.value} aria-pressed={holder === item.value} onClick={() => setHolder(item.value)} className={`h-11 truncate border px-1 text-[10px] md:h-8 ${holder === item.value ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{item.is}</button>)}</div>
+            </div>
+            <Dialog>
+              <DialogTrigger asChild>
+                <button type="button" data-testid="honeycomb-side-track-photo" className="flex min-h-11 w-full items-center gap-3 border border-[#ccd9df] px-2 py-1 text-left text-[10px] uppercase tracking-wide hover:bg-[#e2edf1]">
+                  <img src={sideTrackImage} alt="" className="h-11 w-9 object-contain" />
+                  Skoða hliðarlista
                 </button>
-              ))}
+              </DialogTrigger>
+              <DialogContent aria-describedby={undefined} className="max-w-lg bg-[#f7f9fa]">
+                <DialogTitle>Hliðarlisti fyrir Honeycomb</DialogTitle>
+                <img src={sideTrackImage} alt="Hvítur Honeycomb-hliðarlisti með svörtu innra byrði og burstum" className="mx-auto max-h-[70vh] w-full object-contain" />
+              </DialogContent>
+            </Dialog>
+          </div>
+          <div className="space-y-3">
+            <div>
+              <div className="mb-1 flex items-baseline justify-between gap-2">
+                <span className="text-[10px] uppercase tracking-[.16em]">Ljós og efni</span>
+                <span className="truncate text-[10px] text-[#667984]">{fabric.is} · {fabric.code}</span>
+              </div>
+              <div className="mb-2 grid grid-cols-2 gap-1.5" data-testid="honeycomb-fabric-types">
+                {(["sheer", "translucent", "blackout", "dualdeck"] as FabricType[]).map((type) => (
+                  <button type="button" key={type} onClick={() => setFabricType(type)} aria-pressed={fabricType === type} data-testid={`honeycomb-fabric-type-${type}`} className={`h-11 border px-1 text-[9px] uppercase leading-tight tracking-[.04em] md:h-8 ${fabricType === type ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>
+                    {TYPE_LABELS[type].is}
+                  </button>
+                ))}
+              </div>
+              <div data-testid="honeycomb-fabrics" className="flex flex-wrap gap-1.5">
+                {grouped[fabricType].map((item) => (
+                  <button type="button" key={item.code} onClick={() => setFabricCode(item.code)} title={`${item.is} · ${item.code}`} className={`relative h-11 w-11 overflow-hidden rounded-full border-2 md:h-8 md:w-8 ${fabric.code === item.code ? "border-[#24313b]" : "border-transparent"}`} aria-label={`Velja ${item.is} · ${item.name} (${item.code})`} aria-pressed={fabric.code === item.code}>
+                    <img src={item.image} alt="" className="h-full w-full object-contain" />
+                    {fabric.code === item.code && <Check size={13} className="absolute inset-0 m-auto" />}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <span className="block text-[10px] uppercase tracking-[.16em] text-[#6892b8]">Listar</span>
+              <RailColorSwatches label="Litur á botnlistum" testId="hc-bottom-rail" options={HONEYCOMB_BOTTOM_RAIL_COLORS} value={bottomRailColor} onChange={setBottomRailColor} />
+              <RailColorSwatches label="Finish · litur á braut" testId="hc-rail-color" options={operation === "motor" ? MOTORIZED_RAIL_COLORS : CASSETTE_RAIL_COLORS} value={railColor} onChange={setRailColor} />
             </div>
           </div>
-          <label className="flex items-center justify-between border border-[#ccd9df] px-3 py-3 text-[10px] uppercase"><span>Hliðarlisti</span><input type="checkbox" checked={sideTrack} onChange={(e) => setSideTrack(e.target.checked)} /></label>
-          <HoneycombOptions idPrefix="hc" sideTrack={sideTrack} sideTrackType={sideTrackType} setSideTrackType={setSideTrackType} mountPosition={mountPosition} setMountPosition={setMountPosition} noDrill={noDrill} setNoDrill={setNoDrill} />
-          <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Litur á botnlistum</span><div className="flex flex-wrap gap-2">{HONEYCOMB_BOTTOM_RAIL_COLORS.map((item) => <button type="button" key={item.value} onClick={() => setBottomRailColor(item.value)} className={`border px-3 py-2 text-[10px] ${bottomRailColor === item.value ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{item.value}</button>)}</div></div>
-          <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Finish · litur á braut</span><div className="flex flex-wrap gap-2">{(operation === "motor" ? MOTORIZED_RAIL_COLORS : CASSETTE_RAIL_COLORS).map((item) => <button type="button" key={item.value} onClick={() => setRailColor(item.value)} className={`border px-3 py-2 text-[10px] ${railColor === item.value ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{item.value}</button>)}</div></div>
-          <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Lásahaldari</span><div className="flex flex-wrap gap-2"><button type="button" onClick={() => setHolder(null)} className={`border px-3 py-2 text-[10px] ${holder === null ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>Enginn</button>{HOLDER_COLORS.map((item) => <button type="button" key={item.value} onClick={() => setHolder(item.value)} className={`border px-3 py-2 text-[10px] ${holder === item.value ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{item.is}</button>)}</div></div>
         </div>
       }
     />
