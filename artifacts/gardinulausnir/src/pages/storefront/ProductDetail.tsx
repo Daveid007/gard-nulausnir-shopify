@@ -200,7 +200,7 @@ export function ProductDetail() {
     <div className="min-h-screen bg-[#f7f9fa] text-[#24313b]">
       <div className="bg-[#a2c2e2] px-5 py-2 text-center text-[9px] uppercase tracking-[.22em] text-[#24313b]">Ókeypis ráðgjöf · Sérsniðið á Íslandi</div>
       <header className="border-b border-[#d8e1e5] px-5 md:px-10">
-        <div className="flex h-[74px] items-center justify-between">
+        <div className={`flex h-[74px] items-center justify-between ${product.id === "honeycomb-45mm" ? "md:h-16" : ""}`}>
         <BrandLogo className="h-9 w-[182px] sm:h-10 sm:w-[202px]" />
           <nav className="hidden gap-6 text-[10px] uppercase tracking-[.18em] md:flex"><a href="#vörulýsing">{product.category}</a><a href="#upplýsingar">Leiðbeiningar</a><Link href="/maelingar">Mælingar</Link><BusinessInquiryButton productContext={inquiryContext} /></nav>
           <div className="flex items-center gap-4">
@@ -230,7 +230,7 @@ export function ProductDetail() {
       </header>
 
       <main id="top">
-        <div className="mx-auto flex max-w-[1510px] items-center justify-between gap-4 px-5 pt-5 md:px-10 md:pt-8 mb-5">
+        <div className={`mx-auto flex max-w-[1510px] items-center justify-between gap-4 px-5 pt-5 md:px-10 mb-5 ${product.id === "honeycomb-45mm" ? "md:pt-2 md:mb-1" : "md:pt-8"}`}>
           <Link href="/collection" className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[.18em] text-[#667984]"><ArrowLeft size={14} /> Allar gardínur</Link>
           <WarrantyButton />
         </div>

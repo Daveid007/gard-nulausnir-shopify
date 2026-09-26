@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { StorefrontLayout } from "./StorefrontLayout";
+import sideTrackImage from "@/assets/accessory-thumbs/roller-side-track.png";
 import { Calculator, Info } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -382,6 +383,7 @@ export function PriceCalculator({ productIdentity = "square-cassette", product }
               Hliðarbrautir / Side tracks
             </h3>
             <label className={`flex cursor-pointer items-center justify-between gap-3 border p-3 transition ${sideTrack ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>
+              <img src={sideTrackImage} alt="Hvít hliðarbraut fyrir rúllugardínu með burstum" className="h-28 w-14 shrink-0 object-contain" />
               <span>
                 <span className="block text-sm">Bæta við hliðarbrautum</span>
                 <span className="mt-1 block text-xs text-[#667984]">Draga úr ljósbili meðfram hliðum gardínunnar.</span>
