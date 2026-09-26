@@ -367,7 +367,7 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
             </div>
             <div className="space-y-2">
               <span className="block text-[10px] uppercase tracking-[.16em] text-[#6892b8]">Listar</span>
-              <RailColorSwatches label="Litur á botnlistum" testId="hc-bottom-rail" options={HONEYCOMB_BOTTOM_RAIL_COLORS} value={bottomRailColor} onChange={setBottomRailColor} />
+              <RailColorSwatches label="Litur á botnlistum" testId="hc-bottom-rail" options={HONEYCOMB_BOTTOM_RAIL_COLORS} value={bottomRailColor} onChange={setBottomRailColor} showPhotos />
               <RailColorSwatches label="Finish · litur á braut" testId="hc-rail-color" options={operation === "motor" ? MOTORIZED_RAIL_COLORS : CASSETTE_RAIL_COLORS} value={railColor} onChange={setRailColor} />
             </div>
           </div>
