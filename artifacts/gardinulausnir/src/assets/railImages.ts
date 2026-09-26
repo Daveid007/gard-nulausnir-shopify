@@ -20,11 +20,11 @@ import bottom3 from "@/assets/accessory-thumbs/16_(3)_1780327812514.jpg";
 import bottom4 from "@/assets/accessory-thumbs/16_(4)_1780327812514.jpg";
 import bottom5 from "@/assets/accessory-thumbs/16_(5)_1780327812515.jpg";
 
-import hcBottom1 from "@/assets/accessory-thumbs/16_(1)_1781393187195.jpg";
-import hcBottom2 from "@/assets/accessory-thumbs/16_(2)_1781393187197.jpg";
-import hcBottom3 from "@/assets/accessory-thumbs/16_(3)_1781393187197.jpg";
-import hcBottom4 from "@/assets/accessory-thumbs/16_(4)_1781393187198.jpg";
-import hcBottom5 from "@/assets/accessory-thumbs/16_(5)_1781393187198.jpg";
+import hcBottom1 from "@/assets/accessory-thumbs/honeycomb-bottom-rail-black.jpg";
+import hcBottom2 from "@/assets/accessory-thumbs/honeycomb-bottom-rail-silver.jpg";
+import hcBottom3 from "@/assets/accessory-thumbs/honeycomb-bottom-rail-cream.jpg";
+import hcBottom4 from "@/assets/accessory-thumbs/honeycomb-bottom-rail-sand.jpg";
+import hcBottom5 from "@/assets/accessory-thumbs/honeycomb-bottom-rail-white.jpg";
 
 export type RailColorEntry = {
   value: string;
