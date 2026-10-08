@@ -58,6 +58,9 @@ function Toggle<T extends string>({ value, options, onChange, name }: {
   );
 }
 
+const StyleToggle = Toggle<CurtainStyle>;
+const ControlToggle = Toggle<CurtainControl>;
+
 export function CurtainPriceCalculator({ productId, onQuoteChange }: {
   productId: string; onQuoteChange: (q: CurtainQuote | null) => void;
 }) {
@@ -100,9 +103,9 @@ export function CurtainPriceCalculator({ productId, onQuoteChange }: {
         <input data-testid="curtain-calc-quantity" type="number" min={1} step={1} value={qty} onChange={(e) => setQty(e.target.value)} className={field} />
       </label>
       <p className={`${label} mt-4`}>Útfærsla</p>
-      <Toggle name="style" value={style} onChange={setStyle} options={[["standard", STYLE_LABEL.standard], ["s-wave", STYLE_LABEL["s-wave"]]]} />
+      <StyleToggle name="style" value={style} onChange={setStyle} options={[["standard", STYLE_LABEL.standard], ["s-wave", STYLE_LABEL["s-wave"]]]} />
       <p className={`${label} mt-4`}>Stjórnun</p>
-      <Toggle name="control" value={control} onChange={setControl} options={[["manual", CONTROL_LABEL.manual], ["motorized", CONTROL_LABEL.motorized]]} />
+      <ControlToggle name="control" value={control} onChange={setControl} options={[["manual", CONTROL_LABEL.manual], ["motorized", CONTROL_LABEL.motorized]]} />
 
       <div className="mt-6 bg-[#e8eef1] p-5" aria-live="polite">
         {quote ? (
