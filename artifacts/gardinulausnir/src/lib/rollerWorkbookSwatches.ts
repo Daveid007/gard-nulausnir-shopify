@@ -1,5 +1,6 @@
 import { COLLECTIONS } from "../pages/storefront/_shared/fabric-collections.ts";
 import type { RollerWorkbookFabric } from "../data/rollerWorkbookFabrics.ts";
+import { zebraWorkbookSwatchFilename } from "./zebraWorkbookImages.ts";
 
 const codeKey = (code: string) => code.toUpperCase().replace(/[^A-Z0-9]/g, "");
 
@@ -39,6 +40,7 @@ const rollerImagesByCode = new Map(
 export function rollerWorkbookSwatchFilename(
   fabric: Pick<RollerWorkbookFabric, "family" | "code">,
 ): string | undefined {
+  if (fabric.family === "zebra") return zebraWorkbookSwatchFilename(fabric.code);
   if (fabric.family !== "roller") return undefined;
   const code = codeKey(fabric.code);
   // Some workbook roller codes add RS to the existing supplier code.

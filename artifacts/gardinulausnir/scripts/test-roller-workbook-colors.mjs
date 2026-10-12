@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { rollerWorkbookFabrics } from "../src/data/rollerWorkbookFabrics.ts";
 import { rollerWorkbookSwatchFilename } from "../src/lib/rollerWorkbookSwatches.ts";
+import { zebraWorkbookImageManifest } from "../src/lib/zebraWorkbookImages.ts";
 
 const root = new URL("../", import.meta.url);
 const calculator = await readFile(new URL("src/components/legacy-calculators/RollerWorkbookCalculator.tsx", root), "utf8");
@@ -28,13 +29,29 @@ for (const [family, count] of Object.entries(counts)) {
 assert.equal(new Set(rollerWorkbookFabrics.map((fabric) => fabric.code)).size, 338);
 
 let mappedPhotos = 0;
+let zebraPhotos = 0;
+const mappedZebraFiles = new Set();
 for (const fabric of rollerWorkbookFabrics) {
   const filename = rollerWorkbookSwatchFilename(fabric);
   if (!filename) continue;
-  assert.equal(fabric.family, "roller", "never borrow unrelated photos for other product families");
+  assert.ok(["roller", "zebra"].includes(fabric.family), "never borrow photos for other product families");
   const path = new URL("src/assets/swatches/" + filename, root);
   await readFile(path);
-  mappedPhotos++;
+  if (fabric.family === "roller") mappedPhotos++;
+  else {
+    zebraPhotos++;
+    mappedZebraFiles.add(filename);
+  }
 }
 assert.equal(mappedPhotos, 80, "preserve every existing confirmed image mapping");
-console.log(`PASS: 338 selectable fabrics, 80 confirmed photos; no image-based hiding (${fileURLToPath(root)}).`);
+assert.equal(zebraPhotos, 81, "every confirmed Zebra photo must match an existing priced fabric");
+assert.equal(mappedZebraFiles.size, Object.keys(zebraWorkbookImageManifest).length, "all photo files must be used exactly once");
+assert.equal(rollerWorkbookSwatchFilename({ family: "zebra", code: "DS-RD-DL22034-0002" }), undefined, "exclude the mislabelled photo");
+assert.equal(rollerWorkbookSwatchFilename({ family: "zebra", code: "DS-TR-ZU00-0101" }), undefined, "do not invent new priced fabric options");
+assert.equal(rollerWorkbookSwatchFilename({ family: "roller", code: "DS-TR-G31-001" }), undefined, "Zebra images must not leak into roller fabrics");
+assert.equal(rollerWorkbookSwatchFilename({ family: "sheer", code: "G31-001" }), undefined);
+assert.equal(rollerWorkbookSwatchFilename({ family: "butterfly", code: "G31-001" }), undefined);
+assert.equal(rollerWorkbookSwatchFilename({ family: "zebra", code: "G31-001-12345" }), undefined, "no substring matches");
+const urls = await readFile(new URL("src/pages/storefront/_shared/swatches.ts", root), "utf8");
+assert.match(urls, /zebra-\*\.webp/, "the Vite asset index must include Zebra photos");
+console.log(`PASS: 338 selectable fabrics, 80 roller and 81 Zebra photos; no image-based hiding (${fileURLToPath(root)}).`);
