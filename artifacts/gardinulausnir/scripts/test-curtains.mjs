@@ -57,10 +57,10 @@ assert.deepEqual(product.swatches.map(({ code }) => code), [
 const secondProduct = products.find(({ id }) => id === GLUGGATJOLD_2828_ID);
 assert.ok(secondProduct);
 assert.equal(secondProduct.title, "Gluggatjöld — 2828");
-assert.equal(secondProduct.subtitle, "17 litakóðar · 85% myrkvun · sýnishorn til skoðunar");
+assert.equal(secondProduct.subtitle, "17 litakóðar · 90% myrkvun · sýnishorn til skoðunar");
 assert.equal(secondProduct.category, "Gluggatjöld");
 assert.equal(secondProduct.price, "Verð eftir fyrirspurn");
-assert.equal(secondProduct.note, "85% myrkvun");
+assert.equal(secondProduct.note, "90% myrkvun");
 assert.deepEqual(secondProduct.swatches.map(({ code }) => code), [
   "2828.07",
   "2828.08",
@@ -84,12 +84,10 @@ assert.deepEqual(secondProduct.swatches.map(({ code }) => code), [
 const thirdProduct = products.find(({ id }) => id === GLUGGATJOLD_2883_ID);
 assert.ok(thirdProduct);
 assert.equal(thirdProduct.title, "Gluggatjöld — 2883");
-assert.equal(thirdProduct.subtitle, "6 litakóðar · sýnishorn til skoðunar");
+assert.equal(thirdProduct.subtitle, "6 litakóðar · 90% myrkvun · sýnishorn til skoðunar");
 assert.equal(thirdProduct.category, "Gluggatjöld");
 assert.equal(thirdProduct.price, "Verð eftir fyrirspurn");
-assert.equal(thirdProduct.note, "2883");
-assert.equal(thirdProduct.subtitle.includes("%"), false);
-assert.equal(thirdProduct.subtitle.includes("myrkvun"), false);
+assert.equal(thirdProduct.note, "90% myrkvun");
 assert.deepEqual(thirdProduct.swatches.map(({ code }) => code), [
   "2883.03",
   "2883.11",
@@ -128,3 +126,21 @@ assert.equal(productPageSource.includes("kr."), false);
 assert.equal(productPageSource.includes("100% myrkvun"), false);
 
 console.log("Curtains swatches, inquiry and product safeguards passed.");
+
+// Full supplier catalogue: eight series, exact catalogue swatch files.
+import { CURTAIN_PRODUCT_DEFINITIONS, CURTAIN_PHOTO_FILES, TEXTILE_SHEER_ID } from "../src/pages/storefront/_shared/curtains.ts";
+const catalogDir = join(curtainsDirectory, "catalog");
+assert.equal(CURTAIN_PRODUCT_DEFINITIONS.length, 8);
+for (const def of CURTAIN_PRODUCT_DEFINITIONS) {
+  assert.ok(products.find(({ id }) => id === def.id), def.id);
+  for (const f of Object.values(CURTAIN_PHOTO_FILES[def.id])) assert.equal(statSync(join(catalogDir, f)).isFile(), true);
+}
+const sheer = CURTAIN_PRODUCT_DEFINITIONS.find(({ id }) => id === TEXTILE_SHEER_ID);
+assert.deepEqual(sheer.swatches.map(({ code }) => code).sort(), ["13-275", "16-250", "20-294", "Q8-01", "Q8-15", "Q8-40"]);
+assert.equal(sheer.specifications, undefined);
+assert.equal(sheer.lightControl, undefined);
+const s3009 = CURTAIN_PRODUCT_DEFINITIONS.find(({ id }) => id === "curtains-3009").swatches.map(({ code }) => code);
+assert.ok(s3009.includes("3009.13"));
+assert.ok(!s3009.includes("3009.01"));
+for (const def of CURTAIN_PRODUCT_DEFINITIONS.slice(3)) for (const sw of def.swatches) assert.equal(statSync(join(catalogDir, sw.fileName)).isFile(), true);
+console.log("curtains catalogue ok");

@@ -8,10 +8,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { CurtainPriceCalculator, curtainQuoteLines, isCurtainPricingSupported, type CurtainQuote } from "@/components/CurtainPriceCalculator";
 import { ResponsiveImage } from "@/components/ResponsiveImage";
 import { Footer, Header } from "./_shared/Storefront";
-import { CURTAIN_SWATCH_ASSETS } from "./_shared/curtains-assets";
+import { CURTAIN_SWATCH_ASSETS, curtainProductDetailImage, curtainProductLifestyleImage } from "./_shared/curtains-assets";
 import {
+  CURTAIN_COLOUR_DISCLAIMER,
   curtainInquiryHref,
   getCurtainProductDefinition,
   GLUGGATJOLD_1000_ID,
@@ -21,10 +23,18 @@ import {
 export function CurtainsProductDetail({ productId = GLUGGATJOLD_1000_ID }: { productId?: CurtainProductId }) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [zoomOpen, setZoomOpen] = useState(false);
+  const [quote, setQuote] = useState<CurtainQuote | null>(null);
   const product = getCurtainProductDefinition(productId);
   if (!product) return null;
   const swatches = CURTAIN_SWATCH_ASSETS[productId];
   const selectedSwatch = swatches[selectedIndex];
+  const lifestyleImage = curtainProductLifestyleImage(productId);
+  const detailImage = curtainProductDetailImage(productId);
+  const pricingSupported = isCurtainPricingSupported(product.id);
+  const baseHref = curtainInquiryHref(product.id, selectedSwatch.code);
+  const inquiryHref = pricingSupported && quote
+    ? baseHref + encodeURIComponent("\n" + curtainQuoteLines(quote).join("\n"))
+    : baseHref;
 
   return (
     <div className="solmyrkvun-grid min-h-screen bg-[#f7f9fa] text-[#24313b]">
@@ -43,11 +53,41 @@ export function CurtainsProductDetail({ productId = GLUGGATJOLD_1000_ID }: { pro
           className="mx-auto grid max-w-[1480px] gap-10 px-5 pb-16 md:grid-cols-[minmax(0,1.08fr)_minmax(360px,.92fr)] md:gap-16 md:px-10 md:pb-28"
         >
           <div data-testid="curtain-gallery" className="min-w-0">
+            {lifestyleImage && (
+              <figure className="mb-4">
+                <div className="aspect-[4/3] w-full overflow-hidden bg-[#e8eef1]">
+                  <ResponsiveImage
+                    data-testid="curtain-lifestyle-image"
+                    src={lifestyleImage}
+                    alt={`${product.title} í rými, umhverfismynd úr vörulista`}
+                    sizes="(min-width: 768px) 58vw, 100vw"
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+                <figcaption className="mt-3 text-[10px] uppercase tracking-[.16em] text-[#667984]">
+                  {product.title} · umhverfismynd
+                </figcaption>
+              </figure>
+            )}
+            <figure className="mb-4">
+              <div className="aspect-[3/2] w-full overflow-hidden bg-[#e8eef1]">
+                <ResponsiveImage
+                  data-testid="curtain-detail-image"
+                  src={detailImage}
+                  alt={`${product.title}, nærmynd af efni`}
+                  sizes="(min-width: 768px) 58vw, 100vw"
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <figcaption className="mt-3 text-[10px] uppercase tracking-[.16em] text-[#667984]">
+                {product.title} · nærmynd af efni
+              </figcaption>
+            </figure>
             <button
               type="button"
               data-testid="curtain-gallery-open"
               onClick={() => setZoomOpen(true)}
-              className="group relative flex aspect-square w-full items-center justify-center overflow-hidden bg-[#e8eef1] p-5 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6892b8] md:p-10"
+              className={`group relative flex w-full ${lifestyleImage ? "aspect-[2/1]" : "aspect-square"} items-center justify-center overflow-hidden bg-[#e8eef1] p-5 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6892b8] md:p-10`}
               aria-label={`Stækka sýnishorn ${selectedSwatch.code}`}
             >
               <ResponsiveImage
@@ -80,8 +120,23 @@ export function CurtainsProductDetail({ productId = GLUGGATJOLD_1000_ID }: { pro
                   {product.lightControl}
                 </p>
               )}
+              {product.specifications && (
+                <dl data-testid="curtain-specifications" aria-label="Eiginleikar vöru" className="mt-5 grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
+                  {product.specifications.map((spec) => (
+                    <div key={spec.label} className="contents">
+                      <dt className="text-[10px] uppercase tracking-[.16em] text-[#667984] self-center">{spec.label}</dt>
+                      <dd className="text-[#24313b]">{spec.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
+              {product.supplierNote && (
+                <p data-testid="curtain-supplier-note" className="mt-4 text-xs leading-5 text-[#667984]">
+                  {product.supplierNote}
+                </p>
+              )}
               <p data-testid="curtain-price" className="mt-5 font-serif text-2xl tracking-tight">
-                Verð eftir fyrirspurn
+                {pricingSupported ? "Áætlað verð út frá málum hér að neðan" : "Verð eftir fyrirspurn"}
               </p>
             </div>
 
@@ -110,7 +165,7 @@ export function CurtainsProductDetail({ productId = GLUGGATJOLD_1000_ID }: { pro
                     >
                       <ResponsiveImage
                         src={swatch.image}
-                        alt=""
+                        alt={`${product.title} – litasýnishorn`}
                         aria-hidden="true"
                         sizes="48px"
                         className="h-12 w-12 shrink-0 object-cover"
@@ -122,20 +177,28 @@ export function CurtainsProductDetail({ productId = GLUGGATJOLD_1000_ID }: { pro
               </div>
             </div>
 
+            {pricingSupported && <CurtainPriceCalculator productId={product.id} onQuoteChange={setQuote} />}
+
             <div className="border-b border-[#ccd9df] py-7">
               <p className="max-w-lg text-sm leading-6 text-[#5a6b74]">
-                Hafðu samband til að fá upplýsingar um þessa vöru og valinn lit. Tengillinn hér fyrir neðan opnar tölvupóst — hann sendir ekki inn pöntun.
+                {pricingSupported && quote
+                  ? "Sendu okkur valinn lit, mál og áætlað verð til staðfestingar. Tengillinn"
+                  : "Hafðu samband til að fá upplýsingar um þessa vöru og valinn lit. Tengillinn"} hér fyrir neðan opnar tölvupóst — hann sendir ekki inn pöntun.
               </p>
               <a
                 data-testid="curtain-inquiry"
-                href={curtainInquiryHref(product.id, selectedSwatch.code)}
+                href={inquiryHref}
+                data-has-quote={pricingSupported && quote ? "true" : "false"}
                 className="mt-6 inline-flex w-full items-center justify-center bg-[#a2c2e2] px-5 py-4 text-[10px] uppercase tracking-[.19em] transition-colors hover:bg-[#89b0d5] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6892b8]"
               >
                 Opna fyrirspurn í tölvupósti · {selectedSwatch.code}
               </a>
             </div>
 
-            <p id="upplýsingar" className="pt-6 text-xs leading-5 text-[#667984]">
+            <p data-testid="curtain-colour-disclaimer" className="pt-6 text-xs leading-5 text-[#667984]">
+              {CURTAIN_COLOUR_DISCLAIMER}
+            </p>
+            <p id="upplýsingar" className="pt-3 text-xs leading-5 text-[#667984]">
               Upplýsingar um mál og útfærslu eru staðfestar í samtali áður en ákvörðun er tekin.
             </p>
           </div>

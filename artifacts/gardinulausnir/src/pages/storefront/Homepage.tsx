@@ -11,7 +11,6 @@ import homepageFamily from "@/assets/homepage-family.jpg";
 import { curtainProductCoverImage } from "./_shared/curtains-assets";
 import { BusinessInquiryButton } from "@/components/BusinessInquiryButton";
 import "./home-office.css";
-import { homeOfficeGroups } from "./_shared/homeOffice";
 import { useReveal } from "./_shared/useReveal";
 
 const collectionHref = "/collection";
@@ -40,7 +39,6 @@ function HomepageHeader() {
            <Link href={`${collectionHref}#windour`} className="transition-colors hover:text-[#6892b8]">WINdoûr</Link>
            <Link href={`${collectionHref}#roldour`} className="transition-colors hover:text-[#6892b8]">ROLdoûr</Link>
           <Link href="/maelingar" className="inline-flex items-center gap-2 transition-colors hover:text-[#6892b8]"><Ruler size={15} strokeWidth={1.5} />Mælingar</Link>
-          <Link href="/heimili-og-skrifstofur" className="transition-colors hover:text-[#6892b8]">Heimili &amp; skrifstofur</Link>
           <HelpDrawer />
            <BusinessInquiryButton />
         </nav>
@@ -56,7 +54,6 @@ function HomepageHeader() {
          <Link href={`${collectionHref}#windour`} onClick={() => setMenuOpen(false)} className="block py-3 text-[10px] uppercase tracking-[.16em]">WINdoûr — Rammagardínur</Link>
          <Link href={`${collectionHref}#roldour`} onClick={() => setMenuOpen(false)} className="block py-3 text-[10px] uppercase tracking-[.16em]">ROLdoûr — Rúllukerfi í ramma</Link>
         <Link href="/maelingar" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 py-3 text-[10px] uppercase tracking-[.16em]"><Ruler size={15} strokeWidth={1.5} />Mælingar</Link>
-        <Link href="/heimili-og-skrifstofur" onClick={() => setMenuOpen(false)} className="block py-3 text-[10px] uppercase tracking-[.16em]">Heimili &amp; skrifstofur</Link>
         <HelpDrawer />
          <BusinessInquiryButton className="block py-3 text-left" />
       </nav>}
@@ -84,32 +81,6 @@ function HeroBanner() {
             <p className="mt-1 text-sm leading-6 text-[#43515a]">Við komum og aðstoðum við nákvæmar mælingar svo gardínurnar passi fullkomlega í gluggann.</p>
           </div>
         </div>
-      </div>
-    </section>
-  );
-}
-
-function HomeOfficeBand() {
-  return (
-    <section aria-labelledby="ho-band-h" className="ho-reveal border-y border-[#24313b]/10 bg-[#f7f9fa] px-5 py-14 md:px-10 md:py-20">
-      <div className="mx-auto grid max-w-[1480px] gap-10 lg:grid-cols-[.8fr_1.2fr]">
-        <div>
-          <p className="sol-kicker text-[9px] uppercase tracking-[.24em] text-[#6892b8]">Heimili og skrifstofur</p>
-          <h2 id="ho-band-h" className="mt-3 font-serif text-4xl leading-[.98] tracking-[-.05em] text-[#24313b] md:text-5xl">Hvaða lausn passar í þitt op?</h2>
-          <p className="mt-4 max-w-md text-[15px] leading-7 text-[#43515a]">Gluggar, svalahurðir og sturtur. Samanburður, mælingar og svör á einum stað.</p>
-          <Link href="/heimili-og-skrifstofur" className="sol-action mt-8 inline-flex items-center gap-3 px-5 py-3.5 text-[10px] uppercase tracking-[.17em]">Skoða leiðarvísinn <ArrowRight size={14} /></Link>
-        </div>
-        <ol className="grid gap-px bg-[#24313b]/10 sm:grid-cols-2">
-          {homeOfficeGroups.map((g) => (
-            <li key={g.id} className="bg-[#f7f9fa]">
-              <Link href={`/heimili-og-skrifstofur#${g.id}`} className="group flex h-full flex-col gap-2 p-5 transition-colors hover:bg-[#edf3f8]">
-                <span className="flex items-center justify-between font-mono text-[11px] text-[#6892b8]">{g.index}<ArrowRight size={14} className="transition-transform group-hover:translate-x-1 motion-reduce:transition-none" /></span>
-                <span className="font-serif text-2xl tracking-[-.03em] text-[#24313b]">{g.title}</span>
-                <span className="text-xs text-[#43515a]">{g.families.join(" · ")} — {g.availability === "local" ? "fáanlegt hjá okkur" : "upplýsingar og fyrirspurn"}</span>
-              </Link>
-            </li>
-          ))}
-        </ol>
       </div>
     </section>
   );
@@ -143,7 +114,7 @@ export function Homepage() {
   useReveal();
   return <div id="top" className="solmyrkvun-grid min-h-screen bg-[#f3f7f8]">
     <HomepageHeader />
-    <main><HeroBanner /><CategoryTilesGrid /><HomeOfficeBand /></main>
+    <main><HeroBanner /><CategoryTilesGrid /></main>
     <Footer />
   </div>;
 }
