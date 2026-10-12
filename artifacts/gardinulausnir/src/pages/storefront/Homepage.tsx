@@ -12,6 +12,7 @@ import { curtainProductCoverImage } from "./_shared/curtains-assets";
 import { BusinessInquiryButton } from "@/components/BusinessInquiryButton";
 import "./home-office.css";
 import { useReveal } from "./_shared/useReveal";
+import { zebraPrimaryImage } from "./_shared/zebra-assets";
 
 const collectionHref = "/collection";
 
@@ -19,6 +20,7 @@ const collections = [
   { id: "curtains", href: `${collectionHref}#curtains`, title: "Gluggatjöld", description: "1000, 2828 og 2883 · 14 + 17 + 6 litasýnishorn.", image: curtainProductCoverImage("curtains-1000") },
   { id: "honeycomb", href: `${collectionHref}#honeycomb`, title: "Honeycomb", description: "Gardínur eftir máli sem loka birtuna úti.", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-honeycomb-45mm.png?v=1787921250" },
   { id: "roller", href: `${collectionHref}#roller`, title: "Rúllugardínur", description: "Rúllugardínur eftir máli — hægt að velja með hliðarlistum eða án.", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-square-cassette.png?v=1787921305" },
+  { id: "zebra", href: `${collectionHref}#zebra`, title: "Sebragardínur", description: "Stillanleg dagsbirta og næði með Zebra-efni.", image: zebraPrimaryImage },
   { id: "sheer-shades", href: `${collectionHref}#sheer-shades`, title: "Strimlar", description: "Strimlar fyrir stillanlega dagsbirtu og næði.", image: new URL("../../assets/strimlar/room.jpg", import.meta.url).href },
   { id: "butterfly", href: `${collectionHref}#butterfly`, title: "Fiðrildagardínur", description: "Lárétt Butterfly-kerfi með mjúkri ljósstýringu.", image: "" },
   { id: "vertical-sheer", href: `${collectionHref}#vertical-sheer-shades`, title: "Lóðréttar vefgardínur", description: "Vertical Sheer Shades / Dream Shades · 17 efni.", image: new URL("../../assets/vertical-sheer-shades/cases/Vertical sheer shades (2).jpg", import.meta.url).href },
@@ -36,6 +38,7 @@ function HomepageHeader() {
         <nav className="hidden items-center gap-6 text-[10px] uppercase tracking-[.16em] text-[#43515a] lg:flex" aria-label="Aðalleiðsögn">
            <Link href={collectionHref} className="transition-colors hover:text-[#6892b8]">Gardínur</Link>
            <Link href={`${collectionHref}#curtains`} className="transition-colors hover:text-[#6892b8]">Gluggatjöld</Link>
+           <Link href={`${collectionHref}#zebra`} className="transition-colors hover:text-[#6892b8]">Sebragardínur</Link>
            <Link href={`${collectionHref}#windour`} className="transition-colors hover:text-[#6892b8]">WINdoûr</Link>
            <Link href={`${collectionHref}#roldour`} className="transition-colors hover:text-[#6892b8]">ROLdoûr</Link>
           <Link href="/maelingar" className="inline-flex items-center gap-2 transition-colors hover:text-[#6892b8]"><Ruler size={15} strokeWidth={1.5} />Mælingar</Link>
@@ -51,6 +54,7 @@ function HomepageHeader() {
       {menuOpen && <nav className="border-t border-[#24313b]/10 bg-[#f7f9fa] px-5 py-4 lg:hidden" aria-label="Farsímaleiðsögn">
          <Link href={collectionHref} onClick={() => setMenuOpen(false)} className="block py-3 text-[10px] uppercase tracking-[.16em]">Gardínur</Link>
          <Link href={`${collectionHref}#curtains`} onClick={() => setMenuOpen(false)} className="block py-3 text-[10px] uppercase tracking-[.16em]">Gluggatjöld</Link>
+         <Link href={`${collectionHref}#zebra`} onClick={() => setMenuOpen(false)} className="block py-3 text-[10px] uppercase tracking-[.16em]">Sebragardínur</Link>
          <Link href={`${collectionHref}#windour`} onClick={() => setMenuOpen(false)} className="block py-3 text-[10px] uppercase tracking-[.16em]">WINdoûr — Rammagardínur</Link>
          <Link href={`${collectionHref}#roldour`} onClick={() => setMenuOpen(false)} className="block py-3 text-[10px] uppercase tracking-[.16em]">ROLdoûr — Rúllukerfi í ramma</Link>
         <Link href="/maelingar" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 py-3 text-[10px] uppercase tracking-[.16em]"><Ruler size={15} strokeWidth={1.5} />Mælingar</Link>

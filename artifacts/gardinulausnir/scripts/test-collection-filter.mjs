@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { readFileSync, existsSync } from "node:fs";
+import { products as curatedProducts } from "../src/pages/storefront/_shared/data.ts";
 import {
   categoryLabel,
   collectionCategoryFromUrl,
@@ -69,8 +71,9 @@ assert.deepEqual(ids("roller"), [
   "arc-cassette",
   "open-roll",
   "dual-roller",
-  "zebra-blind",
 ]);
+assert.deepEqual(ids("zebra"), ["zebra-blind"]);
+assert.deepEqual(ids("sebragardinur"), ["zebra-blind"]);
 const windourIds = ["windour-single-999", "windour-single-2000", "windour-duo-2000", "windour-duo-999"];
 const roldourIds = [
   "roldour-duo-horizontal",
@@ -97,7 +100,6 @@ assert.deepEqual(ids("roller"), [
   "arc-cassette",
   "open-roll",
   "dual-roller",
-  "zebra-blind",
 ]);
 assert.deepEqual(ids("honeycomb"), [
   "honeycomb-45mm",
@@ -116,7 +118,10 @@ assert.deepEqual(ids("flugnanet-og-rammar"), [
 ]);
 assert.deepEqual(ids("unknown"), []);
 
-assert.equal(resolveProductCategory({ id: "zebra-blind", productType: "Honeycomb" }), "roller");
+assert.equal(resolveProductCategory({ id: "zebra-blind", productType: "Honeycomb" }), "zebra");
+assert.equal(resolveProductCategory({ id: "unmapped", category: "Sebragardínur" }), "zebra");
+assert.equal(resolveProductCategory({ id: "unmapped", productType: "Zebra Blinds" }), "zebra");
+assert.equal(categoryLabel("zebra"), "Sebragardínur");
 assert.equal(resolveProductCategory({ id: "unmapped", productType: "Cellular blind" }), "honeycomb");
 assert.equal(resolveProductCategory({ id: "unmapped", category: "Myrkvunargardínur" }), "honeycomb");
 assert.equal(resolveProductCategory({ id: "unmapped", category: "Einfaldar Rúllugardínur" }), "windour");
@@ -148,6 +153,22 @@ assert.equal(collectionCategoryFromUrl({ search: "?collection=windour-duo", hash
 assert.equal(collectionCategoryFromUrl({ search: "", hash: "#windour-single" }), "windour");
 assert.equal(collectionCategoryFromUrl({ search: "", hash: "#roldour" }), "roldour");
 assert.equal(collectionCategoryFromUrl({ search: "", hash: "#curtains" }), "curtains");
+assert.equal(collectionCategoryFromUrl({ search: "", hash: "#zebra" }), "zebra");
+assert.equal(collectionCategoryFromUrl({ search: "?category=zebra", hash: "#roller" }), "zebra");
+assert.equal(collectionCategoryFromUrl({ search: "", hash: "#sebragardinur" }), "zebra");
 assert.equal(collectionCategoryFromUrl({ search: "?category=not-a-category", hash: "#roller" }), "unknown");
+
+const zebraProduct = curatedProducts.find(product => product.id === "zebra-blind");
+assert.ok(zebraProduct, "the existing product id must be preserved");
+assert.equal(zebraProduct.category, "Sebragardínur");
+assert.ok(zebraProduct.image.endsWith("/zebra/black-cassette-cover.webp"));
+assert.ok(existsSync(new URL(zebraProduct.image)), "the owner-selected cover must exist");
+assert.deepEqual(zebraProduct.gallery, [zebraProduct.image], "the editorial gallery must keep Shopify from replacing the selected cover");
+assert.equal(zebraProduct.price, "Reiknast eftir máli");
+const homeSource = readFileSync(new URL("../src/pages/storefront/Homepage.tsx", import.meta.url), "utf8");
+assert.match(homeSource, /id: "zebra".*image: zebraPrimaryImage/, "the homepage category card must use the same cover");
+assert.equal((homeSource.match(/href=\{`\$\{collectionHref\}#zebra`\}/g) ?? []).length, 2, "desktop and mobile homepage navigation must link to Zebra");
+const headerSource = readFileSync(new URL("../src/pages/storefront/_shared/Storefront.tsx", import.meta.url), "utf8");
+assert.equal((headerSource.match(/collectionHref\("zebra"\)/g) ?? []).length, 3, "collection and product navigation must include Zebra on desktop and mobile");
 
 console.log("Collection filtering passed.");

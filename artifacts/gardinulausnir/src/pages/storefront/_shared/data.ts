@@ -1,5 +1,6 @@
 import { categoryLabel, resolveProductCategory } from "./collectionCategories.ts";
 import { CURTAIN_PRODUCT_DEFINITIONS } from "./curtains.ts";
+import { zebraPrimaryImage } from "./zebra-assets.ts";
 
 // Keep the curated catalogue data importable by the Node regression scripts;
 // Vite turns these literal URLs into hashed local assets in the browser build.
@@ -64,7 +65,7 @@ const catalogProducts: Product[] = [
   { id: "arc-cassette", title: "Bogakassetta", subtitle: "Mjúk lína · ljósdreifing", category: "Rúllugardínur", price: "Reiknast eftir máli", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-arc-cassette-primary.png?v=1787921322", secondary: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/02-arc-cassette-detail.png?v=1787921324", colors: [], note: "Ljósdreifing", sizes: ["60–120 cm", "121–180 cm", "181–240 cm"] },
   { id: "open-roll", title: "Opið rúll", subtitle: "Klassískt opið rúllukerfi", category: "Rúllugardínur", price: "Reiknast eftir máli", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-open-roll.png?v=1787921348", secondary: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/02-open-roll-detail.png?v=1787921351", colors: [], note: "Rúllugardína", sizes: ["60–120 cm", "121–180 cm", "181–240 cm"] },
   { id: "dual-roller", title: "Tvöfalt rúll", subtitle: "Dagljós og myrkvun í tveimur lögum", category: "Rúllugardínur", price: "Reiknast eftir máli", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-dual-roller.jpg?v=1787921365", secondary: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/02-dual-roller-detail.jpg?v=1787921367", colors: [], note: "Tvö lög", sizes: ["60–120 cm", "121–180 cm", "181–240 cm"] },
-  { id: "zebra-blind", title: "Sebragardína", subtitle: "Stillanleg dagsbirta og næði", category: "Rúllugardínur", price: "Reiknast eftir máli", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-zebra-blind.png?v=1787921376", secondary: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-zebra-blind.png?v=1787921376", colors: [], note: "Ljósdreifing", sizes: ["60–120 cm", "121–180 cm", "181–240 cm"] },
+  { id: "zebra-blind", title: "Sebragardína", subtitle: "Stillanleg dagsbirta og næði", category: "Sebragardínur", price: "Reiknast eftir máli", image: zebraPrimaryImage, secondary: zebraPrimaryImage, gallery: [zebraPrimaryImage], colors: [], note: "Ljósdreifing", sizes: ["60–120 cm", "121–180 cm", "181–240 cm"] },
 
   // These two workbook products intentionally have no guessed photography. The
   // workbook supplies SS/BFHLA pricing and options; until matching catalogue
@@ -100,4 +101,4 @@ export const products: Product[] = catalogProducts
     };
   });
 
-export const categories = ["Allt", "Honeycomb", "Rúllugardínur", "Lóðréttar vefgardínur", "Strimlar", "Fiðrildagardínur", "Rammagardínur", "Ramma flugnanet og myrkvunargardínur", "Flugnanet og rammar"];
+export const categories = ["Allt", "Honeycomb", "Rúllugardínur", "Sebragardínur", "Lóðréttar vefgardínur", "Strimlar", "Fiðrildagardínur", "Rammagardínur", "Ramma flugnanet og myrkvunargardínur", "Flugnanet og rammar"];

@@ -15,6 +15,7 @@ export type CollectionCategoryKey =
   | "all"
   | "honeycomb"
   | "roller"
+  | "zebra"
   | "vertical-sheer"
   | "sheer-shades"
   | "butterfly"
@@ -62,6 +63,13 @@ export const COLLECTION_CATEGORY_DEFINITIONS: readonly CollectionCategoryDefinit
     english: "HANDE / ROLLER",
     description: "Rúllugardínur eftir máli — hægt að velja með hliðarlistum eða án. Hliðarlistar hjálpa til við að draga úr birtu meðfram hliðum gardínunnar.",
     hash: "roller",
+  },
+  {
+    key: "zebra",
+    label: "Sebragardínur",
+    english: "ZEBRA / DAGSBIRTA OG NÆÐI",
+    description: "Sebragardínur eftir máli með stillanlegri dagsbirtu og næði.",
+    hash: "zebra",
   },
   {
     key: "vertical-sheer",
@@ -127,7 +135,7 @@ const canonicalProductCategories: Readonly<Record<string, Exclude<CollectionCate
   "arc-cassette": "roller",
   "open-roll": "roller",
   "dual-roller": "roller",
-  "zebra-blind": "roller",
+  "zebra-blind": "zebra",
   "windour-single-999": "windour",
   "windour-single-2000": "windour",
   "windour-duo-2000": "windour",
@@ -213,8 +221,14 @@ const categoryByToken = new Map<string, CollectionCategoryKey>([
   ["open-roll", "roller"],
   ["dual-roller", "roller"],
   ["dualroller", "roller"],
-  ["zebra", "roller"],
-  ["zebra-blind", "roller"],
+  ["zebra", "zebra"],
+  ["zebra-blind", "zebra"],
+  ["zebra-blinds", "zebra"],
+  ["category-zebra", "zebra"],
+  ["collection-zebra", "zebra"],
+  ["sebra", "zebra"],
+  ["sebragardina", "zebra"],
+  ["sebragardinur", "zebra"],
 
   ["windour", "windour"],
   ["windour-rammagardinur", "windour"],
