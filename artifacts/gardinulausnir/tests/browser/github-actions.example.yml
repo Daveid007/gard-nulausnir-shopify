@@ -1,0 +1,43 @@
+# To enable automatic checks, copy this file to
+# .github/workflows/roller-colors-browser.yml with a GitHub login that can
+# edit workflows. The current project connection cannot write that directory.
+name: Roller fabric browser regressions
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  roller-colors:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.26.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install only the storefront and browser runner
+        run: |
+          pnpm --filter @workspace/gardinulausnir... install --frozen-lockfile
+          pnpm --dir artifacts/gardinulausnir/tests/browser install --ignore-workspace --frozen-lockfile
+      - name: Install Chromium
+        run: pnpm --dir artifacts/gardinulausnir/tests/browser exec playwright install --with-deps chromium
+      - name: Check catalog and image invariants
+        run: pnpm --filter @workspace/gardinulausnir run test:roller-colors
+      - name: Exercise fabric selection on desktop and phone
+        run: pnpm --filter @workspace/gardinulausnir run test:roller-colors:browser
+      - name: Save failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: roller-browser-failures
+          path: generated-artifacts/roller-browser
+          if-no-files-found: ignore
+          retention-days: 7
