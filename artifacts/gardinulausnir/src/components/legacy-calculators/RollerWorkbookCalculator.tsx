@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { Check, Search } from "lucide-react";
+import { Search } from "lucide-react";
+import { WorkbookFabricSwatch } from "./WorkbookFabricSwatch";
 import { StorefrontLayout } from "./StorefrontLayout";
 import { useCart } from "@/lib/cart";
 import { rollerWorkbookSwatchFilename } from "@/lib/rollerWorkbookSwatches";
@@ -279,16 +280,16 @@ export function RollerWorkbookCalculator({
               </select>
             </label>
             <div className="mt-3 grid max-h-96 grid-cols-3 gap-2 overflow-y-auto p-1 sm:grid-cols-4" aria-label="Efnisýni" data-testid="rw-swatches">
-              {(family === "roller" ? visibleFabrics : visibleFabrics.filter((item) => swatchForWorkbookFabric(item))).map((item) => {
-                const image = swatchForWorkbookFabric(item);
-                return <button key={item.code} type="button" aria-label={`${item.code} · ${item.color}`} aria-pressed={item.code === fabricCode} title={`${item.code} · ${item.color}`} onClick={() => setFabricCode(item.code)} className={`relative min-w-0 overflow-hidden border text-left ${item.code === fabricCode ? "border-[#24313b] ring-1 ring-[#24313b]" : "border-[#ccd9df]"}`}>
-                  {image
-                    ? <img src={image} alt={`${item.code}, ${item.color}`} loading="lazy" className="aspect-square w-full object-cover" />
-                    : <span className="flex aspect-square items-center justify-center bg-[#eef2f4] p-2 text-center text-[10px] text-[#667984]">Mynd ekki tiltæk</span>}
-                  <span className="block break-words px-1.5 py-2 text-[9px] leading-4"><strong className="block">{item.code}</strong>{item.color}</span>
-                  {item.code === fabricCode && <Check className="absolute right-1 top-1 rounded-full bg-[#24313b] p-0.5 text-white" size={20} />}
-                </button>;
-              })}
+              {/* Image availability must never remove a supplier fabric from the picker. */}
+              {visibleFabrics.map((item) => (
+                <WorkbookFabricSwatch
+                  key={item.code}
+                  fabric={item}
+                  image={swatchForWorkbookFabric(item)}
+                  selected={item.code === fabricCode}
+                  onSelect={() => setFabricCode(item.code)}
+                />
+              ))}
             </div>
             {visibleFabrics.length === 0 && <p role="status" className="mt-3 text-xs text-[#667984]">Engin efni fundust. Prófaðu annan kóða eða lit.</p>}
             {fabric && <p className="mt-3 text-xs text-[#667984]">{fabric.code} · {fabric.color} · {fabric.light} · {fabric.size}</p>}
