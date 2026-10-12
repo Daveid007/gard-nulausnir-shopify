@@ -18,6 +18,7 @@
     "test:vertical-sheer": "node --experimental-strip-types scripts/test-vertical-sheer.mjs",
     "test:roller-workbook": "node --experimental-strip-types scripts/test-roller-workbook-pricing.mjs",
     "test:roller-colors": "node --experimental-strip-types scripts/test-roller-workbook-colors.mjs",
+    "test:roller-colors:browser": "pnpm --dir tests/browser run test",
     "test:open-roll-example": "node --experimental-strip-types scripts/test-open-roll-example.mjs",
     "test:fabric-separation": "node --experimental-strip-types scripts/test-fabric-family-separation.mjs",
     "test:business-inquiry": "node --experimental-strip-types scripts/test-business-inquiry.mjs"
