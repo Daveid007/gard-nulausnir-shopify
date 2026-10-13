@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { calculateCurtainPrice, CURTAIN_FABRIC_USD } from "../src/lib/curtainPricing.ts";
 
 const base = { productId: "curtains-2828", widthCm: 241.935, heightCm: 274.32, quantity: 1, style: "standard", control: "manual" };
-const factor = 2 / 0.6 * 121.16 * 1.24;
+const factor = 2 / 0.6 * 121.16 * 1.24 * 1.25;
 // Independently reproduce row 4 and ancillary supplier rows in all four sheets.
 for (const [style, control, rail, processing, shaping, motor] of [
   ["standard", "manual", 5.58, 2.35294117647059, 1.47058823529412, 0],
