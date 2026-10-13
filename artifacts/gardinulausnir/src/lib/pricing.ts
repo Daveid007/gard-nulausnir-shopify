@@ -5,11 +5,22 @@
  * supplier cost (100%), then the 40% margin is applied to the landed cost,
  * followed by the current USD/ISK rate and VAT.  Do not round individual
  * fabric/accessory components: the result is rounded exactly once per unit.
+ * The owner's site-wide 25% retail increase is applied after the original
+ * conversion; supplier rates, shipping assumptions and VAT stay unchanged.
  */
 export const USD_TO_ISK = 121.16;
 export const VAT_FACTOR = 1.24;
 export const MARGIN_FACTOR = 1 / 0.6;
-export const SUPPLIER_TO_RETAIL_ISK = 2 * MARGIN_FACTOR * USD_TO_ISK * VAT_FACTOR;
+export const RETAIL_PRICE_MULTIPLIER = 1.25;
+export const SUPPLIER_TO_RETAIL_ISK = 2 * MARGIN_FACTOR * USD_TO_ISK * VAT_FACTOR * RETAIL_PRICE_MULTIPLIER;
+
+/** Adjust an existing ISK retail amount, never a supplier USD cost. */
+export function increasedRetailPriceIsk(baseIsk: number): number {
+  if (!Number.isFinite(baseIsk) || baseIsk < 0) {
+    throw new Error(`Invalid retail price: ${baseIsk}`);
+  }
+  return Math.round(baseIsk * RETAIL_PRICE_MULTIPLIER);
+}
 
 export const MOTOR_UP_TO_4M2_USD = 34.5573219076603;
 export const MOTOR_OVER_4M2_USD = 71.1311073101807;

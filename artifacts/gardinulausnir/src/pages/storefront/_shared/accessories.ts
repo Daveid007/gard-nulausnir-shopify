@@ -1,3 +1,4 @@
+import { increasedRetailPriceIsk } from "../../../lib/pricing.ts";
 import holderWhite from "../../../assets/accessory-thumbs/拉坠-h_1783342729464.jpg";
 import holderNavy from "../../../assets/accessory-thumbs/diaozhui06_1783342729460.jpg";
 import holderBlack from "../../../assets/accessory-thumbs/拉坠-b_1783342729464.jpg";
@@ -78,12 +79,17 @@ export const bottomRailTypeImages = {
 
 export const holderImages = [null, holderWhite, holderNavy, holderBlack];
 
-export const accessories = [
+const baseAccessories = [
   { name: "Enginn aukahlutur", detail: "Staðlað handtak", price: 0 },
   { name: "Snúrulaus stýring", detail: "Örugg og hrein hreyfing", price: 4500 },
   { name: "Hliðarteinar", detail: "Minni ljósleki til hliðanna", price: 8900 },
   { name: "Mótor · app-stýring", detail: "Stýrðu með síma eða rofa", price: 24900 },
 ];
+
+export const accessories = baseAccessories.map((accessory) => ({
+  ...accessory,
+  price: increasedRetailPriceIsk(accessory.price),
+}));
 
 export const mounts = ["Smellifesting", "Veggfesting", "Loftfesting", "Klemma án borunar"];
 export const mechanisms = ["Keðja", "Þráðlaus stýring", "Mótor · app-stýring"];

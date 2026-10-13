@@ -6,6 +6,8 @@
  * exposes a quote (not a firm retail price) and keeps all assumptions explicit.
  */
 
+import { increasedRetailPriceIsk } from "./pricing.ts";
+
 export const WINDOUR_USD_TO_ISK = 121.16;
 export const WINDOUR_SHIPPING_MULTIPLIER = 2;
 // 40% margin on landed cost (not a 40% markup).
@@ -211,7 +213,7 @@ export function calculateWindourQuote(input: WindourQuoteInput): WindourQuote | 
   const beforeVatUsd = supplierProductUsd * WINDOUR_SHIPPING_MULTIPLIER * WINDOUR_MARKUP_MULTIPLIER;
   const estimatedVatUsd = beforeVatUsd * (WINDOUR_VAT_MULTIPLIER - 1);
   const totalUsd = beforeVatUsd + estimatedVatUsd;
-  const unitIsk = Math.round(totalUsd * WINDOUR_USD_TO_ISK);
+  const unitIsk = increasedRetailPriceIsk(totalUsd * WINDOUR_USD_TO_ISK);
 
   return {
     productId: input.productId,

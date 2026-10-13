@@ -6,6 +6,7 @@ import {
   type CollectionCategoryKey,
 } from "./collectionCategories.ts";
 import { isCurtainProductId } from "./curtains.ts";
+import { increasedRetailPriceIsk } from "../../../lib/pricing.ts";
 
 type ShopifyImage = { url: string; altText: string | null };
 type ShopifyMoney = { amount: string; currencyCode: string };
@@ -43,7 +44,9 @@ const isk = new Intl.NumberFormat("is-IS", {
 function formatPrice(money: ShopifyMoney | undefined, fallback: string) {
   if (!money || money.currencyCode !== "ISK") return fallback;
   const amount = Number(money.amount);
-  return Number.isFinite(amount) ? isk.format(amount) : fallback;
+  return Number.isFinite(amount) && amount >= 0
+    ? isk.format(increasedRetailPriceIsk(amount))
+    : fallback;
 }
 
 function collectionCategory(collection: ShopifyCollection): string | null {

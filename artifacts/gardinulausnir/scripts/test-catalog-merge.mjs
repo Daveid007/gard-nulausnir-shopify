@@ -98,7 +98,7 @@ const direct = catalog.products.find(({ id }) => id === "honeycomb-45mm");
 assert.ok(direct);
 assert.equal(direct.title, "Honeycomb 45 mm");
 assert.equal(direct.subtitle, "Álfilma · algjör myrkvun");
-assert.equal(direct.price, currency.format(123450));
+assert.equal(direct.price, currency.format(Math.round(123450 * 1.25)));
 assert.equal(direct.image, "https://shopify.test/direct-featured.jpg");
 assert.equal(direct.secondary, "https://shopify.test/direct-secondary.jpg");
 
@@ -108,7 +108,7 @@ assert.equal(collectionProduct.title, "Rammagardínur 999");
 assert.equal(collectionProduct.category, "WINdoûr — Rammagardínur");
 assert.match(collectionProduct.subtitle, /eins og húsgagn/);
 assert.equal(collectionProduct.subtitle, "Meira en gardína — eins og húsgagn í rýminu.");
-assert.equal(collectionProduct.price, currency.format(98765));
+assert.equal(collectionProduct.price, currency.format(Math.round(98765 * 1.25)));
 assert.equal(collectionProduct.image, "https://shopify.test/collection-primary.jpg");
 assert.equal(collectionProduct.secondary, "https://shopify.test/collection-secondary.jpg");
 
@@ -117,7 +117,7 @@ assert.ok(duoCollectionProduct);
 assert.equal(duoCollectionProduct.title, "Ramma flugnanet og myrkvunargardínur 2000");
 assert.equal(duoCollectionProduct.category, "WINdoûr — Rammagardínur");
 assert.equal(duoCollectionProduct.subtitle, "Einangruð myrkvun og flugnanet");
-assert.equal(duoCollectionProduct.price, currency.format(112233));
+assert.equal(duoCollectionProduct.price, currency.format(Math.round(112233 * 1.25)));
 assert.equal(duoCollectionProduct.image, "https://shopify.test/duo-primary.jpg");
 assert.equal(duoCollectionProduct.secondary, "https://shopify.test/duo-secondary.jpg");
 
@@ -128,14 +128,14 @@ assert.equal(roldourProduct.category, "ROLdoûr — Rúllukerfi í ramma");
 const curtainProduct = catalog.products.find(({ id }) => id === "curtains-2828");
 assert.ok(curtainProduct);
 assert.equal(curtainProduct.title, "Gluggatjöld — 2828");
-assert.equal(curtainProduct.subtitle, "17 litakóðar · 85% myrkvun · sýnishorn til skoðunar");
+assert.equal(curtainProduct.subtitle, "17 litakóðar · 90% myrkvun · sýnishorn til skoðunar");
 assert.equal(curtainProduct.category, "Gluggatjöld");
 assert.equal(curtainProduct.price, "Verð eftir fyrirspurn");
 
 const thirdCurtainProduct = catalog.products.find(({ id }) => id === "curtains-2883");
 assert.ok(thirdCurtainProduct);
 assert.equal(thirdCurtainProduct.title, "Gluggatjöld — 2883");
-assert.equal(thirdCurtainProduct.subtitle, "6 litakóðar · sýnishorn til skoðunar");
+assert.equal(thirdCurtainProduct.subtitle, "6 litakóðar · 90% myrkvun · sýnishorn til skoðunar");
 assert.equal(thirdCurtainProduct.category, "Gluggatjöld");
 assert.equal(thirdCurtainProduct.price, "Verð eftir fyrirspurn");
 
