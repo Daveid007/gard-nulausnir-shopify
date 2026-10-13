@@ -1,4 +1,6 @@
-import { retailPriceFromSupplierUsd } from "./pricing.ts";
+import { SUPPLIER_TO_RETAIL_ISK } from "./pricing.ts";
+
+export const CURTAIN_RETAIL_INCREASE = 1.25;
 
 // Curtain-how_to_caculate_price-0612 - Iceland.xlsx, price sheet column G.
 export const CURTAIN_FABRIC_USD: Record<string, number> = {
@@ -42,7 +44,7 @@ export function calculateCurtainPrice(input: {
   const supplierUsd = fabricM * (rate + (wave ? 5.3 : 2.35294117647059) +
     (wave ? 3 : 1.47058823529412)) + widthM * railRate +
     2 * 2.20588235294118 + (motorized ? 81 : 0);
-  const unitPrice = retailPriceFromSupplierUsd(supplierUsd);
+  const unitPrice = Math.round(supplierUsd * SUPPLIER_TO_RETAIL_ISK * CURTAIN_RETAIL_INCREASE);
   const totalPrice = unitPrice * quantity;
   if (!Number.isSafeInteger(totalPrice)) throw new Error("Mál eða fjöldi eru of stór.");
   return { fabricM, supplierUsd, unitPrice, totalPrice };
