@@ -11,7 +11,7 @@ import {
   type CollectionCategorySelection,
 } from "./_shared/collectionCategories";
 
-const categoryDefinitions = COLLECTION_CATEGORY_DEFINITIONS;
+const categoryDefinitions = COLLECTION_CATEGORY_DEFINITIONS.filter(category => category.key !== "butterfly");
 
 function currentCategory(): CollectionCategorySelection {
   if (typeof window === "undefined") return "all";

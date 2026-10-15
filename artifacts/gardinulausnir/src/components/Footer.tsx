@@ -84,11 +84,6 @@ function CollectionGuidanceDialog({
           </Link>
         </DialogClose>
         <DialogClose asChild>
-          <Link className={dialogLinkClass} href="/collection#butterfly">
-            Fiðrildagardínur
-          </Link>
-        </DialogClose>
-        <DialogClose asChild>
           <Link className={dialogLinkClass} href="/collection#windour-single">
             Rammagardínur
           </Link>
@@ -156,9 +151,6 @@ function ProductGuidance() {
       </Link>
       <Link className={footerLinkClass} href="/collection#sheer-shades">
         Strimlar
-      </Link>
-      <Link className={footerLinkClass} href="/collection#butterfly">
-        Fiðrildagardínur
       </Link>
       <CollectionGuidanceDialog
         label="Honeycomb"

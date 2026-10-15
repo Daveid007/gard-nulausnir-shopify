@@ -71,7 +71,6 @@ const catalogProducts: Product[] = [
   // workbook supplies SS/BFHLA pricing and options; until matching catalogue
   // photography is available, the storefront presents a neutral image panel.
   { id: "sheer-shades", title: "Strimlar", subtitle: "Strimlar fyrir stillanlega dagsbirtu og næði", category: "Strimlar", productType: "Sheer Shades", tags: ["sheer-shades", "SS"], collectionHandles: ["sheer-shades"], collectionTitles: ["Sheer Shades"], price: "Reiknast eftir máli", image: strimlarGallery[0], secondary: strimlarGallery[1], gallery: strimlarGallery, colors: [], note: "SS", sizes: ["50–300 cm", "50–400 cm"] },
-  { id: "butterfly-blinds", title: "Fiðrildagardína", subtitle: "Láréttar Butterfly Blinds · mjúk ljósstýring og næði", category: "Fiðrildagardínur", productType: "Butterfly Blinds", tags: ["butterfly", "BFHLA"], collectionHandles: ["butterfly"], collectionTitles: ["Fiðrildagardínur"], price: "Reiknast eftir máli", image: "", secondary: "", colors: [], note: "BFHLA", sizes: ["50–300 cm", "50–400 cm"] },
 
   ...curtainCatalogProducts,
 
@@ -101,4 +100,4 @@ export const products: Product[] = catalogProducts
     };
   });
 
-export const categories = ["Allt", "Honeycomb", "Rúllugardínur", "Sebragardínur", "Lóðréttar vefgardínur", "Strimlar", "Fiðrildagardínur", "Rammagardínur", "Ramma flugnanet og myrkvunargardínur", "Flugnanet og rammar"];
+export const categories = ["Allt", "Honeycomb", "Rúllugardínur", "Sebragardínur", "Lóðréttar vefgardínur", "Strimlar", "Rammagardínur", "Ramma flugnanet og myrkvunargardínur", "Flugnanet og rammar"];
