@@ -21,7 +21,8 @@
     "test:roller-colors:browser": "pnpm --dir tests/browser run test",
     "test:open-roll-example": "node --experimental-strip-types scripts/test-open-roll-example.mjs",
     "test:fabric-separation": "node --experimental-strip-types scripts/test-fabric-family-separation.mjs",
-    "test:business-inquiry": "node --experimental-strip-types scripts/test-business-inquiry.mjs"
+    "test:business-inquiry": "node --experimental-strip-types scripts/test-business-inquiry.mjs",
+    "test:roller-photos": "node --experimental-strip-types scripts/test-roller-swatch-coverage.mjs"
   },
   "devDependencies": {
     "@hookform/resolvers": "^3.10.0",

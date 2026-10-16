@@ -1,5 +1,5 @@
 const rawModules = import.meta.glob(
-  ["../../../assets/swatches/柔景_*.jpg", "../../../assets/swatches/zebra-*.webp"],
+  ["../../../assets/swatches/柔景_*.jpg", "../../../assets/swatches/zebra-*.webp", "../../../assets/swatches/supplier-*.webp", "../../../assets/swatches/supplier-*.jpg"],
   { eager: true, import: "default" }
 ) as Record<string, string>;
 
