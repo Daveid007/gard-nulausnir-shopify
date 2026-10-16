@@ -3,8 +3,12 @@ import { readFile, access } from "node:fs/promises";
 import { rollerWorkbookFabrics } from "../src/data/rollerWorkbookFabrics.ts";
 import { COLLECTIONS } from "../src/pages/storefront/_shared/fabric-collections.ts";
 import { rollerWorkbookSwatchFilename } from "../src/lib/rollerWorkbookSwatches.ts";
+import { ROLLER_SUPPLIER_PHOTOS } from "../src/lib/rollerSupplierPhotos.ts";
 
 const approved = new Set(COLLECTIONS.flatMap((collection) => collection.swatches.map((swatch) => swatch.img)));
+for (const [code, source] of Object.entries(ROLLER_SUPPLIER_PHOTOS)) {
+  approved.add(`supplier-${code}.${source.includes(".pdf#") ? "jpg" : "webp"}`);
+}
 const honeycombSource = await readFile(new URL("../src/pages/storefront/_shared/honeycomb-fabrics.ts", import.meta.url), "utf8");
 const honeycombImages = new Set([...honeycombSource.matchAll(/from ["']@assets\/([^"']+)["']/g)].map((match) => match[1]));
 
@@ -32,10 +36,9 @@ const reviewedAdditions = new Map([
 for (const [code, filename] of reviewedAdditions) {
   assert.equal(rollerWorkbookSwatchFilename({ family: "roller", code }), filename, code);
 }
-// Similar-looking incomplete supplier codes remain unavailable: optional RS is
-// the only prefix difference accepted.
+// Previously missing codes now have exact-code supplier photographs.
 for (const code of ["RSMA0-M02", "RSMA0-M16", "RSGT3-0105", "RSBR20049-4304"]) {
-  assert.equal(rollerWorkbookSwatchFilename({ family: "roller", code }), undefined, code);
+  assert.ok(rollerWorkbookSwatchFilename({ family: "roller", code })?.startsWith("supplier-"), code);
 }
 for (const code of ["KT401", "KB401", "KS401", "KN407", "RS-KN407", "391", "1780356839147", "unknown"]) {
   assert.equal(rollerWorkbookSwatchFilename({ family: "roller", code }), undefined, code);
@@ -47,7 +50,7 @@ for (const family of ["zebra", "sheer", "butterfly"]) {
   }
 }
 let matched = 0;
-for (const fabric of rollerWorkbookFabrics) {
+for (const fabric of rollerWorkbookFabrics.filter((item) => item.family === "roller")) {
   const filename = rollerWorkbookSwatchFilename(fabric);
   if (!filename) continue;
   matched++;
@@ -57,6 +60,5 @@ for (const fabric of rollerWorkbookFabrics) {
   await access(new URL(`../src/assets/swatches/${filename}`, import.meta.url));
 }
 const rollerCount = rollerWorkbookFabrics.filter((fabric) => fabric.family === "roller").length;
-assert.equal(matched, 80, "only the reviewed exact roller photos should resolve");
-assert.equal(rollerCount - matched, 59, "unavailable roller photos must remain undefined");
+assert.equal(matched, rollerCount, "all offered roller fabrics have verified photographs");
 console.log(`PASS fabric-family separation: ${rollerWorkbookFabrics.length} codes checked, ${matched}/${rollerCount} verified roller images, ${rollerCount - matched} unavailable, no honeycomb images`);
