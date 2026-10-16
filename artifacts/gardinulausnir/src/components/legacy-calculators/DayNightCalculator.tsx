@@ -26,7 +26,7 @@ import { HoneycombOptions } from "./HoneycombOptions";
 // Supplier cost, equal shipping, margin, FX and VAT are applied in pricing.ts.
 const USD_TO_ISK_RETAIL = SUPPLIER_TO_RETAIL_ISK;
 const USD_TO_ISK_COST = SUPPLIER_TO_RETAIL_ISK;
-const CORDLESS_USD_PER_SQM = 3;
+const CORDLESS_USD_PER_SQM = 2;
 const MOTOR_USD = 34.5573219076603;
 const REMOTE_USD = 0;
 const SIDETRACK_USD_PER_M = 10;

@@ -41,6 +41,7 @@ type VerticalFabric = FabricInfo & { type: FabricType; usdPerSqm: number };
 
 // Raw supplier USD/m² — converted by the shared margin formula at display time.
 // Vertical sheet: KT $36.41, KB $42.48
+import { updateSupplierTable } from "../../lib/supplierPricesRev4";
 const VERTICAL_PRICING: Record<string, { type: FabricType; usdPerSqm: number }> = {
   KT401: { type: "translucent", usdPerSqm: 36.41 },
   KT402: { type: "translucent", usdPerSqm: 36.41 },
@@ -77,6 +78,7 @@ const VERTICAL_PRICING: Record<string, { type: FabricType; usdPerSqm: number }> 
 const VERTICAL_FABRICS: VerticalFabric[] = Object.keys(VERTICAL_PRICING).map((code) => {
   const info = FABRICS[code];
   if (!info) throw new Error(`Fabric ${code} missing from shared FABRICS catalog`);
+  updateSupplierTable(VERTICAL_PRICING, "Vertical Honeycomb Blinds", "Fabric stack left & right", "45mm");
   return { ...info, ...VERTICAL_PRICING[code] };
 });
 

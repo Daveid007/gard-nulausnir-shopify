@@ -1,4 +1,5 @@
 import { Router, type IRouter } from "express";
+import { supplierRate, updateSupplierTable } from "../lib/supplierPricesRev4";
 import { z } from "zod";
 import {
   createShopifyDraftOrder,
@@ -747,12 +748,13 @@ function priceDaynightUsd(item: DaynightItem): { unitUsd: number; description: s
   }
   const billedArea = Math.max(DN_MIN_SQM, rawArea);
   // Fabric and accessories use the same supplier-cost conversion.
-  const backRate = DAYNIGHT_BACK_RATES[item.backCode];
+  const previousRate = DAYNIGHT_BACK_RATES[item.backCode];
+  const backRate = previousRate === undefined ? undefined : supplierRate("Honeycomb Blinds", "Day & Night", "45mm", `${item.frontCode}+${item.backCode}`, previousRate);
   if (backRate === undefined) {
     throw new Error(`Unknown Day & Night supplier rate for back fabric: ${item.backCode}`);
   }
   const fabric = billedArea * backRate;
-  const cordless = item.operation === "cordless" ? billedArea * DN_CORDLESS_USD_PER_SQM : 0;
+  const cordless = item.operation === "cordless" ? billedArea * 2 : 0;
   const noDrill = item.noDrill ? billedArea * 3 : 0;
   const motor = item.operation === "motor" ? motorSupplierUsd(billedArea) + DN_REMOTE_USD : 0;
   const sideTrack = item.sideTrack ? h * (item.sideTrackType === "l" ? 5 : DN_SIDETRACK_USD_PER_M) : 0;
@@ -849,7 +851,7 @@ function priceTdbuUsd(item: TdbuItem): { unitUsd: number; description: string } 
   const billedArea = Math.max(DN_MIN_SQM, rawArea);
   const fabric = billedArea * fabricEntry.usdPerSqm;
   const noDrill = item.noDrill ? billedArea * 3 : 0;
-  const cordless = item.operation === "cordless" ? billedArea * DN_CORDLESS_USD_PER_SQM : 0;
+  const cordless = item.operation === "cordless" ? billedArea * 6 : 0;
   const sideTrack = item.sideTrack ? h * (item.sideTrackType === "l" ? 5 : DN_SIDETRACK_USD_PER_M) : 0;
   const unitUsd = fabric + cordless + noDrill + sideTrack;
   const opLabel = item.operation === "cordless" ? "snærislaust" : "handvirkt";
@@ -1071,4 +1073,8 @@ router.get("/sol/health", (_req, res) => {
   res.json({ ok: true, service: "solmyrkvun-checkout" });
 });
 
+updateSupplierTable(STANDARD_HONEYCOMB_FABRICS, "Honeycomb Blinds", "Bottom up", "45mm");
+updateSupplierTable(HONEYCOMB25_FABRICS, "Honeycomb Blinds", "Bottom up", "25mm");
+updateSupplierTable(TDBU_FABRICS, "Honeycomb Blinds", "TDBU", "45mm");
+updateSupplierTable(VERTICAL_FABRICS, "Vertical Honeycomb Blinds", "Fabric stack left & right", "45mm");
 export default router;
