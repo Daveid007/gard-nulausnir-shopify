@@ -82,7 +82,7 @@ assert.equal(pricing.validateHoneycombSize({
   mountPosition: "inside",
 }).ok, false, "inside mount must apply the 5 mm width deduction");
 
-assert.equal(pricing.tdbuSupplierRate("KB420"), 28.26, "TDBU premium workbook rate changed");
+assert.equal(pricing.tdbuSupplierRate("KB420"), 42.48, "TDBU premium REV 4 workbook rate");
 assert.equal(pricing.SUPPLIER_TO_RETAIL_ISK, 2 / 0.6 * 121.16 * 1.24, "retail conversion changed");
 assert.equal(pricing.blindAccessorySupplierUsd(1000, 1000, 1, { noDrill: true }), 3, "no-drill price changed");
 assert.equal(

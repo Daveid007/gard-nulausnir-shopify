@@ -233,16 +233,16 @@ for (const fixture of pricingFixtures) {
 
 // Supplier rates are fixture inputs, not aliases to whichever calculator
 // happens to be rendering them.
-assert.equal(pricing.honeycombSupplierRate("KS401", 45), 18.02, "45mm KS401 workbook rate changed");
-assert.equal(pricing.honeycombSupplierRate("KS801", 25), 18.02, "25mm KS801 workbook rate changed");
-assert.equal(pricing.honeycombSupplierRate("KT401", 45), 12.5, "45mm KT401 workbook rate changed");
-assert.equal(pricing.honeycombSupplierRate("KB401", 45), 14.26, "45mm KB401 workbook rate changed");
-assert.equal(pricing.honeycombSupplierRate("KN405", 45), 40.01, "45mm KN405 workbook rate changed");
-assert.equal(pricing.dayNightSupplierRate("KS401", "KT401"), 26.3427429770029, "Day & Night KS+KT rate changed");
-assert.equal(pricing.dayNightSupplierRate("KS401", "KB401"), 28.6931231792052, "Day & Night KS+KB rate changed");
-assert.equal(pricing.tdbuSupplierRate("KT401"), 16.0010700873129, "TDBU KT401 rate changed");
-assert.equal(pricing.tdbuSupplierRate("KB401"), 18.3514502895152, "TDBU KB401 rate changed");
-assert.equal(pricing.tdbuSupplierRate("KB420"), 28.26, "TDBU KB420 premium rate changed");
+assert.equal(pricing.honeycombSupplierRate("KS401", 45), 19.4, "45mm KS401 REV 4 rate");
+assert.equal(pricing.honeycombSupplierRate("KS801", 25), 19.4, "25mm KS801 REV 4 rate");
+assert.equal(pricing.honeycombSupplierRate("KT401", 45), 12.82, "45mm KT401 REV 4 rate");
+assert.equal(pricing.honeycombSupplierRate("KB401", 45), 15.35, "45mm KB401 REV 4 rate");
+assert.equal(pricing.honeycombSupplierRate("KN405", 45), 43.08, "45mm KN405 REV 4 rate");
+assert.equal(pricing.dayNightSupplierRate("KS401", "KT401"), 28.22, "Day & Night KS+KT REV 4 rate");
+assert.equal(pricing.dayNightSupplierRate("KS401", "KB401"), 30.75, "Day & Night KS+KB REV 4 rate");
+assert.equal(pricing.tdbuSupplierRate("KT401"), 18.82, "TDBU KT401 REV 4 rate");
+assert.equal(pricing.tdbuSupplierRate("KB401"), 21.35, "TDBU KB401 REV 4 rate");
+assert.equal(pricing.tdbuSupplierRate("KB420"), 42.48, "TDBU KB420 premium REV 4 rate");
 
 const additionalRateFixtures = [
   ["honeycomb 45 KT401", 12.5, 22.5, 11268],
