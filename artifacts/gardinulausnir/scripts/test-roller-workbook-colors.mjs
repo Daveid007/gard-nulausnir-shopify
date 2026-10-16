@@ -43,7 +43,7 @@ for (const fabric of rollerWorkbookFabrics) {
     mappedZebraFiles.add(filename);
   }
 }
-assert.equal(mappedPhotos, 80, "preserve every existing confirmed image mapping");
+assert.equal(mappedPhotos, 139, "every offered roller fabric has a confirmed image mapping");
 assert.equal(zebraPhotos, 81, "every confirmed Zebra photo must match an existing priced fabric");
 assert.equal(mappedZebraFiles.size, Object.keys(zebraWorkbookImageManifest).length, "all photo files must be used exactly once");
 assert.equal(rollerWorkbookSwatchFilename({ family: "zebra", code: "DS-RD-DL22034-0002" }), undefined, "exclude the mislabelled photo");
@@ -54,4 +54,4 @@ assert.equal(rollerWorkbookSwatchFilename({ family: "butterfly", code: "G31-001"
 assert.equal(rollerWorkbookSwatchFilename({ family: "zebra", code: "G31-001-12345" }), undefined, "no substring matches");
 const urls = await readFile(new URL("src/pages/storefront/_shared/swatches.ts", root), "utf8");
 assert.match(urls, /zebra-\*\.webp/, "the Vite asset index must include Zebra photos");
-console.log(`PASS: 338 selectable fabrics, 80 roller and 81 Zebra photos; no image-based hiding (${fileURLToPath(root)}).`);
+console.log(`PASS: 338 selectable fabrics, 139 roller and 81 Zebra photos; no image-based hiding (${fileURLToPath(root)}).`);
