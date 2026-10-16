@@ -13,6 +13,7 @@ import {
   type MountPosition,
 } from "./pricing";
 import { normalizeQuantity } from "./quantity";
+import { supplierRate } from "./supplierPricesRev4";
 import {
   calculateWindourQuote,
   isWindourProductId,
@@ -408,7 +409,7 @@ export function priceCartItem(item: CartItem): number {
   }
   if (item.type === "vertical") {
     const area = Math.max(1, (item.width / 1000) * (item.height / 1000));
-    const fabric = area * item.fabricUsdPerSqm;
+    const fabric = area * supplierRate("Vertical Honeycomb Blinds", "Fabric stack left & right", "45mm", item.fabricCode, item.fabricUsdPerSqm);
     const motor = item.operation === "motor" ? 142.26 + 14 : 0;
     return fabric + motor;
   }
@@ -452,6 +453,7 @@ export function priceCartItem(item: CartItem): number {
       mountPosition: item.mountPosition,
     });
     return blindSupplierUsd(item.width, item.height, perSqm, {
+      productStyle: "daynight",
       operation: item.operation,
       sideTrack: item.sideTrack,
       sideTrackType: item.sideTrackType,
@@ -474,6 +476,7 @@ export function priceCartItem(item: CartItem): number {
     mountPosition: item.mountPosition,
   });
   return blindSupplierUsd(item.width, item.height, perSqm, {
+    productStyle: item.type === "tdbu" ? "tdbu" : "standard",
     operation: item.operation,
     sideTrack: item.sideTrack,
     sideTrackType: item.type === "honeycomb-25" ? "l" : item.sideTrackType ?? "u",

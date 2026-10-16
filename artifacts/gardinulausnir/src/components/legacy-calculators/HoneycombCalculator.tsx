@@ -41,6 +41,7 @@ type FabricType = "sheer" | "translucent" | "blackout" | "dualdeck";
 type StandardFabric = FabricInfo & { type: FabricType; usdPerSqm: number };
 
 // Supplier USD/m² from the workbook's Standard 45mm sheet.
+import { updateSupplierTable } from "../../lib/supplierPricesRev4";
 const STANDARD_PRICING: Record<string, { type: FabricType; usdPerSqm: number }> = {
   KS401: { type: "sheer", usdPerSqm: 18.02 },
   KS402: { type: "sheer", usdPerSqm: 18.02 },
@@ -93,6 +94,7 @@ const STANDARD_PRICING: Record<string, { type: FabricType; usdPerSqm: number }> 
 const STANDARD_FABRICS: StandardFabric[] = Object.keys(STANDARD_PRICING).map((code) => {
   const info = FABRICS[code];
   if (!info) throw new Error(`Fabric ${code} missing from shared FABRICS catalog`);
+  updateSupplierTable(STANDARD_PRICING, "Honeycomb Blinds", "Bottom up", "45mm");
   return { ...info, ...STANDARD_PRICING[code] };
 });
 

@@ -8,6 +8,7 @@
  * The owner's site-wide 25% retail increase is applied after the original
  * conversion; supplier rates, shipping assumptions and VAT stay unchanged.
  */
+import { supplierRate } from "./supplierPricesRev4.ts";
 export const USD_TO_ISK = 121.16;
 export const VAT_FACTOR = 1.24;
 export const MARGIN_FACTOR = 1 / 0.6;
@@ -169,6 +170,7 @@ export function motorSupplierUsd(areaSqm: number): number {
 }
 
 export type BlindAccessoryOptions = {
+  productStyle?: "standard" | "daynight" | "tdbu";
   operation?: BlindOperation;
   sideTrack?: boolean;
   /** Honeycomb U track is the default; 25mm honeycomb uses L track. */
@@ -190,7 +192,8 @@ export function blindAccessorySupplierUsd(
   options: BlindAccessoryOptions = {},
 ): number {
   const operation = options.operation ?? "manual";
-  const cordless = operation === "cordless" ? areaSqm * CORDLESS_USD_PER_SQM : 0;
+  const cordlessRate = options.productStyle === "daynight" ? 2 : options.productStyle === "tdbu" ? 6 : CORDLESS_USD_PER_SQM;
+  const cordless = operation === "cordless" ? areaSqm * cordlessRate : 0;
   const noDrill = options.noDrill ? areaSqm * NO_DRILL_USD_PER_SQM : 0;
   const motor = operation === "motor" ? motorSupplierUsd(areaSqm) : 0;
   const track = options.sideTrack
@@ -296,6 +299,15 @@ export function tdbuSupplierRate(code: string): number | undefined {
   return TDBU_RATES[code];
 }
 
-export function dayNightSupplierRate(_frontCode: string, backCode: string): number | undefined {
-  return DAYNIGHT_BACK_RATES[backCode];
+export function dayNightSupplierRate(frontCode: string, backCode: string): number | undefined {
+  const previous = DAYNIGHT_BACK_RATES[backCode];
+  return previous === undefined ? undefined : supplierRate("Honeycomb Blinds", "Day & Night", "45mm", `${frontCode}+${backCode}`, previous);
+}
+
+for (const [table, style, size] of [
+  [HONEYCOMB_45_RATES, "Bottom up", "45mm"],
+  [HONEYCOMB_25_RATES, "Bottom up", "25mm"],
+  [TDBU_RATES, "TDBU", "45mm"],
+] as const) {
+  for (const code of Object.keys(table)) table[code] = supplierRate("Honeycomb Blinds", style, size, code, table[code]);
 }

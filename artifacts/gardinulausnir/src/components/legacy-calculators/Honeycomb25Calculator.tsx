@@ -32,6 +32,7 @@ type StandardFabric = Omit<FabricInfo, "image"> & { type: FabricType; usdPerSqm:
 // 25mm has its own workbook fabric variants and supplier table. No matching
 // 25mm image assets are present, so these are deliberately code-only swatches
 // rather than misleading 45mm image aliases.
+import { supplierRate } from "../../lib/supplierPricesRev4";
 const STANDARD_PRICING: Record<string, { type: FabricType; usdPerSqm: number }> = {
   KS801: { type: "sheer", usdPerSqm: 18.02 },
   KS802: { type: "sheer", usdPerSqm: 18.02 },
@@ -74,7 +75,8 @@ const STANDARD_PRICING: Record<string, { type: FabricType; usdPerSqm: number }> 
 };
 
 const STANDARD_FABRICS: StandardFabric[] = Object.keys(STANDARD_PRICING).map((code) => {
-  const pricing = STANDARD_PRICING[code];
+  const previous = STANDARD_PRICING[code];
+  const pricing = { ...previous, usdPerSqm: supplierRate("Honeycomb Blinds", "Bottom up", "25mm", code, previous.usdPerSqm) };
   const labels: Record<string, string> = {
     KS801: "White", KS802: "Almond", KS803: "Pink", KS814: "Black",
     KT802: "Buckskin", KT803: "Impatiens", KT804: "Spring Green", KT805: "Cumulus",

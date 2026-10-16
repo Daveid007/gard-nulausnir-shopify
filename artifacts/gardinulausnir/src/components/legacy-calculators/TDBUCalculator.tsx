@@ -34,6 +34,7 @@ type FabricType = "translucent" | "blackout";
 type TdbuFabric = FabricInfo & { type: FabricType; usdPerSqm: number };
 
 // Raw supplier USD/m² from the distinct workbook TDBU sheet.
+import { updateSupplierTable } from "../../lib/supplierPricesRev4";
 const TDBU_PRICING: Record<string, { type: FabricType; usdPerSqm: number }> = {
   KT401: { type: "translucent", usdPerSqm: 16.0010700873129 },
   KT402: { type: "translucent", usdPerSqm: 16.0010700873129 },
@@ -70,6 +71,7 @@ const TDBU_PRICING: Record<string, { type: FabricType; usdPerSqm: number }> = {
 const TDBU_FABRICS: TdbuFabric[] = Object.keys(TDBU_PRICING).map((code) => {
   const info = FABRICS[code];
   if (!info) throw new Error(`Fabric ${code} missing from shared FABRICS catalog`);
+  updateSupplierTable(TDBU_PRICING, "Honeycomb Blinds", "TDBU", "45mm");
   return { ...info, ...TDBU_PRICING[code] };
 });
 
@@ -125,7 +127,7 @@ export default function TDBUCalculator({ product }: { product?: any }) {
     const billedArea = Math.max(MIN_SQM_PER_PIECE, rawArea);
 
     const fabricUSD = billedArea * fabric.usdPerSqm;
-    const cordlessUSD = operation === "cordless" ? billedArea * 3 : 0;
+    const cordlessUSD = operation === "cordless" ? billedArea * 6 : 0;
     const noDrillUSD = noDrill ? billedArea * 3 : 0;
     const sidetrackUSD = sideTrack ? h * (sideTrackType === "l" ? 5 : SIDETRACK_USD_PER_M) : 0;
 
@@ -323,7 +325,7 @@ export default function TDBUCalculator({ product }: { product?: any }) {
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="manual">Handvirk með snæri / Manual cord</SelectItem>
-                   <SelectItem value="cordless">Þráðlaus / Cordless (+{Math.round(3 * USD_TO_ISK_ACCESSORY).toLocaleString("is-IS")} kr./m²)</SelectItem>
+                   <SelectItem value="cordless">Þráðlaus / Cordless (+{Math.round(6 * USD_TO_ISK_ACCESSORY).toLocaleString("is-IS")} kr./m²)</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-[11px] text-muted-foreground mt-1.5">
