@@ -32,6 +32,7 @@ function CalculatorCartStatus() {
   const { items, itemCount, totalIsk, isOpen, setOpen, removeItem, clear } = useCart();
   const [checkoutBusy, setCheckoutBusy] = useState(false);
   const [checkoutError, setCheckoutError] = useState("");
+  const [installation, setInstallation] = useState(false);
   const canCheckout = items.length > 0 && items.length <= 50 && items.every((item) => checkoutLine(item) !== null);
 
   async function handleCheckout() {
@@ -40,11 +41,11 @@ function CalculatorCartStatus() {
     setCheckoutBusy(true);
     try {
       const lines = items.map(checkoutLine).filter((line): line is NonNullable<typeof line> => line !== null);
-      const quote = await quoteOrder(lines);
+      const quote = await quoteOrder(lines, installation);
       const breakdown = quote.lines.map((line) => line.title + " · " + line.quantity + " × " + formatIsk(line.unitPriceIsk)).join("\n");
-      const approved = window.confirm("Staðfest verð frá pöntunarþjónustu:\n" + breakdown + "\n\nSamtals: " + formatIsk(quote.totalIsk) + "\n\nHalda áfram í Shopify-greiðslu?");
+      const approved = window.confirm("Staðfest verð frá pöntunarþjónustu:\n" + breakdown + "\n\nSamtals: " + formatIsk(quote.totalIsk) + "\nVSK innifalinn. Afhendingarkostnaður bætist við í Shopify.\n\nSamþykkja þetta verð og halda áfram í Shopify-greiðslu?");
       if (!approved) return;
-      const url = await createCheckout(lines);
+      const url = await createCheckout(lines, quote.totalIsk, installation);
       window.location.assign(url);
     } catch (error) {
       setCheckoutError(error instanceof Error ? error.message : "Ekki tókst að opna Shopify-greiðslu.");
@@ -85,7 +86,7 @@ function CalculatorCartStatus() {
                           <p className="mt-2 text-xs">{"Áætlun: " + formatIsk(priceLineIsk(item))}</p>
                         )}
                       </div>
-                      <button type="button" onClick={() => removeItem(item.id)} className="text-[10px] uppercase tracking-[.14em] text-[#667984]">
+                      <button type="button" disabled={checkoutBusy} onClick={() => removeItem(item.id)} className="text-[10px] uppercase tracking-[.14em] text-[#667984]">
                         Fjarlægja
                       </button>
                     </div>
@@ -96,9 +97,14 @@ function CalculatorCartStatus() {
               )}
             </div>
             <div className="border-t border-[#ccd9df] pt-5">
+              <label className="mb-3 flex items-start gap-2 text-xs">
+                <input type="checkbox" checked={installation} disabled={!items.length || checkoutBusy}
+                  onChange={(event) => setInstallation(event.target.checked)} />
+                Uppsetning · valfrjálst · 15.000 kr. fyrir pöntunina
+              </label>
               <div className="mb-5 flex justify-between font-serif text-2xl">
                 <span>Samtals</span>
-                <span>{"Áætlun: " + formatIsk(totalIsk)}</span>
+                <span>{"Áætlun: " + formatIsk(totalIsk + (installation && items.length ? 15000 : 0))}</span>
               </div>
               <button type="button" onClick={handleCheckout} disabled={!canCheckout || checkoutBusy} className="w-full bg-[#a2c2e2] py-4 text-[10px] uppercase tracking-[.18em] disabled:cursor-not-allowed disabled:opacity-50">
                 {checkoutBusy ? "Staðfesti verð…" : "Staðfesta verð og greiða í Shopify"}
@@ -106,7 +112,7 @@ function CalculatorCartStatus() {
               {!canCheckout && items.length > 0 && <p className="mt-3 text-xs leading-5 text-[#667984]">Þessi uppsetning þarfnast staðfestingar áður en hægt er að greiða. <a className="underline" href="mailto:hallo@gardinulausnir.is">Hafðu samband</a>.</p>}
               {checkoutError && <p role="alert" className="mt-3 text-xs text-red-700">{checkoutError}</p>}
               {items.length > 0 && (
-                <button type="button" onClick={clear} className="mt-3 w-full py-2 text-[10px] uppercase tracking-[.16em] text-[#667984]">
+                <button type="button" disabled={checkoutBusy} onClick={clear} className="mt-3 w-full py-2 text-[10px] uppercase tracking-[.16em] text-[#667984]">
                   Tæma körfu
                 </button>
               )}
