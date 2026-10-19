@@ -1,3 +1,4 @@
+import { WindowCoveringsDesktop, WindowCoveringsMobile } from "./_shared/WindowCoveringsMenu";
 import { useState } from "react";
 import { ArrowRight, Menu, Ruler, ShoppingBag, X } from "lucide-react";
 import { Link } from "wouter";
@@ -34,12 +35,8 @@ function HomepageHeader() {
     <header className="sticky top-0 z-30 border-b border-[#24313b]/10 bg-[#f7f9fa]/95 backdrop-blur-md">
       <div className="mx-auto flex h-[76px] max-w-[1480px] items-center justify-between gap-4 px-5 md:px-10">
         <BrandLogo className="h-10 w-[202px] sm:h-11 sm:w-[222px]" />
-        <nav className="hidden items-center gap-6 text-[10px] uppercase tracking-[.16em] text-[#43515a] lg:flex" aria-label="Aðalleiðsögn">
-           <Link href={collectionHref} className="transition-colors hover:text-[#6892b8]">Gardínur</Link>
-           <Link href={`${collectionHref}#curtains`} className="transition-colors hover:text-[#6892b8]">Gluggatjöld</Link>
-           <Link href={`${collectionHref}#zebra`} className="transition-colors hover:text-[#6892b8]">Sebragardínur</Link>
-           <Link href={`${collectionHref}#windour`} className="transition-colors hover:text-[#6892b8]">WINdoûr</Link>
-           <Link href={`${collectionHref}#roldour`} className="transition-colors hover:text-[#6892b8]">ROLdoûr</Link>
+        <nav className="hidden items-center gap-6 text-[10px] uppercase tracking-[.16em] text-[#43515a] min-[1100px]:flex" aria-label="Aðalleiðsögn">
+           <WindowCoveringsDesktop panelTop={76} />
           <Link href="/maelingar" className="inline-flex items-center gap-2 transition-colors hover:text-[#6892b8]"><Ruler size={15} strokeWidth={1.5} />Mælingar</Link>
           <HelpDrawer />
            <BusinessInquiryButton />
@@ -47,15 +44,11 @@ function HomepageHeader() {
         <div className="flex items-center gap-4">
            <Link href={collectionHref} className="hidden text-[10px] uppercase tracking-[.16em] text-[#43515a] sm:inline">Vöruflokkar</Link>
           <Link href={collectionHref} aria-label="Opna körfu" className="flex items-center gap-2 text-[10px] uppercase tracking-[.16em]"><ShoppingBag size={18} strokeWidth={1.25} /><span className="hidden sm:inline">Karfa</span></Link>
-          <button type="button" onClick={() => setMenuOpen((open) => !open)} className="grid h-9 w-9 place-items-center lg:hidden" aria-label={menuOpen ? "Loka valmynd" : "Opna valmynd"}>{menuOpen ? <X size={20} /> : <Menu size={20} />}</button>
+          <button type="button" onClick={() => setMenuOpen((open) => !open)} className="grid h-9 w-9 place-items-center min-[1100px]:hidden" aria-label={menuOpen ? "Loka valmynd" : "Opna valmynd"}>{menuOpen ? <X size={20} /> : <Menu size={20} />}</button>
         </div>
       </div>
-      {menuOpen && <nav className="border-t border-[#24313b]/10 bg-[#f7f9fa] px-5 py-4 lg:hidden" aria-label="Farsímaleiðsögn">
-         <Link href={collectionHref} onClick={() => setMenuOpen(false)} className="block py-3 text-[10px] uppercase tracking-[.16em]">Gardínur</Link>
-         <Link href={`${collectionHref}#curtains`} onClick={() => setMenuOpen(false)} className="block py-3 text-[10px] uppercase tracking-[.16em]">Gluggatjöld</Link>
-         <Link href={`${collectionHref}#zebra`} onClick={() => setMenuOpen(false)} className="block py-3 text-[10px] uppercase tracking-[.16em]">Sebragardínur</Link>
-         <Link href={`${collectionHref}#windour`} onClick={() => setMenuOpen(false)} className="block py-3 text-[10px] uppercase tracking-[.16em]">WINdoûr — Rammagardínur</Link>
-         <Link href={`${collectionHref}#roldour`} onClick={() => setMenuOpen(false)} className="block py-3 text-[10px] uppercase tracking-[.16em]">ROLdoûr — Rúllukerfi í ramma</Link>
+      {menuOpen && <nav className="border-t border-[#24313b]/10 bg-[#f7f9fa] max-h-[calc(100dvh-110px)] overflow-y-auto overflow-x-hidden px-5 py-4 min-[1100px]:hidden" aria-label="Farsímaleiðsögn">
+         <WindowCoveringsMobile onNavigate={() => setMenuOpen(false)} />
         <Link href="/maelingar" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 py-3 text-[10px] uppercase tracking-[.16em]"><Ruler size={15} strokeWidth={1.5} />Mælingar</Link>
         <HelpDrawer />
          <BusinessInquiryButton className="block py-3 text-left" />
