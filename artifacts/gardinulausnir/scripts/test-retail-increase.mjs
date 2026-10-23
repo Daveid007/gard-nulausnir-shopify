@@ -25,7 +25,9 @@ assert.equal(pricing.RETAIL_PRICE_MULTIPLIER, 1.25);
 assert.equal(pricing.increasedRetailPriceIsk(11268), 14085);
 assert.equal(pricing.retailPriceFromSupplierUsd(22.5), 14085);
 assert.equal(pricing.USD_TO_ISK, 121.16);
-assert.equal(pricing.honeycombSupplierRate("KT401", 45), 12.5);
+// The later REV 4 supplier import changed this baseline, independently of
+// the retail uplift. Keep the confirmed supplier cost, not the old workbook.
+assert.equal(pricing.honeycombSupplierRate("KT401", 45), 12.82);
 assert.equal(pricing.U_TRACK_USD_PER_M, 10);
 assert.equal(pricing.L_TRACK_USD_PER_M, 5);
 assert.equal(pricing.MOTOR_UP_TO_4M2_USD, 34.5573219076603);
@@ -50,6 +52,7 @@ for (const rate of [12.5, 15.63, 16.0010700873129, 26.3427429770029]) {
 }
 assert.equal(dual.DUAL_ROLLER_RETAIL_ISK, pricing.SUPPLIER_TO_RETAIL_ISK);
 assert.equal(vertical.VERTICAL_SHEER_RETAIL_FACTOR, pricing.SUPPLIER_TO_RETAIL_ISK);
+assert.equal(roller.rollerWorkbookFabrics.length, 338);
 for (const fabric of roller.rollerWorkbookFabrics) {
   const quote = roller.quoteRollerWorkbookBlind({
     family: fabric.family, fabricCode: fabric.code, widthCm: 120, heightCm: 150,
