@@ -8,6 +8,7 @@ import ts from "typescript";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const require = createRequire(pathToFileURL(join(root, "package.json")));
 const pricing = await import(pathToFileURL(join(root, "src/lib/openRollExamplePricing.ts")).href);
+const retailPricing = await import(pathToFileURL(join(root, "src/lib/pricing.ts")).href);
 const source = await readFile(join(root, "src/components/OpenRollExampleCalculator.tsx"), "utf8");
 const compiled = ts.transpileModule(source, {
   compilerOptions: {
@@ -36,6 +37,7 @@ const module = { exports: {} };
 const load = (specifier) => {
   if (specifier === "react") return mockReact;
   if (specifier === "@/lib/openRollExamplePricing") return pricing;
+  if (specifier === "@/lib/pricing") return retailPricing;
   if (specifier === "@/components/legacy-calculators/StorefrontLayout") {
     return { StorefrontLayout: () => null };
   }
@@ -64,6 +66,10 @@ const text = (element) => {
 
 const initial = render();
 const initialPrice = initial.props.priceISK;
+assert.equal(initialPrice, 26_425);
+assert.equal(initial.props.priceLabel, "Verð");
+assert.doesNotMatch(source, /Dæmiverð|lýsandi dæmi|dæmatölu|dæmatöluna|dæmareikni/);
+assert.match(text(find(initial, "open-roll-price-notice")), /Verð eftir máli/);
 assert.equal(find(initial, "open-roll-side-tracks").props.checked, false);
 assert.equal(text(find(initial, "open-roll-side-track-summary")), "Ekki valdir");
 assert.match(decodeURIComponent(initial.props.action.props.href), /Hliðarlistar: Ekki óskað eftir/);
@@ -72,11 +78,12 @@ assert.ok(nodes(initial.props.controls).some((node) => node.type === "img" && no
 find(initial, "open-roll-side-tracks").props.onChange({ target: { checked: true } });
 const selected = render();
 assert.equal(find(selected, "open-roll-side-tracks").props.checked, true);
-assert.equal(selected.props.priceISK, initialPrice, "unpriced side tracks must not change the example total");
+assert.equal(selected.props.priceISK, initialPrice, "unpriced side tracks must not change the approved retail total");
 assert.match(text(find(selected, "open-roll-side-track-summary")), /verð bíður staðfestingar/);
 assert.ok(find(selected, "open-roll-side-track-selection"));
-assert.match(decodeURIComponent(selected.props.action.props.href), /Hliðarlistar: Óskað eftir — óverðlagðir og ekki innifaldir í dæmatölu/);
-assert.equal(selected.props.canAddToCart, false, "do not turn an unconfirmed example into a purchasable product");
+assert.match(decodeURIComponent(selected.props.action.props.href), /Hliðarlistar: Óskað eftir — verð bíður staðfestingar og er ekki innifalið í heildarverði/);
+assert.match(decodeURIComponent(selected.props.action.props.href), /Söluverð án hliðarlista:/);
+assert.equal(selected.props.canAddToCart, false, "keep the enquiry flow without enabling unsupported Shopify checkout");
 
 find(selected, "open-roll-side-tracks").props.onChange({ target: { checked: false } });
 const cleared = render();

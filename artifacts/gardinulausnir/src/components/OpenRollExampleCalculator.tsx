@@ -2,10 +2,12 @@ import { useMemo, useState } from "react";
 import { Mail } from "lucide-react";
 import { StorefrontLayout } from "@/components/legacy-calculators/StorefrontLayout";
 import sideTrackImage from "@/assets/accessory-thumbs/roller-side-track.png";
+import { increasedRetailPriceIsk } from "@/lib/pricing";
 import {
   OPEN_ROLL_EXAMPLE_COLORS,
   OPEN_ROLL_EXAMPLE_HOLDERS,
   OPEN_ROLL_EXAMPLE_RAILS,
+  OPEN_ROLL_RETAIL_AREA_RATE_ISK,
   quoteOpenRollExample,
   type OpenRollExampleColorId,
   type OpenRollExampleHolderId,
@@ -37,18 +39,18 @@ export default function OpenRollExampleCalculator({ product }: { product: any })
   const holder = OPEN_ROLL_EXAMPLE_HOLDERS.find((option) => option.id === holderId)!;
   const mailBody = quote.ok
     ? [
-        "Óska eftir staðfestu tilboði í opið rúllukerfi.",
-        `Mál (dæmi): ${widthCm} × ${heightCm} cm`,
-        `Litur (dæmi): ${color.label}`,
-        `Neðristika (dæmi): ${rail.label}`,
-        `Festingar (dæmi): ${holder.label}`,
+        "Óska eftir að panta opið rúllukerfi.",
+        `Mál: ${widthCm} × ${heightCm} cm`,
+        `Litur: ${color.label}`,
+        `Neðristika: ${rail.label}`,
+        `Festingar: ${holder.label}`,
         `Magn: ${quantity}`,
-        `Hliðarlistar: ${sideTracks ? "Óskað eftir — óverðlagðir og ekki innifaldir í dæmatölu" : "Ekki óskað eftir"}`,
-        `Dæmiverð — ekki staðfest söluverð: ${isk(quote.totalIsk)}`,
-        "Vinsamlegast staðfestið raunverulegt verð og valkosti.",
+        `Hliðarlistar: ${sideTracks ? "Óskað eftir — verð bíður staðfestingar og er ekki innifalið í heildarverði" : "Ekki óskað eftir"}`,
+        `Söluverð án hliðarlista: ${isk(quote.totalIsk)}`,
+        "Vinsamlegast hafið samband um afgreiðslu pöntunar og verð hliðarlista ef þeir eru valdir.",
       ].join("\n")
-    : "Óska eftir staðfestu tilboði í opið rúllukerfi. Mál eða magn í dæmareikni þarfnast leiðréttingar.";
-  const mailto = `mailto:sala@gardinulausnir.is?subject=${encodeURIComponent("Tilboðsbeiðni — opið rúllukerfi")}&body=${encodeURIComponent(mailBody)}`;
+    : "Óska eftir að panta opið rúllukerfi. Mál eða magn í reikni þarfnast leiðréttingar.";
+  const mailto = `mailto:sala@gardinulausnir.is?subject=${encodeURIComponent("Pöntunarbeiðni — opið rúllukerfi")}&body=${encodeURIComponent(mailBody)}`;
 
   const optionSelect = (
     testId: string,
@@ -58,9 +60,9 @@ export default function OpenRollExampleCalculator({ product }: { product: any })
     options: readonly { id: string; label: string; modifierIsk: number }[],
   ) => (
     <label className="block">
-      <span className="mb-2 block text-[9px] uppercase tracking-[.14em] text-[#667984]">{label} · lýsandi dæmaval</span>
+      <span className="mb-2 block text-[9px] uppercase tracking-[.14em] text-[#667984]">{label}</span>
       <select data-testid={testId} value={value} onChange={(event) => setValue(event.target.value)} className="w-full border border-[#ccd9df] bg-[#f7f9fa] px-3 py-3 text-sm">
-        {options.map((option) => <option key={option.id} value={option.id}>{option.label} · {option.modifierIsk ? `+${isk(option.modifierIsk)}` : "+0 kr."}</option>)}
+        {options.map((option) => <option key={option.id} value={option.id}>{option.label} · {option.modifierIsk ? `+${isk(increasedRetailPriceIsk(option.modifierIsk))}` : "+0 kr."}</option>)}
       </select>
     </label>
   );
@@ -70,23 +72,23 @@ export default function OpenRollExampleCalculator({ product }: { product: any })
       product={product}
       priceISK={quote.ok ? quote.totalIsk : 0}
       priceText={quote.ok ? isk(quote.totalIsk) : "—"}
-      priceLabel="Dæmiverð — ekki staðfest söluverð"
-      activeFabric={{ name: `${color.label} · lýsandi litadæmi`, tone: color.hex }}
+      priceLabel="Verð"
+      activeFabric={{ name: color.label, tone: color.hex }}
       quantity={quantity}
       setQuantity={setQuantity}
       canAddToCart={false}
       onAddToCart={() => undefined}
-      action={quote.ok ? <a data-testid="open-roll-request" href={mailto} className="flex h-[51px] flex-1 items-center justify-center gap-3 bg-[#a2c2e2] px-3 text-center text-[10px] font-medium uppercase tracking-[.16em] transition hover:bg-[#89b0d5]">Senda tilboðsbeiðni <Mail size={15} /></a> : <span className="flex h-[51px] flex-1 items-center justify-center bg-[#d8e1e5] px-3 text-center text-[10px] uppercase tracking-[.14em] text-[#667984]">Leiðréttu mál eða magn</span>}
+      action={quote.ok ? <a data-testid="open-roll-request" href={mailto} className="flex h-[51px] flex-1 items-center justify-center gap-3 bg-[#a2c2e2] px-3 text-center text-[10px] font-medium uppercase tracking-[.16em] transition hover:bg-[#89b0d5]">Senda pöntunarbeiðni <Mail size={15} /></a> : <span className="flex h-[51px] flex-1 items-center justify-center bg-[#d8e1e5] px-3 text-center text-[10px] uppercase tracking-[.14em] text-[#667984]">Leiðréttu mál eða magn</span>}
       controls={
         <>
           <section className="border-b border-[#ccd9df] py-5">
-            <div data-testid="open-roll-example-notice" className="border border-[#b78835] bg-[#fff7df] p-4">
-              <strong className="block text-sm">Dæmiverð — ekki staðfest söluverð</strong>
-              <p className="mt-2 text-xs leading-5 text-[#526772]">Reiknirinn notar eingöngu lýsandi dæmagögn. Mál, litir, valkostir og sexkantslitir eru til skýringar; þau staðfesta hvorki framboð né birgjaupplýsingar. Engin forsenda um VSK er gerð.</p>
+            <div data-testid="open-roll-price-notice" className="border border-[#ccd9df] bg-[#edf3f8] p-4">
+              <strong className="block text-sm">Verð eftir máli og völdum aukahlutum</strong>
+              <p className="mt-2 text-xs leading-5 text-[#526772]">Verð reiknast eftir máli, lit, neðristiku og festingum. Hliðarlistar eru valfrjálsir, en verð þeirra bíður staðfestingar og er ekki innifalið í heildarverðinu.</p>
             </div>
           </section>
           <section className="border-b border-[#ccd9df] py-6">
-            <p className="mb-3 text-[10px] uppercase tracking-[.18em]">Mál · lýsandi dæmi</p>
+            <p className="mb-3 text-[10px] uppercase tracking-[.18em]">Mál</p>
             <div className="grid grid-cols-2 gap-3">
               <label><span className="mb-2 block text-[9px] uppercase tracking-[.14em] text-[#667984]">Breidd · 30–300 cm</span><input data-testid="open-roll-width" aria-label="Breidd í sentímetrum" type="number" min="30" max="300" step="0.1" value={widthCm} onChange={(event) => setWidthCm(event.target.value)} className="w-full border border-[#ccd9df] bg-transparent px-3 py-3" /></label>
               <label><span className="mb-2 block text-[9px] uppercase tracking-[.14em] text-[#667984]">Hæð · 40–350 cm</span><input data-testid="open-roll-height" aria-label="Hæð í sentímetrum" type="number" min="40" max="350" step="0.1" value={heightCm} onChange={(event) => setHeightCm(event.target.value)} className="w-full border border-[#ccd9df] bg-transparent px-3 py-3" /></label>
@@ -95,7 +97,7 @@ export default function OpenRollExampleCalculator({ product }: { product: any })
           </section>
           <section className="space-y-4 border-b border-[#ccd9df] py-6">
             {optionSelect("open-roll-color", "Litur", colorId, setColorId, OPEN_ROLL_EXAMPLE_COLORS)}
-            <div className="flex gap-2" aria-label="Litasýnishorn eru lýsandi dæmi">{OPEN_ROLL_EXAMPLE_COLORS.map((option) => <button data-testid={`open-roll-swatch-${option.id}`} key={option.id} type="button" onClick={() => setColorId(option.id)} aria-label={`Velja ${option.label}, lýsandi dæmi`} aria-pressed={colorId === option.id} className={`h-9 w-9 rounded-full border ${colorId === option.id ? "ring-2 ring-[#6892b8] ring-offset-2" : ""}`} style={{ backgroundColor: option.hex }} />)}</div>
+            <div className="flex gap-2" aria-label="Litasýnishorn">{OPEN_ROLL_EXAMPLE_COLORS.map((option) => <button data-testid={`open-roll-swatch-${option.id}`} key={option.id} type="button" onClick={() => setColorId(option.id)} aria-label={`Velja ${option.label}`} aria-pressed={colorId === option.id} className={`h-9 w-9 rounded-full border ${colorId === option.id ? "ring-2 ring-[#6892b8] ring-offset-2" : ""}`} style={{ backgroundColor: option.hex }} />)}</div>
             {optionSelect("open-roll-rail", "Neðristika", railId, setRailId, OPEN_ROLL_EXAMPLE_RAILS)}
             {optionSelect("open-roll-holder", "Festingar", holderId, setHolderId, OPEN_ROLL_EXAMPLE_HOLDERS)}
           </section>
@@ -109,14 +111,14 @@ export default function OpenRollExampleCalculator({ product }: { product: any })
               <input id="open-roll-side-tracks" data-testid="open-roll-side-tracks" type="checkbox" checked={sideTracks} onChange={(event) => setSideTracks(event.target.checked)} aria-describedby="open-roll-side-track-price-note" className="h-4 w-4 shrink-0 accent-[#526f88]" />
               <strong>Óska eftir hliðarlistum</strong>
             </label>
-            <p id="open-roll-side-track-price-note" className="text-xs leading-5 text-[#526772]">Valfrjálst, óverðlagt og útilokað frá dæmatölu þar til verð fæst staðfest.</p>
-            {sideTracks && <p data-testid="open-roll-side-track-selection" role="status" className="text-xs font-medium leading-5 text-[#344b59]">Hliðarlistar valdir. Verð þeirra bíður staðfestingar og bætist ekki við dæmatöluna.</p>}
+            <p id="open-roll-side-track-price-note" className="text-xs leading-5 text-[#526772]">Valfrjálst, óverðlagt og ekki innifalið í heildarverði þar til verð fæst staðfest.</p>
+            {sideTracks && <p data-testid="open-roll-side-track-selection" role="status" className="text-xs font-medium leading-5 text-[#344b59]">Hliðarlistar valdir. Verð þeirra bíður staðfestingar og er ekki innifalið í heildarverðinu.</p>}
           </section>
           {quote.ok && <section data-testid="open-roll-breakdown" className="border-b border-[#ccd9df] py-6 text-xs">
-            <p className="mb-3 text-[10px] uppercase tracking-[.18em]">Sundurliðun dæmiverðs</p>
+            <p className="mb-3 text-[10px] uppercase tracking-[.18em]">Sundurliðun verðs</p>
             <dl className="space-y-2">
               <div className="flex justify-between"><dt>Grunneining</dt><dd>{isk(quote.baseIsk)}</dd></div>
-              <div className="flex justify-between"><dt>Flatarmál · 4.500 kr./m²</dt><dd>{isk(quote.areaIsk)}</dd></div>
+              <div className="flex justify-between"><dt>Flatarmál · {isk(OPEN_ROLL_RETAIL_AREA_RATE_ISK)}/m²</dt><dd>{isk(quote.areaIsk)}</dd></div>
               <div className="flex justify-between"><dt>Valdir viðbótarliðir</dt><dd>{isk(quote.modifiersIsk)}</dd></div>
               <div className="flex justify-between gap-4"><dt>Hliðarlistar</dt><dd data-testid="open-roll-side-track-summary" className="text-right">{sideTracks ? "Valdir · verð bíður staðfestingar" : "Ekki valdir"}</dd></div>
               <div className="flex justify-between border-t border-[#ccd9df] pt-2"><dt>Rúnnað einingarverð</dt><dd data-testid="open-roll-unit-price">{isk(quote.unitIsk)}</dd></div>

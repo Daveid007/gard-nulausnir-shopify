@@ -1,3 +1,7 @@
+import { RETAIL_PRICE_MULTIPLIER } from "./pricing.ts";
+
+// Owner-approved retail formula. Keep the historical export names so existing
+// callers remain compatible; these amounts are no longer illustrative prices.
 export const OPEN_ROLL_EXAMPLE_LIMITS = {
   widthCm: { min: 30, max: 300 },
   heightCm: { min: 40, max: 350 },
@@ -6,6 +10,8 @@ export const OPEN_ROLL_EXAMPLE_LIMITS = {
 
 export const OPEN_ROLL_EXAMPLE_BASE_ISK = 12_500;
 export const OPEN_ROLL_EXAMPLE_AREA_RATE_ISK = 4_500;
+export const OPEN_ROLL_RETAIL_BASE_ISK = OPEN_ROLL_EXAMPLE_BASE_ISK * RETAIL_PRICE_MULTIPLIER;
+export const OPEN_ROLL_RETAIL_AREA_RATE_ISK = OPEN_ROLL_EXAMPLE_AREA_RATE_ISK * RETAIL_PRICE_MULTIPLIER;
 
 export const OPEN_ROLL_EXAMPLE_COLORS = [
   { id: "c-white", label: "Hvítur (Light Filtering)", hex: "#FFFFFF", modifierIsk: 0 },
@@ -71,18 +77,18 @@ export function quoteOpenRollExample(input: OpenRollExampleInput): OpenRollExamp
   const colorModifier = selectedModifier(OPEN_ROLL_EXAMPLE_COLORS, input.colorId);
   const railModifier = selectedModifier(OPEN_ROLL_EXAMPLE_RAILS, input.railId);
   const holderModifier = selectedModifier(OPEN_ROLL_EXAMPLE_HOLDERS, input.holderId);
-  if (colorModifier === undefined) errors.push("Veldu gildan dæmalit.");
-  if (railModifier === undefined) errors.push("Veldu gilda dæmaneðristiku.");
-  if (holderModifier === undefined) errors.push("Veldu gilda dæmafestingu.");
+  if (colorModifier === undefined) errors.push("Veldu gildan lit.");
+  if (railModifier === undefined) errors.push("Veldu gilda neðristiku.");
+  if (holderModifier === undefined) errors.push("Veldu gilda festingu.");
   if (errors.length) return { ok: false, errors };
 
-  const areaIsk = OPEN_ROLL_EXAMPLE_AREA_RATE_ISK * input.widthCm * input.heightCm / 10_000;
-  const modifiersIsk = colorModifier! + railModifier! + holderModifier!;
-  const unroundedUnitIsk = OPEN_ROLL_EXAMPLE_BASE_ISK + areaIsk + modifiersIsk;
+  const areaIsk = OPEN_ROLL_RETAIL_AREA_RATE_ISK * input.widthCm * input.heightCm / 10_000;
+  const modifiersIsk = (colorModifier! + railModifier! + holderModifier!) * RETAIL_PRICE_MULTIPLIER;
+  const unroundedUnitIsk = OPEN_ROLL_RETAIL_BASE_ISK + areaIsk + modifiersIsk;
   const unitIsk = Math.round(unroundedUnitIsk);
   return {
     ok: true,
-    baseIsk: OPEN_ROLL_EXAMPLE_BASE_ISK,
+    baseIsk: OPEN_ROLL_RETAIL_BASE_ISK,
     areaIsk,
     modifiersIsk,
     unroundedUnitIsk,
