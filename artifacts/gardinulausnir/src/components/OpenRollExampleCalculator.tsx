@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Mail } from "lucide-react";
 import { StorefrontLayout } from "@/components/legacy-calculators/StorefrontLayout";
+import sideTrackImage from "@/assets/accessory-thumbs/roller-side-track.png";
 import {
   OPEN_ROLL_EXAMPLE_COLORS,
   OPEN_ROLL_EXAMPLE_HOLDERS,
@@ -97,7 +98,19 @@ export default function OpenRollExampleCalculator({ product }: { product: any })
             <div className="flex gap-2" aria-label="Litasýnishorn eru lýsandi dæmi">{OPEN_ROLL_EXAMPLE_COLORS.map((option) => <button data-testid={`open-roll-swatch-${option.id}`} key={option.id} type="button" onClick={() => setColorId(option.id)} aria-label={`Velja ${option.label}, lýsandi dæmi`} aria-pressed={colorId === option.id} className={`h-9 w-9 rounded-full border ${colorId === option.id ? "ring-2 ring-[#6892b8] ring-offset-2" : ""}`} style={{ backgroundColor: option.hex }} />)}</div>
             {optionSelect("open-roll-rail", "Neðristika", railId, setRailId, OPEN_ROLL_EXAMPLE_RAILS)}
             {optionSelect("open-roll-holder", "Festingar", holderId, setHolderId, OPEN_ROLL_EXAMPLE_HOLDERS)}
-            <label className="flex items-start gap-3 border border-[#ccd9df] p-3 text-xs leading-5"><input data-testid="open-roll-side-tracks" type="checkbox" checked={sideTracks} onChange={(event) => setSideTracks(event.target.checked)} className="mt-1" /><span><strong>Óska eftir hliðarlistum</strong><br />Valfrjálst, óverðlagt og útilokað frá dæmatölu þar til verð fæst staðfest.</span></label>
+          </section>
+          <section aria-labelledby="open-roll-side-track-heading" className="space-y-3 border-b border-[#ccd9df] py-6">
+            <h3 id="open-roll-side-track-heading" className="text-[10px] uppercase tracking-[.18em]">Hliðarlistar · valfrjálst</h3>
+            <div className="flex items-center gap-4 rounded border border-[#ccd9df] bg-white p-3">
+              <img src={sideTrackImage} alt="Hliðarlisti fyrir rúllugardínu" width={96} height={96} loading="lazy" className="h-24 w-24 shrink-0 object-contain" />
+              <p className="text-xs leading-5 text-[#526772]">Hliðarlistar hjálpa til við að draga úr birtu meðfram hliðum gardínunnar.</p>
+            </div>
+            <label htmlFor="open-roll-side-tracks" className={`flex cursor-pointer items-center gap-3 border p-4 text-xs leading-5 ${sideTracks ? "border-[#6892b8] bg-[#e8f0f7]" : "border-[#ccd9df]"}`}>
+              <input id="open-roll-side-tracks" data-testid="open-roll-side-tracks" type="checkbox" checked={sideTracks} onChange={(event) => setSideTracks(event.target.checked)} aria-describedby="open-roll-side-track-price-note" className="h-4 w-4 shrink-0 accent-[#526f88]" />
+              <strong>Óska eftir hliðarlistum</strong>
+            </label>
+            <p id="open-roll-side-track-price-note" className="text-xs leading-5 text-[#526772]">Valfrjálst, óverðlagt og útilokað frá dæmatölu þar til verð fæst staðfest.</p>
+            {sideTracks && <p data-testid="open-roll-side-track-selection" role="status" className="text-xs font-medium leading-5 text-[#344b59]">Hliðarlistar valdir. Verð þeirra bíður staðfestingar og bætist ekki við dæmatöluna.</p>}
           </section>
           {quote.ok && <section data-testid="open-roll-breakdown" className="border-b border-[#ccd9df] py-6 text-xs">
             <p className="mb-3 text-[10px] uppercase tracking-[.18em]">Sundurliðun dæmiverðs</p>
@@ -105,6 +118,7 @@ export default function OpenRollExampleCalculator({ product }: { product: any })
               <div className="flex justify-between"><dt>Grunneining</dt><dd>{isk(quote.baseIsk)}</dd></div>
               <div className="flex justify-between"><dt>Flatarmál · 4.500 kr./m²</dt><dd>{isk(quote.areaIsk)}</dd></div>
               <div className="flex justify-between"><dt>Valdir viðbótarliðir</dt><dd>{isk(quote.modifiersIsk)}</dd></div>
+              <div className="flex justify-between gap-4"><dt>Hliðarlistar</dt><dd data-testid="open-roll-side-track-summary" className="text-right">{sideTracks ? "Valdir · verð bíður staðfestingar" : "Ekki valdir"}</dd></div>
               <div className="flex justify-between border-t border-[#ccd9df] pt-2"><dt>Rúnnað einingarverð</dt><dd data-testid="open-roll-unit-price">{isk(quote.unitIsk)}</dd></div>
               <div className="flex justify-between font-semibold"><dt>Samtals · {quantity} stk.</dt><dd data-testid="open-roll-total">{isk(quote.totalIsk)}</dd></div>
             </dl>
