@@ -41,9 +41,6 @@ const load = (specifier) => {
   if (specifier === "@/components/legacy-calculators/StorefrontLayout") {
     return { StorefrontLayout: () => null };
   }
-  if (specifier.endsWith("roller-side-track.png")) {
-    return { __esModule: true, default: "/test/roller-side-track.png" };
-  }
   return require(specifier);
 };
 new Function("require", "module", "exports", compiled.outputText)(load, module, module.exports);
@@ -70,25 +67,31 @@ assert.equal(initialPrice, 26_425);
 assert.equal(initial.props.priceLabel, "Verð");
 assert.doesNotMatch(source, /Dæmiverð|lýsandi dæmi|dæmatölu|dæmatöluna|dæmareikni/);
 assert.match(text(find(initial, "open-roll-price-notice")), /Verð eftir máli/);
-assert.equal(find(initial, "open-roll-side-tracks").props.checked, false);
-assert.equal(text(find(initial, "open-roll-side-track-summary")), "Ekki valdir");
-assert.match(decodeURIComponent(initial.props.action.props.href), /Hliðarlistar: Ekki óskað eftir/);
-assert.ok(nodes(initial.props.controls).some((node) => node.type === "img" && node.props.src === "/test/roller-side-track.png"));
+assert.doesNotMatch(source, /sideTracks|sideTrackImage|hliðarlist/i);
+assert.equal(find(initial, "open-roll-side-tracks"), undefined);
+assert.equal(find(initial, "open-roll-side-track-summary"), undefined);
+assert.doesNotMatch(text(initial.props.controls), /hliðarlist/i);
+assert.match(decodeURIComponent(initial.props.action.props.href), /Söluverð:/);
+assert.doesNotMatch(decodeURIComponent(initial.props.action.props.href), /hliðarlist/i);
+assert.equal(initial.props.canAddToCart, false, "keep the enquiry flow without enabling unsupported Shopify checkout");
 
-find(initial, "open-roll-side-tracks").props.onChange({ target: { checked: true } });
-const selected = render();
-assert.equal(find(selected, "open-roll-side-tracks").props.checked, true);
-assert.equal(selected.props.priceISK, initialPrice, "unpriced side tracks must not change the approved retail total");
-assert.match(text(find(selected, "open-roll-side-track-summary")), /verð bíður staðfestingar/);
-assert.ok(find(selected, "open-roll-side-track-selection"));
-assert.match(decodeURIComponent(selected.props.action.props.href), /Hliðarlistar: Óskað eftir — verð bíður staðfestingar og er ekki innifalið í heildarverði/);
-assert.match(decodeURIComponent(selected.props.action.props.href), /Söluverð án hliðarlista:/);
-assert.equal(selected.props.canAddToCart, false, "keep the enquiry flow without enabling unsupported Shopify checkout");
-
-find(selected, "open-roll-side-tracks").props.onChange({ target: { checked: false } });
-const cleared = render();
-assert.equal(cleared.props.priceISK, initialPrice);
-assert.equal(text(find(cleared, "open-roll-side-track-summary")), "Ekki valdir");
-assert.equal(find(cleared, "open-roll-side-track-selection"), undefined);
-assert.match(decodeURIComponent(cleared.props.action.props.href), /Hliðarlistar: Ekki óskað eftir/);
-console.log("Open-roll side tracks passed: select, deselect, unchanged total, visible image, price notice and enquiry details.");
+find(initial, "open-roll-color").props.onChange({ target: { value: "c-grey-blackout" } });
+const colored = render();
+assert.equal(colored.props.priceISK, 29_550);
+find(colored, "open-roll-rail").props.onChange({ target: { value: "br-aluminum" } });
+const railed = render();
+assert.equal(railed.props.priceISK, 31_800);
+find(railed, "open-roll-holder").props.onChange({ target: { value: "h-metal-chrome" } });
+const configured = render();
+assert.equal(configured.props.priceISK, 36_175);
+configured.props.setQuantity(2);
+const doubled = render();
+assert.equal(doubled.props.priceISK, 72_350);
+const enquiry = decodeURIComponent(doubled.props.action.props.href);
+assert.match(enquiry, /Magn: 2/);
+assert.match(enquiry, /Söluverð:/);
+assert.doesNotMatch(enquiry, /hliðarlist/i);
+assert.equal(find(doubled, "open-roll-color").props.value, "c-grey-blackout");
+assert.equal(find(doubled, "open-roll-rail").props.value, "br-aluminum");
+assert.equal(find(doubled, "open-roll-holder").props.value, "h-metal-chrome");
+console.log("Open-roll passed: no side-track option or enquiry references; retail prices, other options and quantity unchanged.");
