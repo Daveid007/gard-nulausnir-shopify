@@ -1,4 +1,3 @@
-import { ExternalLink } from "lucide-react";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import greenguard from "@/assets/certifications/greenguard.png";
 import greenLeaf from "@/assets/certifications/green-leaf.png";
@@ -34,11 +33,6 @@ const groups: { title: string; note?: string; items: Entry[] }[] = [
   },
 ];
 
-const links = [
-  ["Hande á Alibaba – fyrirtækjasíða", "https://handegroup.en.alibaba.com/company_profile.html"],
-  ["Hande – vottorð á vef birgis", "https://www.handegroup.com.cn/certificate.html"],
-] as const;
-
 export function SupplierCertifications() {
   return (
     <Dialog>
@@ -53,7 +47,7 @@ export function SupplierCertifications() {
       <DialogContent className="max-h-[85dvh] w-[calc(100%-2rem)] max-w-2xl overflow-y-auto border-[#ccd9df] bg-[#f7f9fa] p-6 text-[#24313b]">
         <DialogHeader className="pr-6 text-left">
           <DialogTitle className="font-serif text-3xl">Vottanir og prófanir birgja</DialogTitle>
-          <DialogDescription className="text-[#596872]">Merki og gögn sem Hande birtir á birgjasíðu sinni. Gildissvið fer eftir efni, vörulínu og íhlut; þau gilda ekki sjálfkrafa um allar vörur verslunarinnar.</DialogDescription>
+          <DialogDescription className="text-[#596872]">Yfirlit yfir merki og gögn frá birgja. Gildissvið fer eftir efni, vörulínu og íhlut; þau gilda ekki sjálfkrafa um allar vörur verslunarinnar.</DialogDescription>
         </DialogHeader>
         <p className="border-l-2 border-[#94b3cf] bg-[#edf3f8] px-3 py-2 text-sm text-[#43515a]">Gildistími og tenging við einstakar vörur hafa ekki verið staðfest hér.</p>
         <div className="flex flex-wrap items-center gap-3">
@@ -74,11 +68,6 @@ export function SupplierCertifications() {
           </section>
         ))}
         <p className="text-xs text-[#596872]">Ábyrgð verslunarinnar (5 ára ábyrgð á vélbúnaði og brautum) er óháð þessum gögnum birgja.</p>
-        <ul className="space-y-1">
-          {links.map(([label, href]) => (
-            <li key={href}><a href={href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-[#435f79] underline underline-offset-4">{label}<ExternalLink size={13} aria-hidden="true" /><span className="sr-only">(opnast í nýjum flipa)</span></a></li>
-          ))}
-        </ul>
         <DialogClose asChild>
           <button type="button" className="mt-2 min-h-11 border border-[#94b3cf] bg-[#e2edf6] px-4 py-2 text-sm hover:bg-[#cddfec]">Loka</button>
         </DialogClose>

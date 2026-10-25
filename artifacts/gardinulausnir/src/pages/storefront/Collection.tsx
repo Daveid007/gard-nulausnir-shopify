@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import "./_group.css";
 import { Footer, Header, ProductGrid } from "./_shared/Storefront";
 import { useStorefrontCatalog } from "./_shared/catalog";
+import { CurtainLightGroups } from "./_shared/CurtainLightGroups";
 import {
   COLLECTION_CATEGORY_DEFINITIONS,
   collectionCategoryFromUrl,
@@ -77,7 +78,9 @@ export function Collection() {
           <p className="text-[9px] uppercase tracking-[.18em] text-[#71808a]">{visibleProducts.length} kerfi</p>
         </div>
 
-        <ProductGrid items={visibleProducts} accentBadges testId="collection-grid" />
+        {selectedCategory === "curtains"
+          ? <CurtainLightGroups items={visibleProducts} accentBadges testId="collection-grid" />
+          : <ProductGrid items={visibleProducts} accentBadges testId="collection-grid" />}
         {visibleProducts.length === 0 && (
           <div data-testid="collection-empty" className="border border-[#a2c2e2] bg-[#eaf1f5] px-6 py-10 text-sm leading-6 text-[#596872]">
             {isUnknownCategory ? "Óþekktur vöruflokkur. Engar vörur voru sóttar fyrir þessa slóð." : "Engar vörur fundust í þessum flokki."}
