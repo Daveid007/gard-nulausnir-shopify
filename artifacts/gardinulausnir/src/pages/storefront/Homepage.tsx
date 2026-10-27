@@ -8,6 +8,7 @@ import { HelpDrawer } from "./_shared/HelpDrawer";
 import { Footer } from "./_shared/Storefront";
 import { ResponsiveImage } from "@/components/ResponsiveImage";
 import { WarrantyButton } from "@/components/WarrantyButton";
+import { SupplierCertifications } from "@/components/SupplierCertifications";
 import homepageFamily from "@/assets/homepage-family.jpg";
 import { curtainProductCoverImage } from "./_shared/curtains-assets";
 import { BusinessInquiryButton } from "@/components/BusinessInquiryButton";
@@ -53,8 +54,9 @@ function HomepageHeader() {
         <HelpDrawer />
          <BusinessInquiryButton className="block py-3 text-left" />
       </nav>}
-      <div className="flex justify-center border-t border-[#d8e1e5] bg-[#edf3f8] px-5 py-1">
+      <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-0.5 border-t border-[#d8e1e5] bg-[#edf3f8] px-3 py-1 sm:px-5">
         <WarrantyButton />
+        <SupplierCertifications />
       </div>
     </header>
   );

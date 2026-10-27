@@ -6,6 +6,7 @@ import type { Product } from "./data";
 import { BrandLogo } from "./BrandLogo";
 import { ResponsiveImage } from "@/components/ResponsiveImage";
 import { WarrantyButton } from "@/components/WarrantyButton";
+import { SupplierCertifications } from "@/components/SupplierCertifications";
 import { HelpDrawer } from "./HelpDrawer";
 import { collectionHref } from "./collectionCategories";
 import { isCurtainProductId } from "./curtains";
@@ -36,8 +37,9 @@ export function Header({ cartCount = 0, categoryNav = false, onCartClick, showCa
             {([["Hurðagardínur og flugnanet", collectionHref("thedour-doors")], ["Mælingar", "/maelingar"]] as const).map(([label, href]) => <Link key={label} href={href} onClick={() => setOpen(false)} className="block py-2 text-[11px] uppercase tracking-[.18em]">{label}</Link>)}
              <BusinessInquiryButton productContext={businessContext} className="block py-2 text-left text-[11px]" />
       </nav>}
-      <div className="flex justify-center border-t border-[#d8e1e5] bg-[#edf3f8] px-5 py-1">
+      <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-0.5 border-t border-[#d8e1e5] bg-[#edf3f8] px-3 py-1 sm:px-5">
         <WarrantyButton />
+        <SupplierCertifications />
       </div>
     </header>
   );
