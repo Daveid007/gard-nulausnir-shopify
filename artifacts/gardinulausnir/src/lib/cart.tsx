@@ -87,6 +87,7 @@ export type DaynightCartItem = {
   operation: "manual" | "cordless" | "motor";
   sideTrack: boolean;
   sideTrackType?: "u" | "l";
+  sideTrackColor?: "Hvítur" | "Svartur";
   mountPosition?: MountPosition;
   noDrill?: boolean;
   railColor: string;
@@ -534,7 +535,7 @@ export function describeCartItem(item: CartItem): { title: string; sub: string }
     const holderSuffix = item.holder ? ` · Lásahaldari · ${HOLDER_LABEL[item.holder]}` : "";
     return {
       title: `Myrkvunargardína 45 mm · ${item.fabricName}`,
-       sub: `${item.width}×${item.height}mm · ${item.fabricCode} · ${opLabel}${item.sideTrack ? " · með hliðarlista" : ""} · ${item.railColor}${holderSuffix}${mountingSuffix}`,
+       sub: `${item.width}×${item.height}mm · ${item.fabricCode} · ${opLabel}${item.sideTrack ? ` · Hliðarlisti${item.sideTrackColor ? `: ${item.sideTrackColor}` : ""}` : ""} · ${item.railColor}${holderSuffix}${mountingSuffix}`,
     };
   }
   if (item.type === "honeycomb-25") {
