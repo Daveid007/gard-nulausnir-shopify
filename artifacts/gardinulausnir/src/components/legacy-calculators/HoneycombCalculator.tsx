@@ -181,6 +181,7 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
   const [operation, setOperation] = useState<Operation>("manual");
   const [sideTrack, setSideTrack] = useState<boolean>(false);
   const [sideTrackType, setSideTrackType] = useState<"u" | "l">("u");
+  const [sideTrackColor, setSideTrackColor] = useState<"Hvítur" | "Svartur">("Hvítur");
   const [mountPosition, setMountPosition] = useState<MountPosition>("outside");
   const [noDrill, setNoDrill] = useState<boolean>(false);
   const { railColor, setRailColor } = useRailColor();
@@ -276,6 +277,7 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
     operation,
     sideTrack,
     sideTrackType,
+    sideTrackColor: sideTrack ? sideTrackColor : undefined,
     mountPosition,
     noDrill,
     railColor,
@@ -325,6 +327,15 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
                     <option value="u">U-spor</option>
                     <option value="l">L-spor</option>
                   </select>
+                )}
+                {sideTrack && (
+                  <label className="col-span-2 text-[10px] uppercase tracking-[.14em]">
+                    Litur hliðarlista
+                    <select aria-label="Litur hliðarlista" data-testid="hc-track-color" value={sideTrackColor} onChange={(e) => setSideTrackColor(e.target.value as "Hvítur" | "Svartur")} className="mt-1 h-11 w-full border border-[#ccd9df] bg-transparent px-2 text-xs md:h-8">
+                      <option value="Hvítur">Hvítur</option>
+                      <option value="Svartur">Svartur</option>
+                    </select>
+                  </label>
                 )}
               </div>
             </div>
@@ -670,6 +681,7 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
                     operation,
                     sideTrack,
                     sideTrackType,
+                    sideTrackColor: sideTrack ? sideTrackColor : undefined,
                     mountPosition,
                     noDrill,
                     railColor,
@@ -713,6 +725,7 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
                 operation,
                 sideTrack,
                 sideTrackType,
+                sideTrackColor: sideTrack ? sideTrackColor : undefined,
                 mountPosition,
                 noDrill,
                 railColor,
