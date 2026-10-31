@@ -182,6 +182,11 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
   const [sideTrack, setSideTrack] = useState<boolean>(false);
   const [sideTrackType, setSideTrackType] = useState<"u" | "l">("u");
   const [sideTrackColor, setSideTrackColor] = useState<"Hvítur" | "Svartur">("Hvítur");
+  const trackChoice = sideTrack ? sideTrackColor : "none";
+  function selectTrack(value: string) {
+    setSideTrack(value !== "none");
+    if (value === "Hvítur" || value === "Svartur") setSideTrackColor(value);
+  }
   const [mountPosition, setMountPosition] = useState<MountPosition>("outside");
   const [noDrill, setNoDrill] = useState<boolean>(false);
   const { railColor, setRailColor } = useRailColor();
@@ -321,21 +326,19 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
                   <option value="inside">Innfelld (−5 mm)</option>
                 </select>
                 <label className="flex h-11 items-center justify-between gap-1 border border-[#ccd9df] px-2 text-[10px] uppercase md:h-8"><span title="+3 USD/m²">Án borunar</span><input type="checkbox" aria-label="Án borunar / No-drill" data-testid="hc-no-drill" checked={noDrill} onChange={(e) => setNoDrill(e.target.checked)} /></label>
-                <label className="flex h-11 items-center justify-between gap-1 border border-[#ccd9df] px-2 text-[10px] uppercase md:h-8"><span>Hliðarlisti</span><input type="checkbox" aria-label="Hliðarlisti" checked={sideTrack} onChange={(e) => setSideTrack(e.target.checked)} /></label>
+                <label className="col-span-2 text-[10px] uppercase tracking-[.14em]">
+                  Hliðarlistar
+                  <select aria-label="Hliðarlistar" data-testid="hc-track-choice" value={trackChoice} onChange={(e) => selectTrack(e.target.value)} className="mt-1 h-11 w-full border border-[#ccd9df] bg-transparent px-2 text-xs md:h-8">
+                    <option value="none">Án hliðarlista</option>
+                    <option value="Hvítur">Með hvítum hliðarlistum</option>
+                    <option value="Svartur">Með svörtum hliðarlistum</option>
+                  </select>
+                </label>
                 {sideTrack && (
                   <select aria-label="Gerð hliðarlista / Track" data-testid="hc-track-type" value={sideTrackType} onChange={(e) => setSideTrackType(e.target.value as "u" | "l")} className="h-11 w-full border border-[#ccd9df] bg-transparent px-1.5 text-xs md:h-8">
                     <option value="u">U-spor</option>
                     <option value="l">L-spor</option>
                   </select>
-                )}
-                {sideTrack && (
-                  <label className="col-span-2 text-[10px] uppercase tracking-[.14em]">
-                    Litur hliðarlista
-                    <select aria-label="Litur hliðarlista" data-testid="hc-track-color" value={sideTrackColor} onChange={(e) => setSideTrackColor(e.target.value as "Hvítur" | "Svartur")} className="mt-1 h-11 w-full border border-[#ccd9df] bg-transparent px-2 text-xs md:h-8">
-                      <option value="Hvítur">Hvítur</option>
-                      <option value="Svartur">Svartur</option>
-                    </select>
-                  </label>
                 )}
               </div>
             </div>
@@ -515,14 +518,18 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
               </div>
               <div className="flex items-center justify-between rounded-lg border border-border/40 px-3 py-2">
                 <div>
-                  <Label htmlFor="hc-sidetrack" className="text-xs font-semibold block">Hliðarlisti</Label>
+                  <Label htmlFor="hc-sidetrack" className="text-xs font-semibold block">Hliðarlistar</Label>
                   <p className="text-[10px] text-muted-foreground">+{Math.round((sideTrackType === "l" ? 5 : 10) * SUPPLIER_TO_RETAIL_ISK).toLocaleString("is-IS")} kr./m</p>
                 </div>
-                <Switch id="hc-sidetrack" checked={sideTrack} onCheckedChange={setSideTrack} />
+                <select id="hc-sidetrack" value={trackChoice} onChange={(e) => selectTrack(e.target.value)} className="h-11 rounded border bg-background px-2 text-xs">
+                  <option value="none">Án hliðarlista</option>
+                  <option value="Hvítur">Með hvítum hliðarlistum</option>
+                  <option value="Svartur">Með svörtum hliðarlistum</option>
+                </select>
               </div>
               <div>
                 <Label htmlFor="hc-track-type" className="text-xs font-semibold mb-1.5 block">Gerð hliðarlista / Track</Label>
-                <Select value={sideTrackType} onValueChange={(v) => setSideTrackType(v as "u" | "l")}>
+                <Select disabled={!sideTrack} value={sideTrackType} onValueChange={(v) => setSideTrackType(v as "u" | "l")}>
                   <SelectTrigger id="hc-track-type"><SelectValue /></SelectTrigger>
                   <SelectContent>
                   <SelectItem value="u">U-spor</SelectItem>
