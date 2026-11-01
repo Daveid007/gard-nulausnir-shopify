@@ -8,12 +8,12 @@ import {
 
 const basic = quoteOpenRollExample({ widthCm: 120, heightCm: 160, quantity: 2, colorId: "c-white", railId: "br-sewn", holderId: "h-std-white" });
 assert.equal(basic.ok, true);
-assert.equal(basic.unitIsk, 26_425);
-assert.equal(basic.totalIsk, 52_850);
+assert.equal(basic.unitIsk, Math.round(21_140 * 1.25 * 1.05));
+assert.equal(basic.totalIsk, Math.round(21_140 * 1.25 * 1.05) * 2);
 
 const rounding = quoteOpenRollExample({ widthCm: 31, heightCm: 41, quantity: 3, colorId: "c-grey-blackout", railId: "br-aluminum", holderId: "h-metal-chrome" });
 assert.equal(rounding.ok, true);
-assert.equal(rounding.unitIsk, Math.round((12_500 + 4_500 * 31 * 41 / 10_000 + 2_500 + 1_800 + 3_500) * 1.25));
+assert.equal(rounding.unitIsk, Math.round((12_500 + 4_500 * 31 * 41 / 10_000 + 2_500 + 1_800 + 3_500) * 1.25 * 1.05));
 assert.equal(rounding.totalIsk, rounding.unitIsk * 3, "round each unit before multiplying quantity");
 
 for (const color of OPEN_ROLL_EXAMPLE_COLORS) {
@@ -21,7 +21,7 @@ for (const color of OPEN_ROLL_EXAMPLE_COLORS) {
     for (const holder of OPEN_ROLL_EXAMPLE_HOLDERS) {
       const quote = quoteOpenRollExample({ widthCm: 30, heightCm: 40, quantity: 1, colorId: color.id, railId: rail.id, holderId: holder.id });
       assert.equal(quote.ok, true, `${color.id}/${rail.id}/${holder.id}`);
-      assert.equal(quote.unitIsk, Math.round((12_500 + 540 + color.modifierIsk + rail.modifierIsk + holder.modifierIsk) * 1.25));
+      assert.equal(quote.unitIsk, Math.round((12_500 + 540 + color.modifierIsk + rail.modifierIsk + holder.modifierIsk) * 1.25 * 1.05));
     }
   }
 }

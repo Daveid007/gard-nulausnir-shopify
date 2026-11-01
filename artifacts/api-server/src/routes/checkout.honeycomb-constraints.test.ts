@@ -77,3 +77,11 @@ test("source checkout rejects unknown honeycomb inventory instead of using clien
     false,
   );
 });
+test("45 mm supports only U tracks and retains colour", () => {
+  for (const colour of ["Hvítur", "Svartur"]) {
+    const parsed = checkoutRequestSchema.parse({items: [honeycombItem({sideTrack:true, sideTrackType:"u", sideTrackColor:colour})]});
+    const line = buildShopifyDraftOrderLines(parsed.items)[0];
+    assert.ok(line.attributes.some(a => a.key === "Litur hliðarlista" && a.value === colour));
+  }
+  assert.equal(checkoutRequestSchema.safeParse({items: [honeycombItem({sideTrack:true,sideTrackType:"l"})]}).success,false);
+});

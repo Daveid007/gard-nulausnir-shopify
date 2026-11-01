@@ -10,6 +10,12 @@ export function checkoutLine(item: CartItem): CheckoutLine | null {
       return { type: item.type, qty: item.qty, productId: item.productId,
         configuration: item.configuration, fabricName: item.fabricName };
     case "honeycomb":
+      if (!item.bottomRail || (item.sideTrack && item.sideTrackType === "l")) return null;
+      return { type: item.type, qty: item.qty, width: item.width, height: item.height,
+        fabricCode: item.fabricCode, operation: item.operation, sideTrack: item.sideTrack,
+        sideTrackType: "u", sideTrackColor: item.sideTrack ? item.sideTrackColor : undefined,
+        noDrill: item.noDrill, mountPosition: item.mountPosition,
+        railColor: item.railColor, bottomRail: item.bottomRail, holder: item.holder ?? null };
     case "honeycomb-25":
       if (item.noDrill || item.sideTrackType || item.mountPosition || !item.bottomRail) return null;
       return { type: item.type, qty: item.qty, width: item.width, height: item.height,
@@ -56,7 +62,7 @@ async function postOrder(path: string, items: CheckoutLine[], installation: bool
 export async function quoteOrder(items: CheckoutLine[], installation = false): Promise<{ totalIsk: number; lines: Array<{ title: string; quantity: number; unitPriceIsk: number }> }> {
   const quote = await postOrder("quote", items, installation);
   if (quote.currency !== "ISK" || !Number.isSafeInteger(quote.totalIsk) || quote.totalIsk <= 0 ||
-      quote.installationIsk !== (installation ? 15000 : 0) ||
+      quote.installationIsk !== 0 ||
       quote.totalIsk !== quote.subtotalIsk + quote.installationIsk || !Array.isArray(quote.lines))
     throw new Error("Ógilt verð barst frá pöntunarþjónustu.");
   return quote;

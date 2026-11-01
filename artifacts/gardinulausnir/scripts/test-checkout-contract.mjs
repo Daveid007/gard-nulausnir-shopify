@@ -18,15 +18,15 @@ globalThis.fetch = async (url, options) => {
   const body = JSON.parse(options.body);
   calls.push({ url, body });
   const data = url.endsWith("/quote")
-    ? { currency: "ISK", subtotalIsk: 11453, installationIsk: body.installation ? 15000 : 0,
-        totalIsk: body.installation ? 26453 : 11453, lines: [] }
+    ? { currency: "ISK", subtotalIsk: 11453, installationIsk: 0,
+        totalIsk: 11453, lines: [] }
     : { url: "https://example.myshopify.com/checkouts/test" };
   return { ok: true, json: async () => data };
 };
 for (const installation of [false, true]) {
   const quote = await quoteOrder(lines, installation);
   await createCheckout(lines, quote.totalIsk, installation);
-  assert.equal(calls.at(-1).body.expectedTotalIsk, installation ? 26453 : 11453);
+  assert.equal(calls.at(-1).body.expectedTotalIsk, 11453);
   assert.equal(calls.at(-1).body.installation, installation);
   assert.deepEqual(calls.at(-1).body.items, lines);
 }

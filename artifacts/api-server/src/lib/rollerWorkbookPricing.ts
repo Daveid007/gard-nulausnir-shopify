@@ -30,7 +30,7 @@ export type RollerWorkbookQuoteSuccess = {
 };
 export type RollerWorkbookQuoteResult = RollerWorkbookQuoteSuccess | RollerWorkbookQuoteFailure;
 
-const RETAIL_FACTOR = 2 * (1 / 0.6) * 121.16 * 1.24;
+const RETAIL_FACTOR = 2 * (1 / 0.6) * 121.16 * 1.24 * 1.25 * 1.05;
 export const ROLLER_WORKBOOK_SUPPLIER_PRICES = {
   motor: { "battery-standard": 38, "battery-wifi": 38, "battery-zigbee": 44, wired: 30, "wired-wifi": 38 } satisfies Record<MotorType, number>,
   remote: 7, hub: 22, cordlessPerSqm: 3, noDrillPerSqm: 3, steelChainPerSqm: 0.5, trackPerMetre: { u: 10, l: 5 },

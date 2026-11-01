@@ -12,7 +12,7 @@ import { supplierRate } from "./supplierPricesRev4.ts";
 export const USD_TO_ISK = 121.16;
 export const VAT_FACTOR = 1.24;
 export const MARGIN_FACTOR = 1 / 0.6;
-export const RETAIL_PRICE_MULTIPLIER = 1.25;
+export const RETAIL_PRICE_MULTIPLIER = 1.25 * 1.05;
 export const SUPPLIER_TO_RETAIL_ISK = 2 * MARGIN_FACTOR * USD_TO_ISK * VAT_FACTOR * RETAIL_PRICE_MULTIPLIER;
 
 /** Adjust an existing ISK retail amount, never a supplier USD cost. */

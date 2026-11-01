@@ -137,7 +137,7 @@ test("Shopify Draft Order lines keep product links, exact prices, and configurat
   assert.equal(lines[7]?.unitPriceIsk, 8546);
   assert.equal(lines[7]?.attributes.find((attribute) => attribute.key === "Litur brautar")?.value, "Hvítur");
   assert.equal(lines.at(-1)?.title, "Uppsetning / Professional installation");
-  assert.equal(lines.at(-1)?.unitPriceIsk, 15000);
+  assert.equal(lines.at(-1)?.unitPriceIsk, 0);
   assert.equal(lines.at(-1)?.requiresShipping, false);
 });
 
