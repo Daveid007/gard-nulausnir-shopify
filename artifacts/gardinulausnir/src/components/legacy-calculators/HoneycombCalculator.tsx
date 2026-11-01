@@ -15,7 +15,7 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/lib/cart";
 import { FABRICS, type FabricInfo } from "@/lib/fabrics";
-import { CASSETTE_RAIL_COLORS, MOTORIZED_RAIL_COLORS, HONEYCOMB_BOTTOM_RAIL_COLORS, HOLDER_COLORS, resolveRailColor } from "@/assets/railImages";
+import { CASSETTE_RAIL_COLORS, MOTORIZED_RAIL_COLORS, HOLDER_COLORS, resolveRailColor } from "@/assets/railImages";
 import { normalizeQuantity } from "@/lib/quantity";
 import { StorefrontLayout } from "./StorefrontLayout";
 import { MeasurementGuideTrigger } from "@/components/MeasurementGuide";
@@ -180,7 +180,7 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
   const [fabricType, setFabricType] = useState<FabricType>("translucent");
   const [operation, setOperation] = useState<Operation>("manual");
   const [sideTrack, setSideTrack] = useState<boolean>(false);
-  const [sideTrackType, setSideTrackType] = useState<"u" | "l">("u");
+  const sideTrackType = "u" as const;
   const [sideTrackColor, setSideTrackColor] = useState<"Hvítur" | "Svartur">("Hvítur");
   const trackChoice = sideTrack ? sideTrackColor : "none";
   function selectTrack(value: string) {
@@ -191,7 +191,7 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
   const [noDrill, setNoDrill] = useState<boolean>(false);
   const { railColor, setRailColor } = useRailColor();
   const [lastCassetteColor, setLastCassetteColor] = useState<string>(railColor);
-  const [bottomRailColor, setBottomRailColor] = useState<string>("Hvítur");
+  const bottomRailColor = railColor;
   const [holder, setHolder] = useState<"white" | "navy" | "black" | null>(null);
   const { addItem } = useCart();
 
@@ -237,7 +237,7 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
     const noDrillUSD = noDrill ? billedArea * 3 : 0;
     const motorUSD = operation === "motor" ? (billedArea > 4 ? 71.1311073101807 : 34.5573219076603) : 0;
     const remoteUSD = 0;
-    const sidetrackUSD = sideTrack ? h * (sideTrackType === "l" ? 5 : 10) : 0;
+    const sidetrackUSD = sideTrack ? h * 10 : 0;
     const holderUSD = holder ? HOLDER_USD : 0;
 
     const perPieceUSD = fabricUSD + cordlessUSD + noDrillUSD + motorUSD + remoteUSD + sidetrackUSD + holderUSD;
@@ -335,10 +335,7 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
                   </select>
                 </label>
                 {sideTrack && (
-                  <select aria-label="Gerð hliðarlista / Track" data-testid="hc-track-type" value={sideTrackType} onChange={(e) => setSideTrackType(e.target.value as "u" | "l")} className="h-11 w-full border border-[#ccd9df] bg-transparent px-1.5 text-xs md:h-8">
-                    <option value="u">U-spor</option>
-                    <option value="l">L-spor</option>
-                  </select>
+                  <p data-testid="hc-track-type" className="col-span-2 text-xs text-[#667984]">Hliðarlistar: U-listar</p>
                 )}
               </div>
             </div>
@@ -366,7 +363,7 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
                 <span className="truncate text-[10px] text-[#667984]">{fabric.is} · {fabric.code}</span>
               </div>
               <div className="mb-2 grid grid-cols-2 gap-1.5" data-testid="honeycomb-fabric-types">
-                {(["sheer", "translucent", "blackout", "dualdeck"] as FabricType[]).map((type) => (
+                {(["sheer", "translucent", "blackout"] as FabricType[]).map((type) => (
                   <button type="button" key={type} onClick={() => setFabricType(type)} aria-pressed={fabricType === type} data-testid={`honeycomb-fabric-type-${type}`} className={`h-11 border px-1 text-[9px] uppercase leading-tight tracking-[.04em] md:h-8 ${fabricType === type ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>
                     {TYPE_LABELS[type].is}
                   </button>
@@ -383,8 +380,8 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
             </div>
             <div className="space-y-2">
               <span className="block text-[10px] uppercase tracking-[.16em] text-[#6892b8]">Listar</span>
-              <RailColorSwatches label="Litur á botnlistum" testId="hc-bottom-rail" options={HONEYCOMB_BOTTOM_RAIL_COLORS} value={bottomRailColor} onChange={setBottomRailColor} showPhotos />
-              <RailColorSwatches label="Finish · litur á braut" testId="hc-rail-color" options={operation === "motor" ? MOTORIZED_RAIL_COLORS : CASSETTE_RAIL_COLORS} value={railColor} onChange={setRailColor} showPhotos />
+              <RailColorSwatches label="Litur á efri braut og botnlista" testId="hc-rail-color" options={operation === "motor" ? MOTORIZED_RAIL_COLORS : CASSETTE_RAIL_COLORS} value={railColor} onChange={setRailColor} showPhotos />
+              <p className="text-[10px] text-[#667984]">Sami litur á efri braut og botnlista.</p>
             </div>
           </div>
         </div>
@@ -423,7 +420,7 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
                 <Label className="text-sm font-semibold">Veldu efnistegund og lit</Label>
               </div>
               <div className="space-y-3">
-                {(["sheer", "translucent", "blackout", "dualdeck"] as FabricType[]).map((t) => {
+                {(["sheer", "translucent", "blackout"] as FabricType[]).map((t) => {
                   const theme = TYPE_THEME[t];
                   const Icon = theme.Icon;
                   return (
@@ -519,7 +516,7 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
               <div className="flex items-center justify-between rounded-lg border border-border/40 px-3 py-2">
                 <div>
                   <Label htmlFor="hc-sidetrack" className="text-xs font-semibold block">Hliðarlistar</Label>
-                  <p className="text-[10px] text-muted-foreground">+{Math.round((sideTrackType === "l" ? 5 : 10) * SUPPLIER_TO_RETAIL_ISK).toLocaleString("is-IS")} kr./m</p>
+                  <p className="text-[10px] text-muted-foreground">+{Math.round(10 * SUPPLIER_TO_RETAIL_ISK).toLocaleString("is-IS")} kr./m</p>
                 </div>
                 <select id="hc-sidetrack" value={trackChoice} onChange={(e) => selectTrack(e.target.value)} className="h-11 rounded border bg-background px-2 text-xs">
                   <option value="none">Án hliðarlista</option>
@@ -527,16 +524,7 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
                   <option value="Svartur">Með svörtum hliðarlistum</option>
                 </select>
               </div>
-              <div>
-                <Label htmlFor="hc-track-type" className="text-xs font-semibold mb-1.5 block">Gerð hliðarlista / Track</Label>
-                <Select disabled={!sideTrack} value={sideTrackType} onValueChange={(v) => setSideTrackType(v as "u" | "l")}>
-                  <SelectTrigger id="hc-track-type"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                  <SelectItem value="u">U-spor</SelectItem>
-                  <SelectItem value="l">L-spor</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              {sideTrack && <p className="text-xs text-muted-foreground">Hliðarlistar: U-listar</p>}
               <div>
                 <Label htmlFor="hc-mount-position" className="text-xs font-semibold mb-1.5 block">Festing / Mount</Label>
                 <Select value={mountPosition} onValueChange={(v) => setMountPosition(v as MountPosition)}>
@@ -557,7 +545,7 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
             <div>
               <div className="flex items-baseline gap-2 mb-2">
                 <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary text-primary-foreground text-[11px] font-bold">4</span>
-                <Label className="text-sm font-semibold">Litur á efri braut <span className="text-muted-foreground font-normal text-xs">/ Head rail colour</span></Label>
+                <Label className="text-sm font-semibold">Litur á efri braut og botnlista</Label>
               </div>
               <AnimatePresence mode="wait" initial={false}>
                 <motion.div
@@ -585,34 +573,11 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
               </AnimatePresence>
             </div>
 
-            {/* STEP 5 — Bottom rail colour */}
-            <div>
-              <div className="flex items-baseline gap-2 mb-2">
-                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary text-primary-foreground text-[11px] font-bold">5</span>
-                <Label className="text-sm font-semibold">Litur á botnstöng <span className="text-muted-foreground font-normal text-xs">/ Bottom rail colour</span></Label>
-              </div>
-              <div className="grid grid-cols-5 gap-1.5">
-                {HONEYCOMB_BOTTOM_RAIL_COLORS.map((rc) => {
-                  const selected = bottomRailColor === rc.value;
-                  return (
-                    <button key={rc.value} type="button" onClick={() => setBottomRailColor(rc.value)}
-                      className={`flex flex-col items-center gap-1 p-1 rounded-lg border transition-all ${selected ? "border-primary ring-2 ring-primary/30 bg-primary/5" : "border-border/50 hover:border-primary/40 bg-background"}`}
-                      aria-pressed={selected}>
-                      <div className="w-full aspect-square rounded-md overflow-hidden">
-                          <img src={rc.image} alt={rc.value} className="w-full h-full object-contain" loading="lazy" />
-                      </div>
-                      <span className="text-[10px] font-medium text-center leading-tight">{rc.value}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
             {/* STEP 6 — Pull holder */}
             <div>
               <div className="flex items-baseline gap-2 mb-2">
-                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary text-primary-foreground text-[11px] font-bold">6</span>
-                <Label className="text-sm font-semibold">Lásahaldari <span className="text-muted-foreground font-normal text-xs">/ Pull holder (+{fmtISK(HOLDER_USD * SUPPLIER_TO_RETAIL_ISK)} stk)</span></Label>
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary text-primary-foreground text-[11px] font-bold">5</span>
+                <Label className="text-sm font-semibold">Lásahaldari <span className="text-muted-foreground font-normal text-xs">(+{fmtISK(HOLDER_USD * SUPPLIER_TO_RETAIL_ISK)} stk)</span></Label>
               </div>
               <div className="grid grid-cols-4 gap-1.5">
                 <button type="button" onClick={() => setHolder(null)}
@@ -656,8 +621,7 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
                 </span>
               </div>
               <div className="flex justify-between"><span>Efni</span><span className="font-medium">{fabric.is}</span></div>
-              <div className="flex justify-between"><span>Litur á efri braut</span><span className="font-medium">{railColor}</span></div>
-              <div className="flex justify-between"><span>Litur á botnstöng</span><span className="font-medium">{bottomRailColor}</span></div>
+              <div className="flex justify-between"><span>Litur á efri braut og botnlista</span><span className="font-medium">{railColor}</span></div>
               <div className="flex justify-between pt-3 border-t border-primary-foreground/20">
                 <span>Efni · {TYPE_LABELS[fabric.type].is}</span>
                 <span>{fmtISK(calc.fabricUSD * SUPPLIER_TO_RETAIL_ISK)}</span>

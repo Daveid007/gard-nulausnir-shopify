@@ -100,11 +100,11 @@ function CalculatorCartStatus() {
               <label className="mb-3 flex items-start gap-2 text-xs">
                 <input type="checkbox" checked={installation} disabled={!items.length || checkoutBusy}
                   onChange={(event) => setInstallation(event.target.checked)} />
-                Uppsetning · valfrjálst · 15.000 kr. fyrir pöntunina
+                Ókeypis uppsetning
               </label>
               <div className="mb-5 flex justify-between font-serif text-2xl">
                 <span>Samtals</span>
-                <span>{"Áætlun: " + formatIsk(totalIsk + (installation && items.length ? 15000 : 0))}</span>
+                <span>{"Áætlun: " + formatIsk(totalIsk)}</span>
               </div>
               <button type="button" onClick={handleCheckout} disabled={!canCheckout || checkoutBusy} className="w-full bg-[#a2c2e2] py-4 text-[10px] uppercase tracking-[.18em] disabled:cursor-not-allowed disabled:opacity-50">
                 {checkoutBusy ? "Staðfesti verð…" : "Staðfesta verð og greiða í Shopify"}

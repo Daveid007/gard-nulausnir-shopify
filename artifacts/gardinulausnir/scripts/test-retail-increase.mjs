@@ -20,10 +20,10 @@ const roller = await import(pathToFileURL(join(root, "src/lib/rollerWorkbookPric
 const vertical = await import(pathToFileURL(join(root, "src/lib/verticalSheerPricing.ts")).href);
 
 const originalFactor = 2 / 0.6 * 121.16 * 1.24;
-const expectedUnit = (usd) => Math.round(usd * originalFactor * 1.25);
-assert.equal(pricing.RETAIL_PRICE_MULTIPLIER, 1.25);
-assert.equal(pricing.increasedRetailPriceIsk(11268), 14085);
-assert.equal(pricing.retailPriceFromSupplierUsd(22.5), 14085);
+const expectedUnit = (usd) => Math.round(usd * originalFactor * 1.25 * 1.05);
+assert.equal(pricing.RETAIL_PRICE_MULTIPLIER, 1.25 * 1.05);
+assert.equal(pricing.increasedRetailPriceIsk(11268), Math.round(11268 * 1.25 * 1.05));
+assert.equal(pricing.retailPriceFromSupplierUsd(22.5), expectedUnit(22.5));
 assert.equal(pricing.USD_TO_ISK, 121.16);
 // The later REV 4 supplier import changed this baseline, independently of
 // the retail uplift. Keep the confirmed supplier cost, not the old workbook.
@@ -69,11 +69,11 @@ for (const productId of windour.WINDOUR_PRODUCT_IDS) {
     quantity: 3, openingType: "single", openingDirection: "horizontal",
   });
   assert.ok(quote, productId);
-  assert.equal(quote.unitIsk, Math.round(quote.totalUsd * 121.16 * 1.25), productId);
+  assert.equal(quote.unitIsk, Math.round(quote.totalUsd * 121.16 * 1.25 * 1.05), productId);
   assert.equal(quote.totalIsk, quote.unitIsk * 3, productId);
 }
 const cartSource = await readFile(join(root, "src/lib/cart.tsx"), "utf8");
 assert.match(cartSource, /retailPriceFromSupplierUsd\(priceCartItem\(item\)\) \* item.qty/);
 assert.match(cartSource, /quote\.retail\.totalIsk/);
 assert.match(cartSource, /calculateWindourQuote/);
-console.log(`25% retail increase passed: shared blind, cart, dual roller, vertical sheer, WINdoûr, and all ${roller.rollerWorkbookFabrics.length} workbook fabrics.`);
+console.log(`Additional 5% over existing 25% retail increase passed: shared blind, cart, dual roller, vertical sheer, WINdoûr, and all ${roller.rollerWorkbookFabrics.length} workbook fabrics.`);

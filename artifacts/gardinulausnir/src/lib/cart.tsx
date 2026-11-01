@@ -535,7 +535,7 @@ export function describeCartItem(item: CartItem): { title: string; sub: string }
     const holderSuffix = item.holder ? ` · Lásahaldari · ${HOLDER_LABEL[item.holder]}` : "";
     return {
       title: `Myrkvunargardína 45 mm · ${item.fabricName}`,
-       sub: `${item.width}×${item.height}mm · ${item.fabricCode} · ${opLabel}${item.sideTrack ? ` · Hliðarlisti${item.sideTrackColor ? `: ${item.sideTrackColor}` : ""}` : " · Án hliðarlista"} · ${item.railColor}${holderSuffix}${mountingSuffix}`,
+       sub: `${item.width}×${item.height}mm · ${item.fabricCode} · ${opLabel}${item.sideTrack ? ` · Hliðarlisti${item.sideTrackColor ? `: ${item.sideTrackColor}` : ""}` : " · Án hliðarlista"} · Efri braut: ${item.railColor} · Botnlisti: ${item.bottomRail}${holderSuffix}${mountingSuffix}`,
     };
   }
   if (item.type === "honeycomb-25") {
@@ -786,9 +786,10 @@ function migrateCartItem(raw: unknown): CartItem | null {
       quote.productionWidthMm !== item.productionWidthMm ||
       quote.productionHeightMm !== item.productionHeightMm ||
       quote.billedAreaSqm !== item.billedAreaSqm ||
-      quote.supplierCostUsd !== item.supplierCostUsd ||
-      quote.unitIsk !== item.unitIsk
+      quote.supplierCostUsd !== item.supplierCostUsd
     ) return null;
+    // Reprice saved configurations instead of dropping them after a retail change.
+    item.unitIsk = quote.unitIsk;
     item.qty = normalizeQuantity(item.qty as number);
     const migrated = finalizeMigratedItem(item as unknown as VerticalSheerCartItem & CartPricingMetadata, item);
     if (item.installation === "outmount") migrated.needsReconfigure = true;

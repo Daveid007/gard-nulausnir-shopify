@@ -15,7 +15,7 @@ const router: IRouter = Router();
 
 // One supplier USD receives 100% shipping, then 40% margin, FX and VAT.
 // This is applied once to the complete per-unit supplier cost.
-const USD_TO_ISK_RETAIL = 2 * (1 / 0.6) * 121.16 * 1.24;
+const USD_TO_ISK_RETAIL = 2 * (1 / 0.6) * 121.16 * 1.24 * 1.25 * 1.05;
 const HOLDER_USD = 5.0;
 
 // Honeycomb (cellular) — 45 mm Standard, with supplier USD/m² rates.
@@ -386,7 +386,8 @@ const honeycombItemSchema = z.object({
   }),
   operation: z.enum(["manual", "cordless", "motor"]),
   sideTrack: z.boolean().optional().default(false),
-  sideTrackType: sideTrackTypeSchema,
+  sideTrackType: z.literal("u").default("u"),
+  sideTrackColor: z.enum(["Hvítur", "Svartur"]).optional(),
   mountPosition: mountPositionSchema,
   noDrill: z.boolean().default(false),
   railColor: railColorSchema,
@@ -789,7 +790,7 @@ function priceHoneycombUsd(item: HoneycombItem): { unitUsd: number; description:
   const cordless = item.operation === "cordless" ? billedArea * DN_CORDLESS_USD_PER_SQM : 0;
   const noDrill = item.noDrill ? billedArea * 3 : 0;
   const motor = item.operation === "motor" ? motorSupplierUsd(billedArea) + DN_REMOTE_USD : 0;
-  const sideTrack = item.sideTrack ? h * (item.sideTrackType === "l" ? 5 : DN_SIDETRACK_USD_PER_M) : 0;
+  const sideTrack = item.sideTrack ? h * DN_SIDETRACK_USD_PER_M : 0;
   const holder = item.holder ? HOLDER_USD : 0;
   const unitUsd = fabric + cordless + noDrill + motor + sideTrack + holder;
   const opLabel =
@@ -1003,6 +1004,7 @@ function configurationAttributes(item: CartItem, description: string): Array<{ k
     mountPosition: "Innfelld/utanáliggjandi festing",
     noDrill: "Án borunar",
     sideTrackType: "Gerð hliðarlista",
+    sideTrackColor: "Litur hliðarlista",
     comboKey: "Efnasamsetning",
     frontCode: "Fremra efni",
     backCode: "Aftara efni",
@@ -1014,7 +1016,7 @@ function configurationAttributes(item: CartItem, description: string): Array<{ k
     bottomRail: "Litur botnstangar",
   };
   const attributes = Object.entries(item)
-    .filter(([key, value]) => key !== "qty" && value !== undefined && value !== null)
+    .filter(([key, value]) => key !== "qty" && value !== undefined && value !== null && (key !== "sideTrackColor" || ("sideTrack" in item && item.sideTrack)))
     .map(([key, value]) => ({ key: labels[key] ?? key, value: typeof value === "boolean" ? (value ? "Já" : "Nei") : String(value) }));
   attributes.push({ key: "Samantekt", value: description.slice(0, 255) });
   return attributes;
@@ -1037,7 +1039,7 @@ export function buildShopifyDraftOrderLines(items: CartItem[]): ShopifyDraftOrde
     productHandle: null,
     title: "Uppsetning / Professional installation",
     quantity: 1,
-    unitPriceIsk: 15000,
+    unitPriceIsk: 0,
     requiresShipping: false,
     attributes: [{ key: "Lýsing", value: "Uppsetning á gardínum af fagmönnum" }],
   });
