@@ -248,7 +248,7 @@ function PrivacyDialog() {
   return (
     <FooterDialog label="Persónuverndarstefna" description="Heildstæð persónuverndarstefna er ekki birt enn.">
       <p className={dialogTextClass}>
-        Heildstæð persónuverndarstefna verður að liggja fyrir áður en söfnun persónuupplýsinga vegna netpantana hefst. Greiðslur á vefnum eru ekki virkar enn.
+        Heildstæð persónuverndarstefna verður að liggja fyrir áður en söfnun persónuupplýsinga vegna netpantana hefst. Greiðsla fer fram á öruggri greiðslusíðu Shopify.
       </p>
       <p className={dialogTextClass}>
         Hafðu samband við{" "}
@@ -318,8 +318,8 @@ export function Footer() {
         <div className="mt-12 flex flex-col gap-6 border-t border-[#24313b]/10 pt-5 text-sm text-[#596872] sm:flex-row sm:items-end sm:justify-between">
           <p>© 2026 Gardínulausnir.is — Sérsmíðaðar gæðagardínur.</p>
           <div className="flex flex-col items-end gap-2">
-            <p className="text-[11px] text-[#596872]">Greiðslur ekki virkar enn.</p>
-            <div className="flex items-center gap-2" aria-label="Greiðslumerki, ekki virk greiðsla">
+            <p className="text-[11px] text-[#596872]">Greiðsla fer fram í Shopify með Teya.</p>
+            <div className="flex items-center gap-2" aria-label="Greiðslumerki">
               <VisaMark />
               <MastercardMark />
             </div>
