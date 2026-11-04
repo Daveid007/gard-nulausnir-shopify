@@ -15,7 +15,7 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/lib/cart";
 import { FABRICS, type FabricInfo } from "@/lib/fabrics";
-import { CASSETTE_RAIL_COLORS, MOTORIZED_RAIL_COLORS, HOLDER_COLORS, resolveRailColor } from "@/assets/railImages";
+import { CASSETTE_RAIL_COLORS, MOTORIZED_RAIL_COLORS, resolveRailColor } from "@/assets/railImages";
 import { normalizeQuantity } from "@/lib/quantity";
 import { StorefrontLayout } from "./StorefrontLayout";
 import { MeasurementGuideTrigger } from "@/components/MeasurementGuide";
@@ -24,12 +24,12 @@ import sideTrackImage from "@/assets/accessory-thumbs/honeycomb-side-track.png";
 import {
   retailPriceFromSupplierUsd,
   SUPPLIER_TO_RETAIL_ISK,
-  HOLDER_USD,
   HONEYCOMB_45_LIMITS,
   validateHoneycombSize,
   type MountPosition,
 } from "@/lib/pricing";
 import { RailColorSwatches } from "./RailColorSwatches";
+import { HoneycombControlHelp, HoneycombMountHelp } from "./HoneycombChoiceHelp";
 
 const MIN_SQM_PER_PIECE = 1;
 const CORDLESS_ISK_PER_SQM = Math.round(3 * SUPPLIER_TO_RETAIL_ISK);
@@ -192,7 +192,6 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
   const { railColor, setRailColor } = useRailColor();
   const [lastCassetteColor, setLastCassetteColor] = useState<string>(railColor);
   const bottomRailColor = railColor;
-  const [holder, setHolder] = useState<"white" | "navy" | "black" | null>(null);
   const { addItem } = useCart();
 
   function handleOperationChange(next: Operation) {
@@ -238,9 +237,8 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
     const motorUSD = operation === "motor" ? (billedArea > 4 ? 71.1311073101807 : 34.5573219076603) : 0;
     const remoteUSD = 0;
     const sidetrackUSD = sideTrack ? h * 10 : 0;
-    const holderUSD = holder ? HOLDER_USD : 0;
 
-    const perPieceUSD = fabricUSD + cordlessUSD + noDrillUSD + motorUSD + remoteUSD + sidetrackUSD + holderUSD;
+    const perPieceUSD = fabricUSD + cordlessUSD + noDrillUSD + motorUSD + remoteUSD + sidetrackUSD;
     const totalUSD = perPieceUSD * quantity;
     const perPieceISK = retailPriceFromSupplierUsd(perPieceUSD);
     const totalISK = perPieceISK * quantity;
@@ -264,10 +262,10 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
 
     return {
       rawArea, billedArea, perPieceUSD, totalUSD, totalISK, perPieceISK,
-      fabricUSD, cordlessUSD, noDrillUSD, motorUSD, remoteUSD, sidetrackUSD, holderUSD,
+      fabricUSD, cordlessUSD, noDrillUSD, motorUSD, remoteUSD, sidetrackUSD,
       widthOK, heightOK, areaOK, w, h,
     };
-  }, [width, height, quantity, operation, sideTrack, sideTrackType, mountPosition, noDrill, fabric, holder]);
+  }, [width, height, quantity, operation, sideTrack, sideTrackType, mountPosition, noDrill, fabric]);
 
   const validSize = calc.widthOK && calc.heightOK && calc.areaOK;
   const addToCart = () => addItem({
@@ -287,7 +285,7 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
     noDrill,
     railColor,
     bottomRail: bottomRailColor,
-    holder,
+    holder: null,
   });
 
   return (
@@ -316,7 +314,8 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
             </div>
             <div role="group" aria-label="Stýring">
               <span className="mb-1 block text-[10px] uppercase tracking-[.16em]">Stýring</span>
-              <div className="grid grid-cols-3 gap-1.5">{(["manual", "cordless", "motor"] as Operation[]).map((item) => <button type="button" key={item} aria-pressed={operation === item} onClick={() => handleOperationChange(item)} className={`h-11 border px-1 text-[10px] uppercase md:h-8 ${operation === item ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{item === "manual" ? "Handvirk" : item === "cordless" ? "Þráðlaus" : "Mótor"}</button>)}</div>
+              <div className="grid grid-cols-3 gap-1.5">{(["manual", "cordless", "motor"] as Operation[]).map((item) => <button type="button" key={item} aria-pressed={operation === item} onClick={() => handleOperationChange(item)} className={`h-11 border px-1 text-[10px] uppercase md:h-8 ${operation === item ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{item === "manual" ? "Handvirk" : item === "cordless" ? "Snærislaus" : "Mótor"}</button>)}</div>
+              <HoneycombControlHelp heightMm={height} />
             </div>
             <div data-testid="hc-honeycomb-options" className="space-y-1.5">
               <span className="block text-[10px] uppercase tracking-[.16em]">Festing</span>
@@ -325,7 +324,7 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
                   <option value="outside">Utanáliggjandi</option>
                   <option value="inside">Innfelld (−5 mm)</option>
                 </select>
-                <label className="flex h-11 items-center justify-between gap-1 border border-[#ccd9df] px-2 text-[10px] uppercase md:h-8"><span title="+3 USD/m²">Án borunar</span><input type="checkbox" aria-label="Án borunar / No-drill" data-testid="hc-no-drill" checked={noDrill} onChange={(e) => setNoDrill(e.target.checked)} /></label>
+                <label className="flex h-11 items-center justify-between gap-1 border border-[#ccd9df] px-2 text-[10px] uppercase md:h-8"><span>Án borunar</span><input type="checkbox" aria-label="Án borunar / No-drill" data-testid="hc-no-drill" checked={noDrill} onChange={(e) => setNoDrill(e.target.checked)} /></label>
                 <label className="col-span-2 text-[10px] uppercase tracking-[.14em]">
                   Hliðarlistar
                   <select aria-label="Hliðarlistar" data-testid="hc-track-choice" value={trackChoice} onChange={(e) => selectTrack(e.target.value)} className="mt-1 h-11 w-full border border-[#ccd9df] bg-transparent px-2 text-xs md:h-8">
@@ -339,10 +338,7 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
                 )}
               </div>
             </div>
-            <div role="group" aria-label="Lásahaldari">
-              <span className="mb-1 block text-[10px] uppercase tracking-[.16em]">Lásahaldari</span>
-              <div className="grid grid-cols-4 gap-1.5"><button type="button" aria-pressed={holder === null} onClick={() => setHolder(null)} className={`h-11 border px-1 text-[10px] md:h-8 ${holder === null ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>Enginn</button>{HOLDER_COLORS.map((item) => <button type="button" key={item.value} aria-pressed={holder === item.value} onClick={() => setHolder(item.value)} className={`h-11 truncate border px-1 text-[10px] md:h-8 ${holder === item.value ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{item.is}</button>)}</div>
-            </div>
+            <HoneycombMountHelp mountPosition={mountPosition} />
             <Dialog>
               <DialogTrigger asChild>
                 <button type="button" data-testid="honeycomb-side-track-photo" className="flex min-h-11 w-full items-center gap-3 border border-[#ccd9df] px-2 py-1 text-left text-[10px] uppercase tracking-wide hover:bg-[#e2edf1]">
@@ -512,6 +508,7 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
                     <SelectItem value="motor">Mótor + fjarstýring (+{MOTOR_ISK.toLocaleString("is-IS")} kr.)</SelectItem>
                   </SelectContent>
                 </Select>
+                <HoneycombControlHelp heightMm={height} />
               </div>
               <div className="flex items-center justify-between rounded-lg border border-border/40 px-3 py-2">
                 <div>
@@ -540,6 +537,8 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
                 <Switch checked={noDrill} onCheckedChange={setNoDrill} />
               </label>
             </div>
+
+            <HoneycombMountHelp mountPosition={mountPosition} />
 
             {/* STEP 4 — Head rail colour */}
             <div>
@@ -573,36 +572,6 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
               </AnimatePresence>
             </div>
 
-            {/* STEP 6 — Pull holder */}
-            <div>
-              <div className="flex items-baseline gap-2 mb-2">
-                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary text-primary-foreground text-[11px] font-bold">5</span>
-                <Label className="text-sm font-semibold">Lásahaldari <span className="text-muted-foreground font-normal text-xs">(+{fmtISK(HOLDER_USD * SUPPLIER_TO_RETAIL_ISK)} stk)</span></Label>
-              </div>
-              <div className="grid grid-cols-4 gap-1.5">
-                <button type="button" onClick={() => setHolder(null)}
-                  className={`flex flex-col items-center gap-1 p-1 rounded-lg border transition-all ${holder === null ? "border-primary ring-2 ring-primary/30 bg-primary/5" : "border-border/50 hover:border-primary/40 bg-background"}`}
-                  aria-pressed={holder === null}>
-                  <div className="w-full aspect-square rounded-md overflow-hidden bg-secondary/40 flex items-center justify-center">
-                    <span className="text-lg text-muted-foreground font-light">–</span>
-                  </div>
-                  <span className="text-[10px] font-medium text-center leading-tight">Enginn</span>
-                </button>
-                {HOLDER_COLORS.map((hc) => {
-                  const selected = holder === hc.value;
-                  return (
-                    <button key={hc.value} type="button" onClick={() => setHolder(hc.value)}
-                      className={`flex flex-col items-center gap-1 p-1 rounded-lg border transition-all ${selected ? "border-primary ring-2 ring-primary/30 bg-primary/5" : "border-border/50 hover:border-primary/40 bg-background"}`}
-                      aria-pressed={selected}>
-                      <div className="w-full aspect-square rounded-md overflow-hidden">
-                          <img src={hc.image} alt={hc.en} className="w-full h-full object-contain" loading="lazy" />
-                      </div>
-                      <span className="text-[10px] font-medium text-center leading-tight">{hc.is}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
           </div>
 
           {/* RESULT — desktop side panel */}
@@ -629,7 +598,6 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
               {calc.cordlessUSD > 0 && <div className="flex justify-between"><span>Snærislaust</span><span>{fmtISK(calc.cordlessUSD * SUPPLIER_TO_RETAIL_ISK)}</span></div>}
               {calc.motorUSD > 0 && <div className="flex justify-between"><span>Mótor + fjarstýring</span><span>{fmtISK((calc.motorUSD + calc.remoteUSD) * SUPPLIER_TO_RETAIL_ISK)}</span></div>}
               {calc.sidetrackUSD > 0 && <div className="flex justify-between"><span>Hliðarlisti</span><span>{fmtISK(calc.sidetrackUSD * SUPPLIER_TO_RETAIL_ISK)}</span></div>}
-              {calc.holderUSD > 0 && <div className="flex justify-between"><span>Lásahaldari</span><span>{fmtISK(calc.holderUSD * SUPPLIER_TO_RETAIL_ISK)}</span></div>}
               <div className="flex justify-between pt-3 border-t border-primary-foreground/20"><span>Verð per stk</span><span className="font-medium">{fmtISK(calc.perPieceISK)}</span></div>
               {quantity > 1 && <div className="flex justify-between"><span>× {quantity} stk</span><span className="font-medium">{fmtISK(calc.totalISK)}</span></div>}
             </div>
@@ -657,7 +625,7 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
                     noDrill,
                     railColor,
                     bottomRail: bottomRailColor,
-                    holder,
+                    holder: null,
                   })
                 }
                 data-testid="add-honeycomb-to-cart"
@@ -701,7 +669,7 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
                 noDrill,
                 railColor,
                 bottomRail: bottomRailColor,
-                holder,
+                holder: null,
               })
             }
             data-testid="add-honeycomb-to-cart-mobile"
