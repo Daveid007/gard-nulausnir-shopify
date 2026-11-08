@@ -1,3 +1,4 @@
+import { HoneycombMountIllustrations } from "./HoneycombMountIllustrations";
 import { HONEYCOMB_45_LIMITS, type MountPosition } from "@/lib/pricing";
 
 const helpClass = "mt-2 space-y-2 text-xs leading-relaxed text-[#52636f] normal-case tracking-normal";
@@ -26,6 +27,7 @@ export function HoneycombMountHelp({ mountPosition }: { mountPosition: MountPosi
         <p>Sláðu inn breidd gluggaopsins án frádráttar. Reiknivélin dregur sjálfkrafa 5 mm frá breiddinni.</p>
       )}
       <p><strong>Án borunar:</strong> Gardínan er fest með innbyggðri þrýstistöng inni í gluggaopinu, eins og sturtustöng eða klemmuhlið. Hún virkar þannig að hún er spennt út á milli hliðarkarmanna. Á endunum eru stamir gúmmípúðar sem grípa þétt í karminn og halda henni alveg fastri — engin verkfæri, engar skrúfur og engin göt í veggjum eða gluggaprófílum.</p>
+      <HoneycombMountIllustrations />
       <p><a href="mailto:sala@gardinulausnir.is?subject=Ráðgjöf%20um%20Honeycomb" className="underline underline-offset-4">Fá aðstoð við val og mælingar</a></p>
     </div>
   );

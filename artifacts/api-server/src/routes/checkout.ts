@@ -931,8 +931,7 @@ function priceItem(item: CartItem): { unitUsd: number; description: string; name
     return { unitUsd, description, name: "Lóðrétt gluggatjald" };
   }
   if (item.type === "dualroller") {
-    const { unitUsd, description } = priceDualRollerUsd(item);
-    return { unitUsd, description, name: "Tvöfalt rúll" };
+    throw new Error("Tvöföld rúllugardína þarf staðfest tilboð. Eldri Honeycomb-efniskóðar og óstaðfest samsetningarverð gilda ekki fyrir þessa vöru.");
   }
   if (item.type === "zebra") {
     const { unitUsd, description } = priceZebraUsd(item);
