@@ -13,7 +13,8 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/lib/cart";
-import { FABRICS, fabricsByFamily, type FabricFamily, type FabricInfo } from "@/lib/fabrics";
+import { FABRICS as ROLLER_FABRICS, fabricsByFamily as rollerFabricsByFamily, type FabricFamily } from "@/lib/dualRollerFabrics";
+import { DualRollerFabricPicker, dualRollerSwatch } from "./DualRollerFabricPicker";
 import { CASSETTE_RAIL_COLORS, MOTORIZED_RAIL_COLORS } from "@/assets/railImages";
 import {
   calculateDualRollerPrice,
@@ -24,6 +25,13 @@ import {
 import { normalizeQuantity } from "@/lib/quantity";
 import { StorefrontLayout } from "./StorefrontLayout";
 import { MeasurementGuideTrigger } from "@/components/MeasurementGuide";
+
+// Both the current and legacy layouts use the same isolated roller catalogue.
+const FABRICS = Object.fromEntries(Object.entries(ROLLER_FABRICS).map(([code, fabric]) => [
+  code, { ...fabric, image: dualRollerSwatch(code) },
+]));
+type FabricInfo = (typeof FABRICS)[string];
+const fabricsByFamily = (family: FabricFamily) => rollerFabricsByFamily(family).map((fabric) => FABRICS[fabric.code]);
 
 // Supplier costs from the original dual-roller calculator. Retail conversion
 // is applied to the complete supplier cost in dualRollerPricing.ts.
@@ -42,7 +50,8 @@ const SIDETRACK_ISK_PER_M = Math.round(SIDETRACK_USD_PER_M * USD_TO_ISK_ACCESSOR
 type Operation = "manual" | "cordless" | "motor";
 
 // Dual Roller: two independent roller layers on one headrail.
-// Pricing from supplier sheet — same fabric families as Day & Night.
+// Historical price constants below are NOT a verified dual-roller price list.
+// Keep existing saved configurations intact, but use inquiry-only for new selections.
 export const DUAL_ROLLER_COMBO_KEYS = ["KS+KB", "KT+KB", "KS+KT"] as const;
 export type DualRollerComboKey = (typeof DUAL_ROLLER_COMBO_KEYS)[number];
 
@@ -55,19 +64,19 @@ export const DUAL_ROLLER_COMBOS: Record<DualRollerComboKey, {
   usdPerSqm: number;
 }> = {
   "KS+KB": {
-    is: "Gegnsætt + Myrkvun",
+    is: "Screen + Myrkvun",
     en: "Sheer + Blackout",
-    description: "Gegnsætt lag á daginn, fullkomið myrkur á nóttunni — í einu kerfi.",
+    description: "Screen-efni og myrkvunarefni. Samsetning staðfest með tilboði.",
     front: "KS", back: "KB", usdPerSqm: 64.48,
   },
   "KT+KB": {
     is: "Ljós síað + Myrkvun",
     en: "Translucent + Blackout",
-    description: "Mjúkt ljós á daginn, fullkomið myrkur á nóttunni.",
+    description: "Ljósdempandi efni og myrkvunarefni. Samsetning staðfest með tilboði.",
     front: "KT", back: "KB", usdPerSqm: 61.20,
   },
   "KS+KT": {
-    is: "Gegnsætt + Ljós síað",
+    is: "Screen + Ljós síað",
     en: "Sheer + Translucent",
     description: "Tvö lög af mjúku ljósi — einstaklega björt rými.",
     front: "KS", back: "KT", usdPerSqm: 62.50,
@@ -83,8 +92,8 @@ export default function DualRollerCalculator({ product }: { product?: any }) {
   const [height, setHeight] = useState<number>(1500);
   const [quantity, setQuantity] = useState<number>(1);
   const [comboKey, setComboKey] = useState<DualRollerComboKey>("KS+KB");
-  const [frontCode, setFrontCode] = useState<string>("KS401");
-  const [backCode, setBackCode] = useState<string>("KB401");
+  const [frontCode, setFrontCode] = useState<string>("RSCV3-0105");
+  const [backCode, setBackCode] = useState<string>("RSNPG-0105");
   const [operation, setOperation] = useState<Operation>("manual");
   const [sideTrack, setSideTrack] = useState<boolean>(false);
   const [railColor, setRailColor] = useState<string>("Hvítur");
@@ -128,6 +137,15 @@ export default function DualRollerCalculator({ product }: { product?: any }) {
   }, [width, height, quantity, operation, sideTrack, combo]);
 
   const validSize = calc.widthOK && calc.heightOK && calc.areaOK;
+  const inquiryHref = `mailto:sala@gardinulausnir.is?subject=${encodeURIComponent("Tilboðsbeiðni – tvöföld rúllugardína")}&body=${encodeURIComponent([
+    "Óska eftir tilboði í tvöfalda rúllugardínu.",
+    `Fremra lag: ${front.code} – ${front.is}`,
+    `Aftara lag: ${back.code} – ${back.is}`,
+    `Breidd: ${width / 10} cm · Hæð: ${height / 10} cm · Fjöldi: ${quantity}`,
+    `Stýring: ${operation === "motor" ? "Mótor" : operation === "cordless" ? "Snærislaus" : "Handvirk"}`,
+    `Hliðarlistar: ${sideTrack ? "Já" : "Nei"} · Litur á brautum: ${railColor}`,
+    "Vinsamlegast staðfestið samhæfni efna, búnað, stærðarmörk og verð.",
+  ].join("\n"))}`;
   const addToCart = () => addItem({
     type: "dualroller",
     qty: normalizeQuantity(quantity),
@@ -147,19 +165,23 @@ export default function DualRollerCalculator({ product }: { product?: any }) {
   return (
     <StorefrontLayout
       product={product}
-      priceISK={calc.totalISK}
+      priceISK={0}
+      priceText="Fá tilboð"
+      priceLabel="Verð staðfest með tilboði"
       priceRounding="exact"
       activeFabric={{ name: `${front.is} + ${back.is}`, image: front.image, pattern: back.image }}
       quantity={quantity}
       setQuantity={(next) => setQuantity(normalizeQuantity(next))}
-      canAddToCart={validSize}
-      onAddToCart={addToCart}
+      canAddToCart={false}
+      onAddToCart={() => {}}
+      action={<a data-testid="dualroller-inquiry" href={inquiryHref} className="flex h-[51px] flex-1 items-center justify-center bg-[#a2c2e2] px-3 text-[10px] uppercase tracking-[.15em]">Óska eftir tilboði í tölvupósti</a>}
       controls={
         <div className="space-y-5 border-b border-[#ccd9df] py-6">
+          <p data-testid="dualroller-quote-notice" className="text-sm text-[#52636f]">Veldu rúllugardínuefni fyrir hvort lag. Verð, samhæfni og stærðarmörk tvöfalda búnaðarins verða staðfest með tilboði. Screen síar birtu en er ekki myrkvunarefni.</p>
            <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Samsetning tveggja laga</span><div className="grid grid-cols-3 gap-2">{DUAL_ROLLER_COMBO_KEYS.map((key) => <button type="button" key={key} data-testid={`dualroller-combo-${key}`} onClick={() => selectCombo(key)} aria-pressed={comboKey === key} className={`border px-2 py-3 text-left text-[10px] ${comboKey === key ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{DUAL_ROLLER_COMBOS[key].is}</button>)}</div></div>
              <div className="grid grid-cols-2 gap-3">
-              <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Fremra lag · {front.is}</span><div data-testid="dualroller-front-fabrics" className="flex flex-wrap gap-2">{frontFabrics.map((item) => <button type="button" key={item.code} data-testid={`dualroller-front-${item.code}`} onClick={() => setFrontCode(item.code)} className={`h-11 w-11 overflow-hidden rounded-full border ${front.code === item.code ? "border-[#24313b]" : "border-transparent"}`} aria-label={`Velja ${item.is} · ${item.name} (${item.code})`} aria-pressed={front.code === item.code}><img src={item.image} alt={item.is} className="h-full w-full object-contain" /></button>)}</div></div>
-              <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Aftara lag · {back.is}</span><div data-testid="dualroller-back-fabrics" className="flex flex-wrap gap-2">{backFabrics.map((item) => <button type="button" key={item.code} data-testid={`dualroller-back-${item.code}`} onClick={() => setBackCode(item.code)} className={`h-11 w-11 overflow-hidden rounded-full border ${back.code === item.code ? "border-[#24313b]" : "border-transparent"}`} aria-label={`Velja ${item.is} · ${item.name} (${item.code})`} aria-pressed={back.code === item.code}><img src={item.image} alt={item.is} className="h-full w-full object-contain" /></button>)}</div></div>
+              <DualRollerFabricPicker layer="front" fabrics={frontFabrics} selected={front} onSelect={setFrontCode} />
+              <DualRollerFabricPicker layer="back" fabrics={backFabrics} selected={back} onSelect={setBackCode} />
           </div>
            <div className="mb-2 flex items-center justify-between gap-3">
              <span className="text-[10px] uppercase tracking-[.18em]">Mál</span>
@@ -169,7 +191,7 @@ export default function DualRollerCalculator({ product }: { product?: any }) {
             <label><span className="mb-2 block text-[9px] uppercase tracking-[.14em] text-[#667984]">Breidd · cm</span><input data-testid="dual-width" aria-label="Breidd í sentímetrum" type="number" min="40" max="300" step="0.1" value={width / 10} onChange={(e) => setWidth((Number(e.target.value) || 0) * 10)} className="w-full border border-[#ccd9df] bg-transparent px-3 py-3 text-sm" /></label>
             <label><span className="mb-2 block text-[9px] uppercase tracking-[.14em] text-[#667984]">Hæð · cm</span><input data-testid="dual-height" aria-label="Hæð í sentímetrum" type="number" min="50" max="300" step="0.1" value={height / 10} onChange={(e) => setHeight((Number(e.target.value) || 0) * 10)} className="w-full border border-[#ccd9df] bg-transparent px-3 py-3 text-sm" /></label>
           </div>
-          {!validSize && <p className="text-xs text-red-600">Stærð er utan framleiðslumarka (40–300 × 50–300 cm, hámark 5,6 m²).</p>}
+          {!validSize && <p className="text-xs text-[#52636f]">Þessi mál þarfnast sérstakrar yfirferðar með tilboðinu.</p>}
           <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Stýring</span><div className="grid grid-cols-3 gap-2">{(["manual", "cordless", "motor"] as Operation[]).map((item) => <button type="button" key={item} onClick={() => setOperation(item)} className={`border px-2 py-3 text-[10px] uppercase ${operation === item ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{item === "manual" ? "Handvirk" : item === "cordless" ? "Þráðlaus" : "Mótor"}</button>)}</div></div>
           <label className="flex items-center justify-between border border-[#ccd9df] px-3 py-3 text-[10px] uppercase"><span>Hliðarlisti</span><input type="checkbox" checked={sideTrack} onChange={(e) => setSideTrack(e.target.checked)} /></label>
           <div><span className="mb-2 block text-[10px] uppercase tracking-[.18em]">Finish · litur á brautum</span><div className="flex flex-wrap gap-2">{(operation === "motor" ? MOTORIZED_RAIL_COLORS : CASSETTE_RAIL_COLORS).map((item) => <button type="button" key={item.value} onClick={() => setRailColor(item.value)} className={`border px-3 py-2 text-[10px] ${railColor === item.value ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{item.value}</button>)}</div></div>

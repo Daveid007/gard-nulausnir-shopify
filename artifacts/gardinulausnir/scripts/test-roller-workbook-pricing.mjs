@@ -88,7 +88,7 @@ for (const family of ["roller", "zebra", "sheer", "butterfly"]) {
 const sourceFixture = pricing.quoteRollerWorkbookBlind({
   family: "roller",
   fabricCode: "RS-TSD2265-2",
-  // 50 × 80in source example: 1270mm entered width, then 5mm inside deduction.
+  // 50 × 80in example: entered roller width is preserved without deduction.
   widthCm: 127,
   heightCm: 203.2,
   quantity: 2,
@@ -99,11 +99,11 @@ const sourceFixture = pricing.quoteRollerWorkbookBlind({
   cassette: "Square with fabric inserted",
 });
 assert.equal(sourceFixture.ok, true);
-assert.ok(Math.abs(sourceFixture.supplier.unitUsd - 53.4563995678041) < 1e-12);
-assert.ok(Math.abs(sourceFixture.supplier.totalUsd - 106.9127991356082) < 1e-12);
+assert.equal(sourceFixture.supplier.unitUsd, sourceFixture.fabric.supplierUsdPerSqm * (1.27 * 2.032) + 20.32);
+assert.equal(sourceFixture.supplier.totalUsd, sourceFixture.supplier.unitUsd * 2);
 assert.equal(sourceFixture.supplier.trackUsd, 20.32, "U track is charged once for both sides");
-assert.equal(sourceFixture.effectiveWidthMm, 1265);
-const retailFactor = 2 * (1 / 0.6) * 121.16 * 1.24;
+assert.equal(sourceFixture.effectiveWidthMm, 1270);
+const retailFactor = 2 * (1 / 0.6) * 121.16 * 1.24 * 1.25 * 1.05;
 assert.equal(sourceFixture.retail.unitIsk, Math.round(sourceFixture.supplier.unitUsd * retailFactor));
 assert.equal(sourceFixture.retail.totalIsk, sourceFixture.retail.unitIsk * 2);
 

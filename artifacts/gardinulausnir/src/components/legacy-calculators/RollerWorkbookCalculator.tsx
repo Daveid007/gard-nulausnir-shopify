@@ -303,7 +303,7 @@ export function RollerWorkbookCalculator({
               <label><span className="mb-2 block text-[9px] uppercase tracking-[.14em] text-[#667984]">Hæð · cm</span><input data-testid="rw-height" aria-label="Hæð í sentímetrum" value={heightCm} onChange={(event) => setHeightCm(event.target.value)} type="number" min="1" step="0.1" inputMode="decimal" className="w-full border border-[#ccd9df] bg-transparent px-3 py-3 outline-none focus:border-[#24313b]" /></label>
             </div>
             <div className="mt-3 grid grid-cols-2 gap-2">
-              {(["inside", "outside"] as const).map((value) => <button key={value} type="button" onClick={() => setMountPosition(value)} className={`border px-3 py-3 text-left text-xs ${mountPosition === value ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{value === "inside" ? "Innan í gluggakarmi" : "Utan á karm"}<span className="mt-1 block text-[10px] text-[#667984]">{value === "inside" ? "5 mm dregnir frá breidd" : "Enginn frádráttur"}</span></button>)}
+              {(["inside", "outside"] as const).map((value) => <button key={value} type="button" onClick={() => setMountPosition(value)} className={`border px-3 py-3 text-left text-xs ${mountPosition === value ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}>{value === "inside" ? "Innan í gluggakarmi" : "Utan á karm"}<span className="mt-1 block text-[10px] text-[#667984]">{family === "roller" ? "Innsláttarmál notuð óbreytt" : value === "inside" ? "5 mm dregnir frá breidd" : "Enginn frádráttur"}</span></button>)}
             </div>
           </section>
 
