@@ -4,6 +4,7 @@ import { Link } from "wouter";
 import { BusinessInquiryButton } from "@/components/BusinessInquiryButton";
 import { ResponsiveImage } from "@/components/ResponsiveImage";
 import { ThedourStepHelp } from "@/components/ThedourStepHelp";
+import { getRoldourReferencePrice, ROLDOUr_REFERENCE } from "@/lib/roldourReferencePrice";
 import {
   THEDOUR_FRAME_COLOURS,
   THEDOUR_HONEYCOMB_COLOURS,
@@ -292,6 +293,7 @@ export function ThedourScreenWizard(props: Props) {
     ? family === "windour" ? duoPanelLabel : "Myrkvun og flugnanet"
     : material === "honeycomb" ? "Myrkvunargardína" : "Flugnanet";
   const hasMaterialColour = family === "roldour" || system === "duo" || material === "honeycomb";
+  const referencePrice = selection ? getRoldourReferencePrice(selection) : null;
   const summaryText = selection ? [
     selection.family === "windour" ? "WINdoûr" : "ROLdoûr Slimline",
     selection.direction === "vertical" ? "lóðrétt (niður/upp)" : "lárétt (til hliðar)",
@@ -312,12 +314,20 @@ export function ThedourScreenWizard(props: Props) {
     selection.additionalNotes ? `athugasemdir: ${selection.additionalNotes}` : null,
     selection.requiresCustomQuote ? "sérval DUO · eingöngu fyrirspurn" : null,
     `vörukort ${selection.mappedProductId}`,
+    referencePrice !== null ? `viðmiðunarverð ${referencePrice.toLocaleString("is-IS")} kr. á gardínu með VSK og sendingu til Íslands` : null,
   ].filter(Boolean).join(" · ") : "";
 
   return (
     <section className="border-b border-[#ccd9df] py-6" aria-label="Leiðsögn um val og mælingu" onKeyDown={(event) => {
       if (event.key === "Enter" && event.target instanceof HTMLButtonElement === false && step < 8) next();
     }}>
+      {props.initialProductId === ROLDOUr_REFERENCE.productId && (
+        <div className="mb-5 border border-[#9ebbd0] bg-[#eaf3f8] p-4 text-sm" data-testid="roldour-reference-price">
+          <p className="font-medium">Viðmiðunarverð: {ROLDOUr_REFERENCE.unitPriceIsk.toLocaleString("is-IS")} kr. á gardínu með VSK</p>
+          <p className="mt-2 text-xs leading-5">{ROLDOUr_REFERENCE.description}.</p>
+          <p className="mt-2 text-xs leading-5">Sending til Íslands innifalin. Viðmið miðast við tvær eins gardínur, mældar 1530 × 1220 mm. Aðrar útfærslur og stærðir eru verðlagðar í tilboði.</p>
+        </div>
+      )}
       <div className="mb-5 grid gap-3 rounded border border-[#9ebbd0] bg-[#eaf3f8] p-4 text-sm text-[#24313b] sm:grid-cols-2" aria-label="Skýring á opnunarstefnu">
         <div className="flex items-center gap-3">
           <ArrowDownUp size={24} aria-hidden="true" className="shrink-0" />
@@ -517,6 +527,11 @@ export function ThedourScreenWizard(props: Props) {
               {selection.additionalNotes && <><dt className="text-[#667984]">Athugasemdir</dt><dd className="whitespace-pre-wrap">{selection.additionalNotes}</dd></>}
             </dl>
             {selection.requiresCustomQuote && <p className="border border-[#d8c79f] bg-[#fffaf0] p-3 text-xs leading-5">Þessi DUO samsetning er skráð í fyrirspurn en hefur ekki staðfest verðlíkan. Hún verður ekki sett í áætlunarkörfu.</p>}
+            {family === "roldour" && <p className="border border-[#ccd9df] p-4 text-sm" aria-live="polite">
+              {referencePrice !== null
+                ? `Viðmiðunarverð fyrir valið: ${referencePrice.toLocaleString("is-IS")} kr. á gardínu með VSK og sendingu til Íslands, miðað við tvær eins gardínur.`
+                : "Verð fyrir þessa útfærslu er staðfest í tilboði."}
+            </p>}
             {fitting === "overlap" && <p className="border border-[#d8c79f] bg-[#fffaf0] p-3 text-xs leading-5">Utanáliggjandi festing er send til staðfestingar. Engin frádráttur eða skörun hefur verið ágiskuð og mælimál eru ekki notuð sem framleiðslumál.</p>}
             {selection.mappedProductId !== props.initialProductId && <Link href={`/products/${selection.mappedProductId}`} className="block border border-[#8ca9b8] px-4 py-3 text-center text-xs">Opna samsvarandi vörukort án þess að tapa valinu</Link>}
             {props.summaryAction?.(selection)}

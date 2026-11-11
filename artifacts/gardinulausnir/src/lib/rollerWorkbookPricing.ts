@@ -319,8 +319,8 @@ export function quoteRollerWorkbookBlind(input: RollerWorkbookQuoteInput): Rolle
   const actualAreaSqm = (effectiveWidthMm / 1000) * (heightMm / 1000);
   const billedAreaSqm = Math.max(MINIMUM_BILLED_SQM, actualAreaSqm);
   const track = input.track ?? "none";
-  const remote = input.remote ?? false;
-  const hub = input.hub ?? false;
+  const remote = input.operation === "motor";
+  const hub = false;
   const noDrill = input.noDrill ?? false;
   const areaOptionRate =
     (input.operation === "cordless" ? ROLLER_WORKBOOK_SUPPLIER_PRICES.cordlessPerSqm : 0) +
@@ -383,7 +383,7 @@ export function quoteRollerWorkbookBlind(input: RollerWorkbookQuoteInput): Rolle
         : "Outside mount uses the entered width without deduction.",
       "Fabric and area-priced options have a 1 m² minimum billing area.",
       "U track is USD 10/m and L track USD 5/m, each once for both sides; cassette has no workbook price.",
-      "Hub is an optional USD 22 motor accessory; the workbook does not state when it is required.",
+      "Remote is included with every motor. Hub is not offered.",
       "Retail ISK is rounded once per blind before quantity is applied.",
     ],
   };

@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { WorkbookFabricSwatch } from "./WorkbookFabricSwatch";
+import { fabricColorLabel, fabricLightLabel } from "@/lib/fabricLabels";
+import { fabricColorFamily, groupFabricsByColor } from "@/lib/fabricColorFamilies";
 import { StorefrontLayout } from "./StorefrontLayout";
 import { useCart } from "@/lib/cart";
 import { rollerWorkbookSwatchFilename } from "@/lib/rollerWorkbookSwatches";
@@ -8,7 +10,6 @@ import { swatchUrl } from "@/pages/storefront/_shared/swatches";
 import sideTrackImage from "@/assets/accessory-thumbs/roller-side-track.png";
 import {
   quoteRollerWorkbookBlind,
-  getRollerWorkbookSizeLimits,
   rollerWorkbookFabrics,
   ROLLER_WORKBOOK_CASSETTES,
   type ManualControl,
@@ -109,39 +110,36 @@ export function RollerWorkbookCalculator({
   const [operation, setOperation] = useState<RollerWorkbookOperation>("manual");
   const [manualControl, setManualControl] = useState<ManualControl>("cord");
   const [motorType, setMotorType] = useState<MotorType>("battery-standard");
-  const [remote, setRemote] = useState(false);
-  const [hub, setHub] = useState(false);
+  const remote = operation === "motor";
+  const hub = false;
   const [noDrill, setNoDrill] = useState(false);
   const [mountPosition, setMountPosition] = useState<"inside" | "outside">("inside");
   const [track, setTrack] = useState<SideTrack>("none");
-  const [cassette, setCassette] = useState<string>(
-    productIdentity === "arc-cassette" ? ROLLER_WORKBOOK_CASSETTES[1] : ROLLER_WORKBOOK_CASSETTES[0],
-  );
+  const cassette = productIdentity === "arc-cassette" ? ROLLER_WORKBOOK_CASSETTES[1] : ROLLER_WORKBOOK_CASSETTES[0];
   const { addItem } = useCart();
 
   const familyFabrics = useMemo(
-    () => rollerWorkbookFabrics.filter((fabric) => fabric.family === family),
+    () => rollerWorkbookFabrics.filter((fabric) => fabric.family === family).map((fabric) => ({
+      ...fabric, colorFamily: fabricColorFamily(fabric.color), color: fabricColorLabel(fabric.color), light: fabricLightLabel(fabric.light),
+    })),
     [family],
   );
   const visibleFabrics = useMemo(() => {
     const needle = fabricSearch.trim().toLocaleLowerCase();
     if (!needle) return familyFabrics;
     return familyFabrics.filter((fabric) =>
-      [fabric.code, fabric.name, fabric.color, fabric.light, fabric.size]
+      [fabric.code, fabric.name, fabric.color, fabric.light, fabric.size, fabric.colorFamily]
         .some((value) => value.toLocaleLowerCase().includes(needle)),
     );
   }, [fabricSearch, familyFabrics]);
-  const fabric = familyFabrics.find((item) => item.code === fabricCode) ?? initialFabric;
+  const fabric = familyFabrics.find((item) => item.code === fabricCode) ?? familyFabrics[0];
   // Keep a chosen fabric selected when a subsequent search does not match it;
   // searching must never replace a supplier fabric selection behind the user.
   const selectFabrics = fabric && !visibleFabrics.some((item) => item.code === fabric.code)
     ? [fabric, ...visibleFabrics]
     : visibleFabrics;
-  const cassetteChoices = productIdentity === "square-cassette"
-    ? [ROLLER_WORKBOOK_CASSETTES[0]]
-    : productIdentity === "arc-cassette"
-      ? [ROLLER_WORKBOOK_CASSETTES[1]]
-      : ROLLER_WORKBOOK_CASSETTES;
+  const selectGroups = groupFabricsByColor(selectFabrics);
+  const swatchGroups = groupFabricsByColor(visibleFabrics);
 
   const quoteInput: RollerWorkbookQuoteInput = {
     family,
@@ -161,17 +159,9 @@ export function RollerWorkbookCalculator({
     cassette, fabricCode, family, heightCm, manualControl, motorType, mountPosition,
     hub, noDrill, operation, quantity, remote, track, widthCm,
   ]);
-  const sizeLimits = useMemo(
-    () => getRollerWorkbookSizeLimits(family, operation, fabricCode),
-    [fabricCode, family, operation],
-  );
 
   const chooseOperation = (next: RollerWorkbookOperation) => {
     setOperation(next);
-    if (next !== "motor") {
-      setRemote(false);
-      setHub(false);
-    }
     if (next === "manual" && family === "sheer") setManualControl("cord");
   };
 
@@ -274,22 +264,24 @@ export function RollerWorkbookCalculator({
             <label className="mt-3 block">
               <span className="sr-only">Veldu efni</span>
               <select data-testid="rw-fabric" aria-label="Veldu efni" value={fabricCode} onChange={(event) => setFabricCode(event.target.value)} className="w-full border border-[#ccd9df] bg-[#f7f9fa] px-3 py-3 text-sm outline-none focus:border-[#24313b]">
-                {selectFabrics.length === 0 ? <option value="">Engin efni fundust</option> : selectFabrics.map((item) => (
+                {selectFabrics.length === 0 ? <option value="">Engin efni fundust</option> : selectGroups.map((group) => (
+                  <optgroup key={group.label} label={group.label}>{group.fabrics.map((item) => (
                   <option key={item.code} value={item.code}>{item.code} · {item.color} · {item.light} · {item.size}</option>
+                  ))}</optgroup>
                 ))}
               </select>
             </label>
-            <div className="mt-3 grid max-h-96 grid-cols-3 gap-2 overflow-y-auto p-1 sm:grid-cols-4" aria-label="Efnisýni" data-testid="rw-swatches">
-              {/* Image availability must never remove a supplier fabric from the picker. */}
-              {visibleFabrics.map((item) => (
-                <WorkbookFabricSwatch
-                  key={item.code}
-                  fabric={item}
-                  image={swatchForWorkbookFabric(item)}
-                  selected={item.code === fabricCode}
-                  onSelect={() => setFabricCode(item.code)}
-                />
-              ))}
+            <div className="mt-3 max-h-96 space-y-5 overflow-y-auto p-1" aria-label="Efnisýni eftir litafjölskyldu" data-testid="rw-swatches">
+              {swatchGroups.map((group) => <section key={group.label} aria-label={group.label}>
+                <h3 className="mb-2 text-xs font-medium text-[#24313b]">{group.label} <span className="font-normal text-[#667984]">({group.fabrics.length})</span></h3>
+                <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                  {group.fabrics.map((item) => (
+                    <WorkbookFabricSwatch key={item.code} fabric={item}
+                      image={swatchForWorkbookFabric(item)} selected={item.code === fabricCode}
+                      onSelect={() => setFabricCode(item.code)} />
+                  ))}
+                </div>
+              </section>)}
             </div>
             {visibleFabrics.length === 0 && <p role="status" className="mt-3 text-xs text-[#667984]">Engin efni fundust. Prófaðu annan kóða eða lit.</p>}
             {fabric && <p className="mt-3 text-xs text-[#667984]">{fabric.code} · {fabric.color} · {fabric.light} · {fabric.size}</p>}
@@ -315,8 +307,7 @@ export function RollerWorkbookCalculator({
             {operation === "manual" && <select data-testid="rw-manual-control" aria-label="Veldu handstýringu" value={manualControl} onChange={(event) => setManualControl(event.target.value as ManualControl)} className="mt-3 w-full border border-[#ccd9df] bg-transparent px-3 py-3 text-sm"><option value="" disabled>Veldu handstýringu</option>{controlsFor(family).map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select>}
             {operation === "motor" && <>
               <select data-testid="rw-motor-type" aria-label="Veldu mótor" value={motorType} onChange={(event) => setMotorType(event.target.value as MotorType)} className="mt-3 w-full border border-[#ccd9df] bg-transparent px-3 py-3 text-sm">{MOTOR_TYPES.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select>
-              <label className="mt-3 flex items-center justify-between border border-[#ccd9df] px-3 py-3 text-xs">Fjarstýring<input data-testid="rw-remote" aria-label="Fjarstýring" type="checkbox" checked={remote} onChange={(event) => setRemote(event.target.checked)} /></label>
-              <label className="mt-3 flex items-center justify-between border border-[#ccd9df] px-3 py-3 text-xs"><span>Hub <span className="block text-[10px] text-[#667984]">Valfrjálst · samhæfni og þörf bíður staðfestingar birgja. Einn hub fyrir hverja gardínu.</span></span><input data-testid="rw-hub" aria-label="Valfrjáls hub" type="checkbox" checked={hub} onChange={(event) => setHub(event.target.checked)} /></label>
+              <p data-testid="rw-remote" className="mt-3 border border-[#ccd9df] px-3 py-3 text-xs">Fjarstýring fylgir með mótor og er innifalin í verðinu.</p>
             </>}
             {family !== "butterfly" && <label className="mt-3 flex items-center justify-between border border-[#ccd9df] px-3 py-3 text-xs">Uppsetning án borunar<input data-testid="rw-no-drill" aria-label="Uppsetning án borunar" type="checkbox" checked={noDrill} onChange={(event) => setNoDrill(event.target.checked)} /></label>}
           </section>
@@ -328,9 +319,6 @@ export function RollerWorkbookCalculator({
               const extra = sideTrackExtra(item.value);
               return <button data-testid={`rw-track-${item.value}`} key={item.value} type="button" aria-pressed={track === item.value} onClick={() => setTrack(item.value)} className={`border px-3 py-3 text-left text-xs ${track === item.value ? "border-[#24313b] bg-[#e2edf1]" : "border-[#ccd9df]"}`}><span className="block">{item.label}</span>{extra !== null && <span className="mt-1 block text-[10px] text-[#667984]">{extra === 0 ? "Innifalið" : `+${extra.toLocaleString("is-IS")} kr. / stk.`}</span>}</button>;
             })}</div>
-            <p className="mt-5 text-[10px] font-medium uppercase tracking-[.16em] text-[#6892b8]">Kassetta</p>
-            <select data-testid="rw-cassette" aria-label="Veldu kassetu" value={cassette} onChange={(event) => setCassette(event.target.value)} disabled={cassetteChoices.length === 1} className="mt-2 w-full border border-[#ccd9df] bg-transparent px-3 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-70">{cassetteChoices.map((item) => <option key={item} value={item}>{item === ROLLER_WORKBOOK_CASSETTES[0] ? "Ferningskassetta með efni" : "Bogakassetta með efni"}</option>)}</select>
-            {sizeLimits && <p className="mt-3 text-xs leading-5 text-[#667984]">Leyfileg mál fyrir valið efni og stýringu: {sizeLimits.minWidthMm}–{sizeLimits.maxWidthMm} mm á breidd, {sizeLimits.minHeightMm}–{sizeLimits.maxHeightMm} mm á hæð, mest {sizeLimits.maxAreaSqm} m².</p>}
           </section>
           {errorMessage && <p role="alert" className="border-b border-red-200 bg-red-50 px-3 py-4 text-sm leading-5 text-red-800">{errorMessage}</p>}
         </>

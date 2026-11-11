@@ -201,7 +201,10 @@ const motorHub = pricing.quoteRollerWorkbookBlind({
   cassette: "Arc with fabric inserted",
 });
 assert.equal(motorHub.ok, true);
-assert.equal(motorHub.supplier.hubUsd, 22);
+assert.equal(motorHub.supplier.hubUsd, 0);
+assert.equal(motorHub.hub, false);
+assert.equal(motorHub.remote, true);
+assert.equal(motorHub.supplier.remoteUsd, 7);
 const manualHub = pricing.quoteRollerWorkbookBlind({
   family: "roller",
   fabricCode: "RS-TSD2265-2",

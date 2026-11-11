@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { fabricColorLabel } from "./fabricLabels";
 import {
   calculateDualRollerCartTotal,
   calculateDualRollerPrice,
@@ -166,6 +167,7 @@ export type HoneycombCartItem = {
   operation: "manual" | "cordless" | "motor";
   sideTrack: boolean;
   sideTrackType?: "u" | "l";
+  sideTrackColor?: "Hvítur" | "Svartur";
   mountPosition?: MountPosition;
   noDrill?: boolean;
   railColor: string;
@@ -512,7 +514,7 @@ export function describeCartItem(item: CartItem): { title: string; sub: string }
     const motor = quote.motorType ? ` · mótor: ${quote.motorType}` : "";
     return {
       title: `${quote.fabric.family} · ${quote.fabric.name}`,
-      sub: `${quote.enteredWidthMm / 10}×${quote.heightMm / 10} cm · litur: ${quote.fabric.color} · ${quote.operation}${manual}${motor} · fjarstýring: ${quote.remote ? "já" : "nei"} · miðstöð: ${quote.hub ? "já" : "nei"} · ${quote.mountPosition === "inside" ? "innfelld" : "utanáliggjandi"} · án borunar: ${quote.noDrill ? "já" : "nei"} · spor: ${quote.track} · kassetta: ${quote.cassette}`,
+      sub: `${quote.enteredWidthMm / 10}×${quote.heightMm / 10} cm · litur: ${fabricColorLabel(quote.fabric.color)} · ${quote.operation}${manual}${motor}${quote.remote ? " · fjarstýring fylgir" : ""} · ${quote.mountPosition === "inside" ? "innfelld" : "utanáliggjandi"} · án borunar: ${quote.noDrill ? "já" : "nei"} · spor: ${quote.track} · kassetta: ${quote.cassette}`,
     };
   }
   if (item.type === "roller") {
