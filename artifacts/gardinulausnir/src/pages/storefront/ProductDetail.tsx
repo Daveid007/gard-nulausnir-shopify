@@ -70,7 +70,6 @@ export function ProductDetail() {
   const isBlinddour = product.id === "blinddour-trackless-door";
   const isRoldour = isThedourRoldourProductId(product.id);
   const hasThedourColourOptions = isThedourDoor || isRoldour;
-  const isOpenRollExample = product.id === "open-roll";
   const isCustomizer = isRoller || isHoneycomb;
   const rollerProduct: RollerProductIdentity | undefined =
     product.id === "square-cassette" || product.id === "arc-cassette" || product.id === "open-roll"
@@ -88,7 +87,6 @@ export function ProductDetail() {
           : product.id === "top-down-bottom-up" ? "tdbu"
             : product.id === "vertical-45mm" ? "vertical"
               : product.id === "dual-roller" ? "dual-roller"
-                 : isOpenRollExample ? "open-roll-example"
                   : workbookProduct ? "roller-workbook"
                    : rollerProduct ? "roller"
                     : null;
@@ -204,7 +202,7 @@ export function ProductDetail() {
         <BrandLogo className="h-9 w-[182px] sm:h-10 sm:w-[202px]" />
           <nav className="hidden gap-6 text-[10px] uppercase tracking-[.18em] md:flex"><a href="#vörulýsing">{product.category}</a><a href="#upplýsingar">Leiðbeiningar</a><Link href="/maelingar">Mælingar</Link><BusinessInquiryButton productContext={inquiryContext} /></nav>
           <div className="flex items-center gap-4">
-              {!isOpenRollExample && <button
+              <button
                aria-label={legacyCalculator ? "Opna reiknivélarkörfu" : isWindour ? "Opna áætlunarkörfu" : isVerticalSheer ? "Opna körfu lóðréttra vefgardína" : "Opna körfu"}
               onClick={() => {
                 if (legacyCalculator) window.dispatchEvent(new Event(LEGACY_CART_OPEN_EVENT));
@@ -215,7 +213,7 @@ export function ProductDetail() {
               className="flex items-center gap-2 text-[10px] uppercase tracking-[.18em]"
             >
               <ShoppingBag size={16} /> <span className="hidden sm:inline">{isWindour ? "Áætlun" : "Karfa"}</span> {!legacyCalculator && !isWindour && !isVerticalSheer && <span className="grid h-5 w-5 place-items-center rounded-full bg-[#24313b] text-[9px] text-[#f7f9fa]">{cart}</span>}
-              </button>}
+              </button>
             <button type="button" onClick={() => setMobileNavOpen((open) => !open)} className="grid h-9 w-9 place-items-center md:hidden" aria-label={mobileNavOpen ? "Loka valmynd" : "Opna valmynd"}>
               {mobileNavOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
