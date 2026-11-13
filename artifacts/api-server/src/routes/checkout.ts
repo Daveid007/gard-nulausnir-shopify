@@ -564,7 +564,7 @@ const rollerWorkbookConfigurationSchema = z.object({
   noDrill: z.boolean().optional(),
   mountPosition: z.enum(["inside", "outside"]),
   track: z.enum(["none", "u-white", "u-grey", "l-white", "l-black"]).optional(),
-  cassette: z.enum(["Square with fabric inserted", "Arc with fabric inserted"]),
+  cassette: z.enum(["Square with fabric inserted", "Arc with fabric inserted", "Open roll"]),
 }).strict();
 
 const rollerWorkbookItemSchema = z.object({
@@ -572,7 +572,7 @@ const rollerWorkbookItemSchema = z.object({
   qty: z.number().int().min(1).max(99),
   // The two new IDs without confirmed Shopify variants are handled as custom
   // draft-order lines; existing catalogue IDs retain their real link.
-  productId: z.enum(["square-cassette", "arc-cassette", "zebra-blind", "sheer-shades", "butterfly-blinds"]),
+  productId: z.enum(["open-roll", "square-cassette", "arc-cassette", "zebra-blind", "sheer-shades", "butterfly-blinds"]),
   configuration: rollerWorkbookConfigurationSchema,
   fabricName: z.string().min(1).max(120),
 }).strict();
@@ -581,7 +581,10 @@ function productMatchesRollerWorkbookConfiguration(
   productId: z.infer<typeof rollerWorkbookItemSchema>["productId"],
   configuration: z.infer<typeof rollerWorkbookItemSchema>["configuration"],
 ): boolean {
-  return (productId === "square-cassette" &&
+  return (productId === "open-roll" &&
+      configuration.family === "roller" &&
+      configuration.cassette === "Open roll") ||
+    (productId === "square-cassette" &&
       configuration.family === "roller" &&
       configuration.cassette === "Square with fabric inserted") ||
     (productId === "arc-cassette" &&

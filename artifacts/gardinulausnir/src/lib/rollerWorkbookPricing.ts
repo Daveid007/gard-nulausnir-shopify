@@ -32,6 +32,8 @@ export type SideTrack = "none" | "u-white" | "u-grey" | "l-white" | "l-black";
 export const ROLLER_WORKBOOK_CASSETTES = [
   "Square with fabric inserted",
   "Arc with fabric inserted",
+  // Merchant-approved: open roll uses ordinary roller selling-price rules.
+  "Open roll",
 ] as const;
 export type RollerWorkbookCassette = (typeof ROLLER_WORKBOOK_CASSETTES)[number];
 

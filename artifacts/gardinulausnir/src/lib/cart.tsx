@@ -267,6 +267,7 @@ export type WindourCartItem = {
  */
 export const ROLLER_WORKBOOK_REVISION = 1;
 export type RollerWorkbookProductId =
+  | "open-roll"
   | "square-cassette"
   | "arc-cassette"
   | "zebra-blind"
@@ -513,7 +514,7 @@ export function describeCartItem(item: CartItem): { title: string; sub: string }
     const manual = quote.manualControl ? ` · handstýring: ${quote.manualControl}` : "";
     const motor = quote.motorType ? ` · mótor: ${quote.motorType}` : "";
     return {
-      title: `${quote.fabric.family} · ${quote.fabric.name}`,
+      title: `${item.productId === "open-roll" ? "Venjuleg rúllugardína" : quote.fabric.family} · ${quote.fabric.name}`,
       sub: `${quote.enteredWidthMm / 10}×${quote.heightMm / 10} cm · litur: ${fabricColorLabel(quote.fabric.color)} · ${quote.operation}${manual}${motor}${quote.remote ? " · fjarstýring fylgir" : ""} · ${quote.mountPosition === "inside" ? "innfelld" : "utanáliggjandi"} · án borunar: ${quote.noDrill ? "já" : "nei"} · spor: ${quote.track} · kassetta: ${quote.cassette}`,
     };
   }
@@ -631,7 +632,10 @@ function isRollerWorkbookProductFamily(
   productId: unknown,
   configuration: Pick<RollerWorkbookQuoteInput, "family" | "cassette">,
 ): productId is RollerWorkbookProductId {
-  return (productId === "square-cassette" &&
+  return (productId === "open-roll" &&
+      configuration.family === "roller" &&
+      configuration.cassette === "Open roll") ||
+    (productId === "square-cassette" &&
       configuration.family === "roller" &&
       configuration.cassette === "Square with fabric inserted") ||
     (productId === "arc-cassette" &&

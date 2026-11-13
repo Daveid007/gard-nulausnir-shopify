@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { WorkbookFabricSwatch } from "./WorkbookFabricSwatch";
 import { fabricColorLabel, fabricLightLabel } from "@/lib/fabricLabels";
-import { fabricColorFamily, groupFabricsByColor } from "@/lib/fabricColorFamilies";
+import { fabricColorFamily, groupFabricsByColorAndLight } from "@/lib/fabricColorFamilies";
 import { StorefrontLayout } from "./StorefrontLayout";
 import { useCart } from "@/lib/cart";
 import { rollerWorkbookSwatchFilename } from "@/lib/rollerWorkbookSwatches";
@@ -100,7 +100,6 @@ export function RollerWorkbookCalculator({
   productIdentity: RollerWorkbookProductIdentity;
 }) {
   const family = familyForIdentity[productIdentity];
-  const unavailableOpenRoll = productIdentity === "open-roll";
   const initialFabric = firstFabric(family);
   const [widthCm, setWidthCm] = useState("120");
   const [heightCm, setHeightCm] = useState("160");
@@ -115,7 +114,7 @@ export function RollerWorkbookCalculator({
   const [noDrill, setNoDrill] = useState(false);
   const [mountPosition, setMountPosition] = useState<"inside" | "outside">("inside");
   const [track, setTrack] = useState<SideTrack>("none");
-  const cassette = productIdentity === "arc-cassette" ? ROLLER_WORKBOOK_CASSETTES[1] : ROLLER_WORKBOOK_CASSETTES[0];
+  const cassette = productIdentity === "open-roll" ? "Open roll" : productIdentity === "arc-cassette" ? ROLLER_WORKBOOK_CASSETTES[1] : ROLLER_WORKBOOK_CASSETTES[0];
   const { addItem } = useCart();
 
   const familyFabrics = useMemo(
@@ -138,8 +137,8 @@ export function RollerWorkbookCalculator({
   const selectFabrics = fabric && !visibleFabrics.some((item) => item.code === fabric.code)
     ? [fabric, ...visibleFabrics]
     : visibleFabrics;
-  const selectGroups = groupFabricsByColor(selectFabrics);
-  const swatchGroups = groupFabricsByColor(visibleFabrics);
+  const selectGroups = groupFabricsByColorAndLight(selectFabrics);
+  const swatchGroups = groupFabricsByColorAndLight(visibleFabrics);
 
   const quoteInput: RollerWorkbookQuoteInput = {
     family,
@@ -166,7 +165,7 @@ export function RollerWorkbookCalculator({
   };
 
   const addToCart = () => {
-    if (!quote.ok || !fabric || unavailableOpenRoll) return;
+    if (!quote.ok || !fabric) return;
     const configuration: Omit<RollerWorkbookQuoteInput, "quantity"> = (() => {
       const { quantity: _quantity, ...values } = quoteInput;
       return values;
@@ -186,35 +185,6 @@ export function RollerWorkbookCalculator({
     name: fabric ? `${fabric.code} · ${fabric.color}` : "Ekkert efni valið",
     image: fabric ? swatchForWorkbookFabric(fabric) : undefined,
   };
-
-  if (unavailableOpenRoll) {
-    return (
-      <StorefrontLayout
-        product={product}
-        priceISK={0}
-        priceText="—"
-        priceLabel="Verð bíður staðfestingar"
-        activeFabric={{ name: "Opið rúllukerfi" }}
-        quantity={quantity}
-        setQuantity={setQuantity}
-        canAddToCart={false}
-        onAddToCart={() => undefined}
-        controls={
-          <div className="border-b border-[#ccd9df] py-6">
-            <p className="text-[10px] uppercase tracking-[.18em] text-[#6892b8]">Opið rúllukerfi</p>
-            <p className="mt-3 text-sm leading-6 text-[#526772]">
-              Verð og uppsetningarval fyrir opið rúllukerfi eru ekki staðfest í birgjavinnubókinni.
-              Hafðu samband til að fá tilboð áður en hægt er að bæta vörunni í körfu.
-            </p>
-            <p className="mt-3 text-sm leading-6 text-[#526772]">Hliðarlistar eru valfrjálsir. Láttu vita í tilboðsbeiðninni ef þú vilt bæta þeim við.</p>
-            <a className="mt-4 inline-flex border border-[#24313b] px-4 py-3 text-[10px] uppercase tracking-[.16em]" href="mailto:sala@gardinulausnir.is?subject=Tilboð%20í%20opið%20rúllukerfi">
-              Óska eftir tilboði
-            </a>
-          </div>
-        }
-      />
-    );
-  }
 
   const errorMessage = !quote.ok
     ? "Ekki er hægt að reikna verð með þessum málum eða valkostum. Athugaðu mál, efni og uppsetningu."
@@ -266,22 +236,23 @@ export function RollerWorkbookCalculator({
               <select data-testid="rw-fabric" aria-label="Veldu efni" value={fabricCode} onChange={(event) => setFabricCode(event.target.value)} className="w-full border border-[#ccd9df] bg-[#f7f9fa] px-3 py-3 text-sm outline-none focus:border-[#24313b]">
                 {selectFabrics.length === 0 ? <option value="">Engin efni fundust</option> : selectGroups.map((group) => (
                   <optgroup key={group.label} label={group.label}>{group.fabrics.map((item) => (
-                  <option key={item.code} value={item.code}>{item.code} · {item.color} · {item.light} · {item.size}</option>
+                  <option key={item.code} value={item.code}>{item.code} · {item.color} · {item.light}{item.size !== "/" ? ` · ${item.size}` : ""}</option>
                   ))}</optgroup>
                 ))}
               </select>
             </label>
-            <div className="mt-3 max-h-96 space-y-5 overflow-y-auto p-1" aria-label="Efnisýni eftir litafjölskyldu" data-testid="rw-swatches">
-              {swatchGroups.map((group) => <section key={group.label} aria-label={group.label}>
-                <h3 className="mb-2 text-xs font-medium text-[#24313b]">{group.label} <span className="font-normal text-[#667984]">({group.fabrics.length})</span></h3>
-                <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+            <p className="mt-3 text-xs text-[#667984]">Sami litur og ljósgerð eru saman í hópi. Opnaðu hóp til að velja efni; verð og áferð geta verið mismunandi.</p>
+            <div className="mt-3 max-h-96 space-y-2 overflow-y-auto p-1" aria-label="Efnisýni eftir lit og ljósgerð" data-testid="rw-swatches">
+              {swatchGroups.map((group) => <details key={group.label} aria-label={group.label} open={fabricSearch.trim() ? true : undefined} className="border border-[#ccd9df] px-3 py-2">
+                <summary className="cursor-pointer text-xs font-medium text-[#24313b]">{group.label} <span className="font-normal text-[#667984]">({group.fabrics.length} efni)</span>{group.fabrics.some(item => item.code === fabricCode) && <span className="ml-2 text-[#526772]">· Valið</span>}</summary>
+                <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4">
                   {group.fabrics.map((item) => (
                     <WorkbookFabricSwatch key={item.code} fabric={item}
                       image={swatchForWorkbookFabric(item)} selected={item.code === fabricCode}
                       onSelect={() => setFabricCode(item.code)} />
                   ))}
                 </div>
-              </section>)}
+              </details>)}
             </div>
             {visibleFabrics.length === 0 && <p role="status" className="mt-3 text-xs text-[#667984]">Engin efni fundust. Prófaðu annan kóða eða lit.</p>}
             {fabric && <p className="mt-3 text-xs text-[#667984]">{fabric.code} · {fabric.color} · {fabric.light} · {fabric.size}</p>}
