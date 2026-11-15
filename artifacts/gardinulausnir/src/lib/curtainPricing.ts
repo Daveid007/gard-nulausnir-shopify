@@ -1,6 +1,6 @@
 import { SUPPLIER_TO_RETAIL_ISK } from "./pricing.ts";
 
-export const CURTAIN_RETAIL_INCREASE = 1.25;
+export const CURTAIN_RETAIL_INCREASE = 1;
 
 // Curtain-how_to_caculate_price-0612 - Iceland.xlsx, price sheet column G.
 export const CURTAIN_FABRIC_USD: Record<string, number> = {

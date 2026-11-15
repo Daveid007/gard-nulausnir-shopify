@@ -3,25 +3,24 @@
  *
  * The supplier price is in USD. Eligible roller, zebra and honeycomb blinds
  * use REV 5 area/quantity freight; other products keep cost-based freight.
- * The legacy margin/uplifts remain for other families. Eligible blinds use
- * a 35% gross margin on supplier cost plus freight, without extra uplifts,
+ * All families use
+ * a 40% gross margin on supplier cost plus freight, without extra uplifts,
  * followed by the current USD/ISK rate and VAT.  Do not round individual
  * fabric/accessory components: the result is rounded exactly once per unit.
- * The owner's site-wide 25% retail increase is applied after the original
- * conversion; supplier rates, shipping assumptions and VAT stay unchanged.
+ * Supplier rates, shipping assumptions and VAT stay unchanged.
  */
 import { supplierRate } from "./supplierPricesRev4.ts";
 import { freightUsd, type FreightGroup } from "./freight.ts";
 export const USD_TO_ISK = 121.16;
 export const VAT_FACTOR = 1.24;
 export const MARGIN_FACTOR = 1 / 0.6;
-export const RETAIL_PRICE_MULTIPLIER = 1.25 * 1.05;
+export const RETAIL_PRICE_MULTIPLIER = 1;
 export const SUPPLIER_TO_RETAIL_ISK = 2 * MARGIN_FACTOR * USD_TO_ISK * VAT_FACTOR * RETAIL_PRICE_MULTIPLIER;
-/** Gross margin before installation/overheads; not a 35% cost markup.
- * REV 5 supplier cost + quantity-tier freight, divided by 0.65, then FX/VAT.
+/** Gross margin before installation/overheads; not a 40% cost markup.
+ * Supplier cost + freight, divided by 0.60, then FX/VAT.
  * No legacy 25%/5% uplift or reference-basket adjustment applies.
  */
-export const BLIND_GROSS_MARGIN = 0.35;
+export const BLIND_GROSS_MARGIN = 0.40;
 export const LANDED_TO_RETAIL_ISK = USD_TO_ISK * VAT_FACTOR / (1 - BLIND_GROSS_MARGIN);
 export function quantityFreightBlindRetailPrice(supplierUsd: number, area: number, quantity: number, group: FreightGroup): number {
   if (!Number.isFinite(supplierUsd) || supplierUsd < 0) throw new Error("Invalid supplier cost");
