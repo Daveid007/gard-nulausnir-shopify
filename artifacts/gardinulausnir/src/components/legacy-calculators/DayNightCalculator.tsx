@@ -20,7 +20,7 @@ import { CASSETTE_RAIL_COLORS, MOTORIZED_RAIL_COLORS, resolveRailColor } from "@
 import { normalizeQuantity } from "@/lib/quantity";
 import { StorefrontLayout } from "./StorefrontLayout";
 import { MeasurementGuideTrigger } from "@/components/MeasurementGuide";
-import { DAYNIGHT_45_LIMITS, dayNightSupplierRate, fixedFreightBlindRetailPrice as retailPriceFromSupplierUsd, LANDED_TO_RETAIL_ISK as SUPPLIER_TO_RETAIL_ISK, validateHoneycombSize, type MountPosition } from "@/lib/pricing";
+import { DAYNIGHT_45_LIMITS, dayNightSupplierRate, quantityFreightBlindRetailPrice as retailPriceFromSupplierUsd, LANDED_TO_RETAIL_ISK as SUPPLIER_TO_RETAIL_ISK, validateHoneycombSize, type MountPosition } from "@/lib/pricing";
 import { HoneycombOptions } from "./HoneycombOptions";
 
 // Supplier cost, equal shipping, margin, FX and VAT are applied in pricing.ts.
@@ -149,7 +149,7 @@ export default function DayNightCalculator({ product }: { product?: any }) {
     const perPieceUSD = fabricUSD + cordlessUSD + noDrillUSD + motorUSD + remoteUSD + sidetrackUSD;
     const totalUSD = perPieceUSD * quantity;
 
-    const perPieceISK = retailPriceFromSupplierUsd(perPieceUSD);
+    const perPieceISK = retailPriceFromSupplierUsd(perPieceUSD, rawArea, quantity, "daynight");
     const totalISK = perPieceISK * quantity;
 
     const size = validateHoneycombSize({
@@ -479,7 +479,7 @@ export default function DayNightCalculator({ product }: { product?: any }) {
               <div className="flex justify-between"><span>Litur á brautum</span><span className="font-medium">{railColor}</span></div>
               <div className="flex justify-between pt-3 border-t border-primary-foreground/20">
                 <span>Efni · {combo.is}</span>
-                <span>{fmtISK(retailPriceFromSupplierUsd(calc.fabricUSD))}</span>
+                <span>{fmtISK(retailPriceFromSupplierUsd(calc.fabricUSD, calc.rawArea, quantity, "daynight"))}</span>
               </div>
               {calc.cordlessUSD > 0 && <div className="flex justify-between"><span>Snærislaust</span><span>{fmtISK(calc.cordlessUSD * USD_TO_ISK_COST)}</span></div>}
               {calc.motorUSD > 0 && <div className="flex justify-between"><span>Mótor + fjarstýring</span><span>{fmtISK((calc.motorUSD + calc.remoteUSD) * USD_TO_ISK_COST)}</span></div>}

@@ -21,7 +21,7 @@ import { CASSETTE_RAIL_COLORS, MOTORIZED_RAIL_COLORS, resolveRailColor } from "@
 import { normalizeQuantity } from "@/lib/quantity";
 import { StorefrontLayout } from "./StorefrontLayout";
 import { MeasurementGuideTrigger } from "@/components/MeasurementGuide";
-import { fixedFreightBlindRetailPrice as retailPriceFromSupplierUsd, LANDED_TO_RETAIL_ISK as SUPPLIER_TO_RETAIL_ISK } from "@/lib/pricing";
+import { retailPriceFromSupplierUsd, SUPPLIER_TO_RETAIL_ISK } from "@/lib/pricing";
 
 // Supplier cost, equal shipping, margin, FX and VAT are applied in pricing.ts.
 const USD_TO_ISK_RETAIL = SUPPLIER_TO_RETAIL_ISK;

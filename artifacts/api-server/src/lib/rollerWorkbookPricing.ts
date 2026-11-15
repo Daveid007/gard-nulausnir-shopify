@@ -1,3 +1,5 @@
+import { freightUsd } from "./freight";
+import { freightBlindRetailPrice } from "./retailPolicy";
 /**
  * Server-local implementation of the Roller Blinds workbook calculator.
  * Keep this in lockstep with the browser calculator; it intentionally has no
@@ -108,6 +110,6 @@ export function quoteRollerWorkbookBlind(input: RollerWorkbookQuoteInput): Rolle
   const fabricUsd = fabric.supplierUsdPerSqm * billedAreaSqm, areaOptionsUsd = ((input.operation === "cordless" ? 3 : 0) + (noDrill ? 3 : 0) + (input.operation === "manual" && input.manualControl === "steel-chain" ? .5 : 0)) * billedAreaSqm;
   const motorUsd = input.operation === "motor" ? motors[input.motorType!] : 0, remoteUsd = remote ? 7 : 0, hubUsd = hub ? 22 : 0, trackUsd = track === "none" ? 0 : heightMm / 1000 * (track.startsWith("u-") ? 10 : 5), unitUsd = fabricUsd + areaOptionsUsd + motorUsd + remoteUsd + hubUsd + trackUsd;
   const unitIsk = input.family === "roller" || input.family === "zebra"
-    ? Math.round((unitUsd + 100) * RETAIL_FACTOR / 2) : Math.round(unitUsd * RETAIL_FACTOR);
+    ? freightBlindRetailPrice(unitUsd, freightUsd(actualAreaSqm, input.quantity, input.family === "roller" ? "roller" : "cellular")) : Math.round(unitUsd * RETAIL_FACTOR);
   return { ok: true, fabric, operation: input.operation, ...(input.manualControl ? { manualControl: input.manualControl } : {}), ...(input.motorType ? { motorType: input.motorType } : {}), mountPosition: input.mountPosition, cassette: input.cassette as RollerWorkbookCassette, track, remote, hub, noDrill, quantity: input.quantity, enteredWidthMm, effectiveWidthMm, heightMm, actualAreaSqm, billedAreaSqm, limits, supplier: { fabricUsd, areaOptionsUsd, motorUsd, remoteUsd, hubUsd, trackUsd, cassetteUsd: 0, unitUsd, totalUsd: unitUsd * input.quantity }, retail: { unitIsk, totalIsk: unitIsk * input.quantity }, notes: [input.family === "roller" ? "Entered width is used without deduction." : input.mountPosition === "inside" ? "Inside mount deducts 5 mm from entered width before size and area calculation." : "Outside mount uses the entered width without deduction.", "Fabric and area-priced options have a 1 m² minimum billing area.", "U track is USD 10/m and L track USD 5/m, each once for both sides; cassette has no workbook price.", "Remote is included with every motor. Hub is not offered.", "Retail ISK is rounded once per blind before quantity is applied."] };
 }

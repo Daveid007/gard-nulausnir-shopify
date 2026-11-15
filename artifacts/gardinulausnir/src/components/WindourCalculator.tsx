@@ -128,7 +128,7 @@ function WindourCartStatus() {
                       <div>
                         <p className="font-serif text-xl">{description.title}</p>
                         <p className="mt-2 text-xs leading-5 text-[#667984]">{description.sub}</p>
-                        <p className="mt-2 text-xs">{formatIsk(priceLineIsk(item))}</p>
+                        <p className="mt-2 text-xs">{formatIsk(priceLineIsk(item, items))}</p>
                       </div>
                       <button type="button" onClick={() => removeItem(item.id)} className="text-[10px] uppercase tracking-[.14em] text-[#667984]">
                         Fjarlægja

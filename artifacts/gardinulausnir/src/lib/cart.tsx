@@ -9,7 +9,8 @@ import {
   dayNightSupplierRate,
   assertHoneycombSize,
   honeycombSupplierRate,
-  fixedFreightBlindRetailPrice,
+  LANDED_TO_RETAIL_ISK,
+  retailPriceFromSupplierUsd,
   tdbuSupplierRate,
   type MountPosition,
 } from "./pricing";
@@ -337,13 +338,17 @@ type CartContextValue = {
 
 const CartContext = createContext<CartContextValue | null>(null);
 
+import { orderFreightUsd } from "./freight.ts";
+
 const STORAGE_KEY = "solmyrkvun.cart.v2";
 const LEGACY_STORAGE_KEY = "solmyrkvun.cart.v1";
 
 // Blind lines and WINdoûr estimates both use whole-ISK per-unit rounding
 // before multiplying quantity.
-export function priceLineIsk(item: CartItem): number {
+export function priceLineIsk(item: CartItem, orderItems: readonly CartItem[] = [item]): number {
   if (item.needsReconfigure) return 0;
+  const freight = orderFreightUsd(item, orderItems);
+  if (freight !== undefined) return Math.round((priceCartItem(item) + freight) * LANDED_TO_RETAIL_ISK) * item.qty;
   if (item.type === "roller-workbook") {
     const quote = quoteRollerWorkbookBlind({ ...item.configuration, quantity: item.qty });
     return quote.ok ? quote.retail.totalIsk : 0;
@@ -381,7 +386,7 @@ export function priceLineIsk(item: CartItem): number {
       quantity: item.qty,
     }).totalIsk;
   }
-  return fixedFreightBlindRetailPrice(priceCartItem(item)) * item.qty;
+  return retailPriceFromSupplierUsd(priceCartItem(item)) * item.qty;
 }
 
 export function priceCartItem(item: CartItem): number {
@@ -998,7 +1003,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     let count = 0;
     for (const item of items) {
       usd += priceCartItem(item) * item.qty;
-      isk += priceLineIsk(item);
+      isk += priceLineIsk(item, items);
       count += item.qty;
     }
     return { totalUsd: usd, totalIsk: isk, itemCount: count };

@@ -1,25 +1,31 @@
 /**
  * Supplier-to-retail pricing shared by the calculators and cart.
  *
- * The supplier price is in USD. Shipping is intentionally equal to the
- * supplier cost (100%), then the 40% margin is applied to the landed cost,
+ * The supplier price is in USD. Eligible roller, zebra and honeycomb blinds
+ * use REV 5 area/quantity freight; other products keep cost-based freight.
+ * The legacy margin/uplifts remain for other families. Eligible blinds use
+ * a 35% gross margin on supplier cost plus freight, without extra uplifts,
  * followed by the current USD/ISK rate and VAT.  Do not round individual
  * fabric/accessory components: the result is rounded exactly once per unit.
  * The owner's site-wide 25% retail increase is applied after the original
  * conversion; supplier rates, shipping assumptions and VAT stay unchanged.
  */
 import { supplierRate } from "./supplierPricesRev4.ts";
+import { freightUsd, type FreightGroup } from "./freight.ts";
 export const USD_TO_ISK = 121.16;
 export const VAT_FACTOR = 1.24;
 export const MARGIN_FACTOR = 1 / 0.6;
 export const RETAIL_PRICE_MULTIPLIER = 1.25 * 1.05;
 export const SUPPLIER_TO_RETAIL_ISK = 2 * MARGIN_FACTOR * USD_TO_ISK * VAT_FACTOR * RETAIL_PRICE_MULTIPLIER;
-/** Freight replaces (not supplements) the old 100% freight allowance. */
-export const BLIND_FREIGHT_USD = 100;
-export const LANDED_TO_RETAIL_ISK = SUPPLIER_TO_RETAIL_ISK / 2;
-export function fixedFreightBlindRetailPrice(supplierUsd: number): number {
+/** Gross margin before installation/overheads; not a 35% cost markup.
+ * REV 5 supplier cost + quantity-tier freight, divided by 0.65, then FX/VAT.
+ * No legacy 25%/5% uplift or reference-basket adjustment applies.
+ */
+export const BLIND_GROSS_MARGIN = 0.35;
+export const LANDED_TO_RETAIL_ISK = USD_TO_ISK * VAT_FACTOR / (1 - BLIND_GROSS_MARGIN);
+export function quantityFreightBlindRetailPrice(supplierUsd: number, area: number, quantity: number, group: FreightGroup): number {
   if (!Number.isFinite(supplierUsd) || supplierUsd < 0) throw new Error("Invalid supplier cost");
-  return Math.round((supplierUsd + BLIND_FREIGHT_USD) * LANDED_TO_RETAIL_ISK);
+  return Math.round((supplierUsd + freightUsd(area, quantity, group)) * LANDED_TO_RETAIL_ISK);
 }
 
 /** Adjust an existing ISK retail amount, never a supplier USD cost. */
@@ -234,8 +240,10 @@ export function blindRetailPriceIsk(
   fabricUsdPerSqm: number,
   options: BlindAccessoryOptions = {},
   minimumArea = 1,
+  quantity = 1,
 ): number {
-  return fixedFreightBlindRetailPrice(blindSupplierUsd(widthMm, heightMm, fabricUsdPerSqm, options, minimumArea));
+  const area = (widthMm - (options.mountPosition === "inside" ? 5 : 0)) * heightMm / 1e6;
+  return quantityFreightBlindRetailPrice(blindSupplierUsd(widthMm, heightMm, fabricUsdPerSqm, options, minimumArea), area, quantity, options.productStyle === "daynight" ? "daynight" : "cellular");
 }
 
 // Honeycomb Standard (45mm) from the workbook's 45mm supplier table.

@@ -83,7 +83,7 @@ function CalculatorCartStatus() {
                         {item.needsReconfigure ? (
                           <p className="mt-2 text-xs font-medium text-amber-700">Þessi eldri lína þarf að vera endurstillt áður en verð er notað.</p>
                         ) : (
-                          <p className="mt-2 text-xs">{"Áætlun: " + formatIsk(priceLineIsk(item))}</p>
+                          <p className="mt-2 text-xs">{"Áætlun: " + formatIsk(priceLineIsk(item, items))}</p>
                         )}
                       </div>
                       <button type="button" disabled={checkoutBusy} onClick={() => removeItem(item.id)} className="text-[10px] uppercase tracking-[.14em] text-[#667984]">
@@ -106,6 +106,7 @@ function CalculatorCartStatus() {
                 <span>Samtals</span>
                 <span>{"Áætlun: " + formatIsk(totalIsk)}</span>
               </div>
+              <p className="mt-2 text-xs text-[#667984]">Verð er endurreiknað eftir heildarmagni í hverjum flutningsflokki körfunnar.</p>
               <button type="button" onClick={handleCheckout} disabled={!canCheckout || checkoutBusy} className="w-full bg-[#a2c2e2] py-4 text-[10px] uppercase tracking-[.18em] disabled:cursor-not-allowed disabled:opacity-50">
                 {checkoutBusy ? "Staðfesti verð…" : "Staðfesta verð og greiða í Shopify"}
               </button>

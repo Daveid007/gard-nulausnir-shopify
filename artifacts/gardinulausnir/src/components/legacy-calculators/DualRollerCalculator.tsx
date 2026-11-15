@@ -478,7 +478,7 @@ export default function DualRollerCalculator({ product }: { product?: any }) {
               <div className="flex justify-between"><span>Litur á brautum</span><span className="font-medium">{railColor}</span></div>
               <div className="flex justify-between pt-3 border-t border-primary-foreground/20">
                 <span>Efni · {combo.is}</span>
-                <span>{fmtISK((calc.fabricUSD + 100) * USD_TO_ISK_RETAIL)}</span>
+                <span>{fmtISK(calc.fabricUSD * USD_TO_ISK_RETAIL)}</span>
               </div>
               {calc.cordlessUSD > 0 && <div className="flex justify-between"><span>Snærislaust</span><span>{fmtISK(calc.cordlessUSD * USD_TO_ISK_ACCESSORY)}</span></div>}
               {calc.motorUSD > 0 && <div className="flex justify-between"><span>Mótor + fjarstýring</span><span>{fmtISK((calc.motorUSD + calc.remoteUSD) * USD_TO_ISK_ACCESSORY)}</span></div>}
