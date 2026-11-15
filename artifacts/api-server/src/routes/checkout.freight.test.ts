@@ -5,13 +5,13 @@ import { quoteRollerWorkbookBlind, rollerWorkbookFabrics } from "../lib/rollerWo
 import { freightBlindRetailPrice } from "../lib/retailPolicy";
 import { freightUsd, orderFreightUsd } from "../lib/freight";
 
-const factor = 121.16 * 1.24 / 0.65;
-test("35% gross margin replaces fixed freight and stacked retail adjustments", () => {
+const factor = 121.16 * 1.24 / 0.6;
+test("40% gross margin replaces fixed freight and stacked retail adjustments", () => {
   for (const cost of [0, 15.384, 67.85, 100, 250]) {
     const price = freightBlindRetailPrice(cost, 40.8);
     assert.equal(price, Math.round((cost + 40.8) * factor));
     const net = price / 1.24;
-    assert.ok(Math.abs((net - (cost + 40.8) * 121.16) / net - 0.35) < 0.0001);
+    assert.ok(Math.abs((net - (cost + 40.8) * 121.16) / net - 0.40) < 0.0001);
   }
 });
 test("all REV 5 tier boundaries and invalid inputs", () => {
@@ -23,15 +23,15 @@ test("all REV 5 tier boundaries and invalid inputs", () => {
   for (const qty of [0, -1, 1.5, Infinity, NaN]) assert.throws(() => freightUsd(2, qty, "roller"));
   for (const area of [0, -1, Infinity, NaN]) assert.throws(() => freightUsd(area, 1, "roller"));
 });
-test("four different roller sizes total 94,189 ISK including free installation", () => {
+test("four different roller sizes total 102,038 ISK including free installation", () => {
   const items = checkoutRequestSchema.parse({items: [[128.8,144.3],[132.3,144.1],[196.7,144.1],[128.5,144.1]].map(([widthCm,heightCm]) => ({
     type: "roller-workbook", qty: 1, productId: "open-roll", fabricName: "RSSK00-0101",
     configuration: {family: "roller", fabricCode: "RSSK00-0101", widthCm, heightCm, operation: "manual",
       manualControl: "plastic-chain", mountPosition: "outside", track: "none", cassette: "Open roll"},
   }))}).items;
   const lines = buildShopifyDraftOrderLines(items, true);
-  assert.deepEqual(lines.map(line => line.unitPriceIsk), [20714,21248,31590,20637,0]);
-  assert.equal(lines.reduce((sum, line) => sum + line.unitPriceIsk * line.quantity, 0), 94189);
+  assert.deepEqual(lines.map(line => line.unitPriceIsk), [22440,23018,34223,22357,0]);
+  assert.equal(lines.reduce((sum, line) => sum + line.unitPriceIsk * line.quantity, 0), 102038);
 });
 test("checkout matches workbook quotes; unrelated families retain their policy", () => {
   for (const family of ["roller", "zebra", "sheer", "butterfly"] as const) {
@@ -47,7 +47,7 @@ test("checkout matches workbook quotes; unrelated families retain their policy",
     ]}).items);
     const expected = family === "roller" || family === "zebra"
       ? Math.round((quote.supplier.unitUsd + 1.8 * (family === "roller" ? 34 : 31.5)) * factor)
-      : Math.round(quote.supplier.unitUsd * 2 / 0.6 * 121.16 * 1.24 * 1.25 * 1.05);
+      : Math.round(quote.supplier.unitUsd * 2 / 0.6 * 121.16 * 1.24);
     assert.equal(line.unitPriceIsk, expected);
     assert.equal(quote.retail.totalIsk, expected * 4);
   }

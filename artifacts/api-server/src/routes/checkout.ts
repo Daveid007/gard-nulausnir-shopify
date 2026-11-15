@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { freightBlindRetailPrice } from "../lib/retailPolicy";
+import { freightBlindRetailPrice, SUPPLIER_TO_RETAIL_ISK } from "../lib/retailPolicy";
 import { orderFreightUsd } from "../lib/freight";
 import { supplierRate, updateSupplierTable } from "../lib/supplierPricesRev4";
 import { z } from "zod";
@@ -17,7 +17,7 @@ const router: IRouter = Router();
 
 // One supplier USD receives 100% shipping, then 40% margin, FX and VAT.
 // This is applied once to the complete per-unit supplier cost.
-const USD_TO_ISK_RETAIL = 2 * (1 / 0.6) * 121.16 * 1.24 * 1.25 * 1.05;
+const USD_TO_ISK_RETAIL = SUPPLIER_TO_RETAIL_ISK;
 const HOLDER_USD = 5.0;
 
 // Honeycomb (cellular) — 45 mm Standard, with supplier USD/m² rates.
