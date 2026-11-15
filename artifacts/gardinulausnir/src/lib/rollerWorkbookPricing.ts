@@ -9,7 +9,7 @@ import {
   type RollerWorkbookFabric,
   type RollerWorkbookFamily,
 } from "../data/rollerWorkbookFabrics.ts";
-import { retailPriceFromSupplierUsd } from "./pricing.ts";
+import { retailPriceFromSupplierUsd, quantityFreightBlindRetailPrice } from "./pricing.ts";
 
 export { rollerWorkbookFabrics, rollerWorkbookFamilies };
 export type { RollerWorkbookFabric, RollerWorkbookFamily };
@@ -343,7 +343,9 @@ export function quoteRollerWorkbookBlind(input: RollerWorkbookQuoteInput): Rolle
   const remoteUsd = remote ? ROLLER_WORKBOOK_SUPPLIER_PRICES.remote : 0;
   const hubUsd = hub ? ROLLER_WORKBOOK_SUPPLIER_PRICES.hub : 0;
   const unitUsd = fabricUsd + areaOptionsUsd + motorUsd + remoteUsd + hubUsd + trackUsd;
-  const unitIsk = retailPriceFromSupplierUsd(unitUsd);
+  const unitIsk = input.family === "roller" || input.family === "zebra"
+    ? quantityFreightBlindRetailPrice(unitUsd, actualAreaSqm, input.quantity, input.family === "roller" ? "roller" : "cellular")
+    : retailPriceFromSupplierUsd(unitUsd);
 
   return {
     ok: true,

@@ -1,4 +1,6 @@
 import { Router, type IRouter } from "express";
+import { freightBlindRetailPrice } from "../lib/retailPolicy";
+import { orderFreightUsd } from "../lib/freight";
 import { supplierRate, updateSupplierTable } from "../lib/supplierPricesRev4";
 import { z } from "zod";
 import {
@@ -1027,7 +1029,8 @@ function configurationAttributes(item: CartItem, description: string): Array<{ k
 export function buildShopifyDraftOrderLines(items: CartItem[]): ShopifyDraftOrderLine[] {
   const lines: ShopifyDraftOrderLine[] = items.map((item) => {
     const { unitUsd, description, name } = priceItem(item);
-    const unitPriceIsk = Math.round(unitUsd * USD_TO_ISK_RETAIL);
+    const freight = orderFreightUsd(item, items);
+    const unitPriceIsk = freight !== undefined ? freightBlindRetailPrice(unitUsd, freight) : Math.round(unitUsd * USD_TO_ISK_RETAIL);
     return {
       productHandle: productHandle(item),
       title: name,

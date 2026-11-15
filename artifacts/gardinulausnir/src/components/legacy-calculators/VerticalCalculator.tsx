@@ -402,7 +402,7 @@ export default function VerticalCalculator({ product }: { product?: any }) {
               <div className="flex justify-between"><span>Litur á brautum</span><span className="font-medium">{railColor}</span></div>
               <div className="flex justify-between pt-3 border-t border-primary-foreground/20">
                 <span>Efni · {TYPE_LABELS[fabric.type].is}</span>
-                <span>{fmtISK(calc.fabricUSD * USD_TO_ISK_RETAIL)}</span>
+                <span>{fmtISK(retailPriceFromSupplierUsd(calc.fabricUSD))}</span>
               </div>
               {calc.motorUSD > 0 && <div className="flex justify-between"><span>Mótor + fjarstýring</span><span>{fmtISK((calc.motorUSD + calc.remoteUSD) * USD_TO_ISK_ACCESSORY)}</span></div>}
               <div className="flex justify-between pt-3 border-t border-primary-foreground/20"><span>Verð per stk</span><span className="font-medium">{fmtISK(calc.perPieceISK)}</span></div>

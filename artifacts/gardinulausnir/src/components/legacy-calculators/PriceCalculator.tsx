@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { useCart, HOLDER_USD, formatIsk } from "@/lib/cart";
 import { ShoppingBag } from "lucide-react";
 import { MeasurementGuideTrigger } from "@/components/MeasurementGuide";
-import { retailPriceFromSupplierUsd } from "@/lib/pricing";
+import { quantityFreightBlindRetailPrice as retailPriceFromSupplierUsd } from "@/lib/pricing";
 import { BOTTOM_RAIL_COLORS, HOLDER_COLORS } from "@/assets/railImages";
 import { normalizeQuantity } from "@/lib/quantity";
 import { COLLECTIONS } from "@/pages/storefront/_shared/fabric-collections";
@@ -300,12 +300,12 @@ export function PriceCalculator({ productIdentity = "square-cassette", product }
 
     const perPieceUSD = fabricCost + cordlessCost + motorCost + remoteCost + sideTrackCost + holderCost;
     const totalUSD = perPieceUSD * quantity;
-    const perPieceISK = retailPriceFromSupplierUsd(perPieceUSD);
+    const perPieceISK = retailPriceFromSupplierUsd(perPieceUSD, sqm, normalizeQuantity(quantity), "roller");
     const totalISK = perPieceISK * normalizeQuantity(quantity);
     const withoutTrackUSD = perPieceUSD - sideTrackCost;
     const sideTrackExtraISK =
-      retailPriceFromSupplierUsd(withoutTrackUSD + SIDETRACK_USD_PER_M * h) -
-      retailPriceFromSupplierUsd(withoutTrackUSD);
+      retailPriceFromSupplierUsd(withoutTrackUSD + SIDETRACK_USD_PER_M * h, sqm, normalizeQuantity(quantity), "roller") -
+      retailPriceFromSupplierUsd(withoutTrackUSD, sqm, normalizeQuantity(quantity), "roller");
 
     return { sqm, perPieceUSD, totalUSD, perPieceISK, totalISK, holderCost, sideTrackExtraISK };
   }, [width, height, operation, fabric, sideTrack, quantity, holder]);
