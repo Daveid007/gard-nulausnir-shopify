@@ -14,6 +14,13 @@ export const VAT_FACTOR = 1.24;
 export const MARGIN_FACTOR = 1 / 0.6;
 export const RETAIL_PRICE_MULTIPLIER = 1.25 * 1.05;
 export const SUPPLIER_TO_RETAIL_ISK = 2 * MARGIN_FACTOR * USD_TO_ISK * VAT_FACTOR * RETAIL_PRICE_MULTIPLIER;
+/** Freight replaces (not supplements) the old 100% freight allowance. */
+export const BLIND_FREIGHT_USD = 100;
+export const LANDED_TO_RETAIL_ISK = SUPPLIER_TO_RETAIL_ISK / 2;
+export function fixedFreightBlindRetailPrice(supplierUsd: number): number {
+  if (!Number.isFinite(supplierUsd) || supplierUsd < 0) throw new Error("Invalid supplier cost");
+  return Math.round((supplierUsd + BLIND_FREIGHT_USD) * LANDED_TO_RETAIL_ISK);
+}
 
 /** Adjust an existing ISK retail amount, never a supplier USD cost. */
 export function increasedRetailPriceIsk(baseIsk: number): number {
@@ -228,7 +235,7 @@ export function blindRetailPriceIsk(
   options: BlindAccessoryOptions = {},
   minimumArea = 1,
 ): number {
-  return retailPriceFromSupplierUsd(blindSupplierUsd(widthMm, heightMm, fabricUsdPerSqm, options, minimumArea));
+  return fixedFreightBlindRetailPrice(blindSupplierUsd(widthMm, heightMm, fabricUsdPerSqm, options, minimumArea));
 }
 
 // Honeycomb Standard (45mm) from the workbook's 45mm supplier table.

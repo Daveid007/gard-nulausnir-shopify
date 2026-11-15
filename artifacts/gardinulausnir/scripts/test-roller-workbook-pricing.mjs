@@ -104,7 +104,7 @@ assert.equal(sourceFixture.supplier.totalUsd, sourceFixture.supplier.unitUsd * 2
 assert.equal(sourceFixture.supplier.trackUsd, 20.32, "U track is charged once for both sides");
 assert.equal(sourceFixture.effectiveWidthMm, 1270);
 const retailFactor = 2 * (1 / 0.6) * 121.16 * 1.24 * 1.25 * 1.05;
-assert.equal(sourceFixture.retail.unitIsk, Math.round(sourceFixture.supplier.unitUsd * retailFactor));
+assert.equal(sourceFixture.retail.unitIsk, Math.round((sourceFixture.supplier.unitUsd + 100) * retailFactor / 2));
 assert.equal(sourceFixture.retail.totalIsk, sourceFixture.retail.unitIsk * 2);
 
 assert.deepEqual(pricing.getRollerWorkbookSizeLimits("sheer", "motor", "SS-PA-100-110"), {

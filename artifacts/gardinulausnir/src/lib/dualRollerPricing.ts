@@ -1,5 +1,5 @@
 import { normalizeQuantity } from "./quantity.ts";
-import { retailPriceFromSupplierUsd, SUPPLIER_TO_RETAIL_ISK } from "./pricing";
+import { fixedFreightBlindRetailPrice as retailPriceFromSupplierUsd, LANDED_TO_RETAIL_ISK as SUPPLIER_TO_RETAIL_ISK } from "./pricing";
 
 export const DUAL_ROLLER_RETAIL_ISK = SUPPLIER_TO_RETAIL_ISK;
 export const DUAL_ROLLER_ACCESSORY_ISK = SUPPLIER_TO_RETAIL_ISK;

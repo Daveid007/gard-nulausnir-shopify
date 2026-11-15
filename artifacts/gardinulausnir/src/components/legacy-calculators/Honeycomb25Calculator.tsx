@@ -18,7 +18,7 @@ import { CASSETTE_RAIL_COLORS, HONEYCOMB_BOTTOM_RAIL_COLORS, HOLDER_COLORS, reso
 import { normalizeQuantity } from "@/lib/quantity";
 import { StorefrontLayout } from "./StorefrontLayout";
 import { MeasurementGuideTrigger } from "@/components/MeasurementGuide";
-import { HONEYCOMB_25_LIMITS, HOLDER_USD, retailPriceFromSupplierUsd, SUPPLIER_TO_RETAIL_ISK, type MountPosition } from "@/lib/pricing";
+import { HONEYCOMB_25_LIMITS, HOLDER_USD, fixedFreightBlindRetailPrice as retailPriceFromSupplierUsd, LANDED_TO_RETAIL_ISK as SUPPLIER_TO_RETAIL_ISK, type MountPosition } from "@/lib/pricing";
 
 const MIN_SQM_PER_PIECE = 1;
 const CORDLESS_ISK_PER_SQM = Math.round(3 * SUPPLIER_TO_RETAIL_ISK);
@@ -567,7 +567,7 @@ export default function Honeycomb25Calculator({ product }: { product?: any }) {
               <div className="flex justify-between"><span>Litur á botnstöng</span><span className="font-medium">{bottomRailColor}</span></div>
               <div className="flex justify-between pt-3 border-t border-primary-foreground/20">
                 <span>Efni · {TYPE_LABELS[fabric.type].is}</span>
-                <span>{fmtISK(calc.fabricUSD * SUPPLIER_TO_RETAIL_ISK)}</span>
+                <span>{fmtISK(retailPriceFromSupplierUsd(calc.fabricUSD))}</span>
               </div>
               {calc.cordlessUSD > 0 && <div className="flex justify-between"><span>Snærislaust</span><span>{fmtISK(calc.cordlessUSD * SUPPLIER_TO_RETAIL_ISK)}</span></div>}
               {calc.sidetrackUSD > 0 && <div className="flex justify-between"><span>Hliðarlisti</span><span>{fmtISK(calc.sidetrackUSD * SUPPLIER_TO_RETAIL_ISK)}</span></div>}

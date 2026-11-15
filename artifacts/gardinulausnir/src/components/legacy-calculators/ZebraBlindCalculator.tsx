@@ -17,7 +17,7 @@ import { CASSETTE_RAIL_COLORS, MOTORIZED_RAIL_COLORS, resolveRailColor } from "@
 import { normalizeQuantity } from "@/lib/quantity";
 import { StorefrontLayout } from "./StorefrontLayout";
 import { MeasurementGuideTrigger } from "@/components/MeasurementGuide";
-import { retailPriceFromSupplierUsd, SUPPLIER_TO_RETAIL_ISK } from "@/lib/pricing";
+import { fixedFreightBlindRetailPrice as retailPriceFromSupplierUsd, LANDED_TO_RETAIL_ISK as SUPPLIER_TO_RETAIL_ISK } from "@/lib/pricing";
 
 // Supplier cost, equal shipping, margin, FX and VAT are applied in pricing.ts.
 const USD_TO_ISK_RETAIL = SUPPLIER_TO_RETAIL_ISK;
@@ -418,7 +418,7 @@ export default function ZebraBlindCalculator({ product }: { product?: any }) {
               <div className="flex justify-between"><span>Kassettalitur</span><span className="font-medium">{railColor}</span></div>
               <div className="flex justify-between pt-3 border-t border-primary-foreground/20">
                 <span>Efni · {fmtISK(Math.round(fabric.usdPerSqm * USD_TO_ISK_RETAIL))}/m²</span>
-                <span>{fmtISK(Math.round(calc.fabricUSD * USD_TO_ISK_RETAIL))}</span>
+                <span>{fmtISK(retailPriceFromSupplierUsd(calc.fabricUSD))}</span>
               </div>
               {calc.motorUSD > 0 && (
                 <div className="flex justify-between">

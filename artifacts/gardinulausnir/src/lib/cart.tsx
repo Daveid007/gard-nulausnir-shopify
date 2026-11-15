@@ -9,7 +9,7 @@ import {
   dayNightSupplierRate,
   assertHoneycombSize,
   honeycombSupplierRate,
-  retailPriceFromSupplierUsd,
+  fixedFreightBlindRetailPrice,
   tdbuSupplierRate,
   type MountPosition,
 } from "./pricing";
@@ -381,7 +381,7 @@ export function priceLineIsk(item: CartItem): number {
       quantity: item.qty,
     }).totalIsk;
   }
-  return retailPriceFromSupplierUsd(priceCartItem(item)) * item.qty;
+  return fixedFreightBlindRetailPrice(priceCartItem(item)) * item.qty;
 }
 
 export function priceCartItem(item: CartItem): number {

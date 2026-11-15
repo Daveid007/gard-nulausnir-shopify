@@ -22,8 +22,8 @@ import { MeasurementGuideTrigger } from "@/components/MeasurementGuide";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import sideTrackImage from "@/assets/accessory-thumbs/honeycomb-side-track.png";
 import {
-  retailPriceFromSupplierUsd,
-  SUPPLIER_TO_RETAIL_ISK,
+  fixedFreightBlindRetailPrice as retailPriceFromSupplierUsd,
+  LANDED_TO_RETAIL_ISK as SUPPLIER_TO_RETAIL_ISK,
   HONEYCOMB_45_LIMITS,
   validateHoneycombSize,
   type MountPosition,
@@ -593,7 +593,7 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
               <div className="flex justify-between"><span>Litur á efri braut og botnlista</span><span className="font-medium">{railColor}</span></div>
               <div className="flex justify-between pt-3 border-t border-primary-foreground/20">
                 <span>Efni · {TYPE_LABELS[fabric.type].is}</span>
-                <span>{fmtISK(calc.fabricUSD * SUPPLIER_TO_RETAIL_ISK)}</span>
+                <span>{fmtISK(retailPriceFromSupplierUsd(calc.fabricUSD))}</span>
               </div>
               {calc.cordlessUSD > 0 && <div className="flex justify-between"><span>Snærislaust</span><span>{fmtISK(calc.cordlessUSD * SUPPLIER_TO_RETAIL_ISK)}</span></div>}
               {calc.motorUSD > 0 && <div className="flex justify-between"><span>Mótor + fjarstýring</span><span>{fmtISK((calc.motorUSD + calc.remoteUSD) * SUPPLIER_TO_RETAIL_ISK)}</span></div>}

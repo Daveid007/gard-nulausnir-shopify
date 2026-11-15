@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { useCart, HOLDER_USD, formatIsk } from "@/lib/cart";
 import { ShoppingBag } from "lucide-react";
 import { MeasurementGuideTrigger } from "@/components/MeasurementGuide";
-import { retailPriceFromSupplierUsd } from "@/lib/pricing";
+import { fixedFreightBlindRetailPrice as retailPriceFromSupplierUsd } from "@/lib/pricing";
 import { BOTTOM_RAIL_COLORS, HOLDER_COLORS } from "@/assets/railImages";
 import { normalizeQuantity } from "@/lib/quantity";
 import { COLLECTIONS } from "@/pages/storefront/_shared/fabric-collections";

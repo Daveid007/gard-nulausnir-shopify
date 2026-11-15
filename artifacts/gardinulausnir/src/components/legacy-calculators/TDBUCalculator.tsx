@@ -19,7 +19,7 @@ import { CASSETTE_RAIL_COLORS } from "@/assets/railImages";
 import { normalizeQuantity } from "@/lib/quantity";
 import { StorefrontLayout } from "./StorefrontLayout";
 import { MeasurementGuideTrigger } from "@/components/MeasurementGuide";
-import { retailPriceFromSupplierUsd, SUPPLIER_TO_RETAIL_ISK, TDBU_45_LIMITS, validateHoneycombSize, type MountPosition } from "@/lib/pricing";
+import { fixedFreightBlindRetailPrice as retailPriceFromSupplierUsd, LANDED_TO_RETAIL_ISK as SUPPLIER_TO_RETAIL_ISK, TDBU_45_LIMITS, validateHoneycombSize, type MountPosition } from "@/lib/pricing";
 import { HoneycombOptions } from "./HoneycombOptions";
 
 const USD_TO_ISK_RETAIL = SUPPLIER_TO_RETAIL_ISK;
@@ -413,7 +413,7 @@ export default function TDBUCalculator({ product }: { product?: any }) {
               <div className="flex justify-between"><span>Litur á brautum</span><span className="font-medium">{railColor}</span></div>
               <div className="flex justify-between pt-3 border-t border-primary-foreground/20">
                 <span>Efni · {TYPE_LABELS[fabric.type].is}</span>
-                <span>{fmtISK(calc.fabricUSD * USD_TO_ISK_RETAIL)}</span>
+                <span>{fmtISK(retailPriceFromSupplierUsd(calc.fabricUSD))}</span>
               </div>
                {calc.cordlessUSD > 0 && <div className="flex justify-between"><span>Þráðlaus</span><span>{fmtISK(calc.cordlessUSD * USD_TO_ISK_ACCESSORY)}</span></div>}
               {calc.sidetrackUSD > 0 && <div className="flex justify-between"><span>Hliðarlisti</span><span>{fmtISK(calc.sidetrackUSD * USD_TO_ISK_ACCESSORY)}</span></div>}

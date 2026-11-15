@@ -21,6 +21,7 @@ const vertical = await import(pathToFileURL(join(root, "src/lib/verticalSheerPri
 
 const originalFactor = 2 / 0.6 * 121.16 * 1.24;
 const expectedUnit = (usd) => Math.round(usd * originalFactor * 1.25 * 1.05);
+const expectedFixedUnit = (usd) => Math.round((usd + 100) / 0.6 * 121.16 * 1.24 * 1.25 * 1.05);
 assert.equal(pricing.RETAIL_PRICE_MULTIPLIER, 1.25 * 1.05);
 assert.equal(pricing.increasedRetailPriceIsk(11268), Math.round(11268 * 1.25 * 1.05));
 assert.equal(pricing.retailPriceFromSupplierUsd(22.5), expectedUnit(22.5));
@@ -47,10 +48,10 @@ for (const rate of [12.5, 15.63, 16.0010700873129, 26.3427429770029]) {
     { operation: "manual", sideTrack: true, sideTrackType: "l" },
   ]) {
     const supplierUsd = pricing.blindSupplierUsd(1200, 1500, rate, options);
-    assert.equal(pricing.blindRetailPriceIsk(1200, 1500, rate, options), expectedUnit(supplierUsd));
+    assert.equal(pricing.blindRetailPriceIsk(1200, 1500, rate, options), expectedFixedUnit(supplierUsd));
   }
 }
-assert.equal(dual.DUAL_ROLLER_RETAIL_ISK, pricing.SUPPLIER_TO_RETAIL_ISK);
+assert.equal(dual.DUAL_ROLLER_RETAIL_ISK, pricing.LANDED_TO_RETAIL_ISK);
 assert.equal(vertical.VERTICAL_SHEER_RETAIL_FACTOR, pricing.SUPPLIER_TO_RETAIL_ISK);
 assert.equal(roller.rollerWorkbookFabrics.length, 338);
 for (const fabric of roller.rollerWorkbookFabrics) {
@@ -60,7 +61,7 @@ for (const fabric of roller.rollerWorkbookFabrics) {
     track: "none", cassette: "Square with fabric inserted",
   });
   assert.equal(quote.ok, true, fabric.code);
-  assert.equal(quote.retail.unitIsk, expectedUnit(quote.supplier.unitUsd), fabric.code);
+  assert.equal(quote.retail.unitIsk, (["roller", "zebra"].includes(fabric.family) ? expectedFixedUnit : expectedUnit)(quote.supplier.unitUsd), fabric.code);
   assert.equal(quote.retail.totalIsk, quote.retail.unitIsk * 3, fabric.code);
 }
 for (const productId of windour.WINDOUR_PRODUCT_IDS) {
@@ -73,7 +74,7 @@ for (const productId of windour.WINDOUR_PRODUCT_IDS) {
   assert.equal(quote.totalIsk, quote.unitIsk * 3, productId);
 }
 const cartSource = await readFile(join(root, "src/lib/cart.tsx"), "utf8");
-assert.match(cartSource, /retailPriceFromSupplierUsd\(priceCartItem\(item\)\) \* item.qty/);
+assert.match(cartSource, /fixedFreightBlindRetailPrice\(priceCartItem\(item\)\) \* item.qty/);
 assert.match(cartSource, /quote\.retail\.totalIsk/);
 assert.match(cartSource, /calculateWindourQuote/);
 console.log(`Additional 5% over existing 25% retail increase passed: shared blind, cart, dual roller, vertical sheer, WINdoûr, and all ${roller.rollerWorkbookFabrics.length} workbook fabrics.`);
