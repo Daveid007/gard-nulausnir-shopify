@@ -1030,7 +1030,10 @@ export function buildShopifyDraftOrderLines(items: CartItem[]): ShopifyDraftOrde
   const lines: ShopifyDraftOrderLine[] = items.map((item) => {
     const { unitUsd, description, name } = priceItem(item);
     const freight = orderFreightUsd(item, items);
-    const unitPriceIsk = freight !== undefined ? freightBlindRetailPrice(unitUsd, freight) : Math.round(unitUsd * USD_TO_ISK_RETAIL);
+    const currentUnitPriceIsk = freight !== undefined ? freightBlindRetailPrice(unitUsd, freight) : Math.round(unitUsd * USD_TO_ISK_RETAIL);
+    // New orders only; keep freight tables and historical orders unchanged.
+    const unitPriceIsk = item.type === "honeycomb" && item.sideTrack && item.sideTrackType === "u"
+      ? Math.round(currentUnitPriceIsk * 1.25) : currentUnitPriceIsk;
     return {
       productHandle: productHandle(item),
       title: name,
@@ -1050,6 +1053,39 @@ export function buildShopifyDraftOrderLines(items: CartItem[]): ShopifyDraftOrde
   });
   return lines;
 }
+
+export function buildCartQuote(items: CartItem[]) {
+  const lines = buildShopifyDraftOrderLines(items);
+  const subtotalIsk = lines.filter(line => line.requiresShipping)
+    .reduce((sum, line) => sum + line.unitPriceIsk * line.quantity, 0);
+  const installationIsk = 0;
+  return {
+    currency: "ISK",
+    subtotalIsk,
+    installationIsk,
+    totalIsk: subtotalIsk + installationIsk,
+    vatIncluded: true,
+    // Supplier freight is already in the formula; customer delivery is separate.
+    deliveryIncluded: false,
+    lines: lines.map(line => ({
+      title: line.title, quantity: line.quantity, unitPriceIsk: line.unitPriceIsk,
+      totalIsk: line.unitPriceIsk * line.quantity,
+    })),
+  };
+}
+
+router.post("/sol/quote", (req, res) => {
+  const parsed = checkoutRequestSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Ekki er hægt að staðfesta þessa körfu. Endurstilltu vörurnar í reiknivélinni.", code: "INVALID_CART" });
+    return;
+  }
+  try {
+    res.set("Cache-Control", "no-store").json(buildCartQuote(parsed.data.items));
+  } catch {
+    res.status(422).json({ error: "Ekki tókst að staðfesta verð. Endurstilltu vörurnar í reiknivélinni.", code: "INVALID_CONFIGURATION" });
+  }
+});
 
 router.post("/sol/checkout", async (req, res) => {
   const parsed = checkoutRequestSchema.safeParse(req.body);
