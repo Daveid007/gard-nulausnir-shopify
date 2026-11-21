@@ -80,9 +80,9 @@ export function HelpDrawer() {
               <AccordionContent className="border border-t-0 border-[#ccd9df] bg-white p-5 text-sm text-[#596872] motion-reduce:animate-none">
                 <Accordion type="single" collapsible className="w-full">
                   <AccordionItem value="faq-1" className="border-b border-[#ccd9df] py-1">
-                    <AccordionTrigger className="text-sm font-medium text-[#24313b] hover:no-underline hover:text-[#6892b8] py-2">Afhendingartími</AccordionTrigger>
+                    <AccordionTrigger className="text-sm font-medium text-[#24313b] hover:no-underline hover:text-[#6892b8] py-2">Framleiðslu- og afhendingartími</AccordionTrigger>
                     <AccordionContent className="text-sm text-[#596872] pb-3 motion-reduce:animate-none">
-                      10–18 virkir dagar (sérframleitt frá grunni).
+                      Framleiðslutími er 30 dagar. Afhendingartími er staðfestur við pöntun.
                     </AccordionContent>
                   </AccordionItem>
                   <AccordionItem value="faq-2" className="border-b border-[#ccd9df] py-1">
