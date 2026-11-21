@@ -198,8 +198,8 @@ function FaqDialog() {
   return (
     <FooterDialog label="Algengar spurningar (FAQ)" description="Svör við algengum spurningum úr Hjálp & Upplýsingum.">
       <div className={dialogTextClass}>
-        <h3 className="font-medium text-[#24313b]">Afhendingartími</h3>
-        <p className="mt-2">10–18 virkir dagar (sérframleitt frá grunni).</p>
+        <h3 className="font-medium text-[#24313b]">Framleiðslu- og afhendingartími</h3>
+        <p className="mt-2">Framleiðslutími er 30 dagar. Afhendingartími er staðfestur við pöntun.</p>
       </div>
       <div className={dialogTextClass}>
         <h3 className="font-medium text-[#24313b]">Þrif & umhirða</h3>
@@ -235,7 +235,7 @@ function DeliveryDialog() {
   return (
     <FooterDialog label="Afhending & flutningur" description="Núverandi upplýsingar um sérframleiddar pantanir.">
       <p className={dialogTextClass}>
-        Núverandi hjálparupplýsingar segja: 10–18 virkir dagar (sérframleitt frá grunni). Fáðu staðfestingu á afhendingartíma og skilmálum fyrir þína sérpöntun áður en hún er samþykkt.
+        Framleiðslutími er 30 dagar. Afhendingartími er staðfestur við pöntun. Fáðu staðfestingu á afhendingartíma og skilmálum fyrir þína sérpöntun áður en hún er samþykkt.
       </p>
       <a className={dialogLinkClass} href="mailto:sala@gardinulausnir.is?subject=Afhending%20og%20flutningur">
         Spyrja um afhendingu
