@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { fabricColorLabel } from "./fabricLabels";
+import { honeycombRetailUplift } from "./honeycombRetailUplift";
 import {
   calculateDualRollerCartTotal,
   calculateDualRollerPrice,
@@ -348,7 +349,9 @@ const LEGACY_STORAGE_KEY = "solmyrkvun.cart.v1";
 export function priceLineIsk(item: CartItem, orderItems: readonly CartItem[] = [item]): number {
   if (item.needsReconfigure) return 0;
   const freight = orderFreightUsd(item, orderItems);
-  if (freight !== undefined) return Math.round((priceCartItem(item) + freight) * LANDED_TO_RETAIL_ISK) * item.qty;
+  if (freight !== undefined) return honeycombRetailUplift(
+    Math.round((priceCartItem(item) + freight) * LANDED_TO_RETAIL_ISK), item,
+  ) * item.qty;
   if (item.type === "roller-workbook") {
     const quote = quoteRollerWorkbookBlind({ ...item.configuration, quantity: item.qty });
     return quote.ok ? quote.retail.totalIsk : 0;

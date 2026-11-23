@@ -29,7 +29,7 @@ import {
   type MountPosition,
 } from "@/lib/pricing";
 import { RailColorSwatches } from "./RailColorSwatches";
-import { HoneycombControlHelp, HoneycombMountHelp } from "./HoneycombChoiceHelp";
+import { HoneycombControlHelp } from "./HoneycombChoiceHelp";
 
 const MIN_SQM_PER_PIECE = 1;
 const CORDLESS_ISK_PER_SQM = Math.round(3 * SUPPLIER_TO_RETAIL_ISK);
@@ -168,6 +168,8 @@ const TYPE_THEME: Record<FabricType, TypeTheme> = {
   },
 };
 
+import { honeycombRetailUplift } from "@/lib/honeycombRetailUplift";
+
 function fmtISK(v: number) {
   return v.toLocaleString("is-IS", { maximumFractionDigits: 0 }) + " kr.";
 }
@@ -187,7 +189,7 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
     setSideTrack(value !== "none");
     if (value === "Hvítur" || value === "Svartur") setSideTrackColor(value);
   }
-  const [mountPosition, setMountPosition] = useState<MountPosition>("outside");
+  const mountPosition: MountPosition = "outside";
   const [noDrill, setNoDrill] = useState<boolean>(false);
   const { railColor, setRailColor } = useRailColor();
   const [lastCassetteColor, setLastCassetteColor] = useState<string>(railColor);
@@ -226,7 +228,7 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
   }, [fabricCode, fabricType, grouped]);
 
   const calc = useMemo(() => {
-    const w = Math.max(0.3, (mountPosition === "inside" ? width - 5 : width) / 1000);
+    const w = Math.max(0.3, width / 1000);
     const h = Math.max(0.3, height / 1000);
     const rawArea = w * h;
     const billedArea = Math.max(MIN_SQM_PER_PIECE, rawArea);
@@ -240,7 +242,10 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
 
     const perPieceUSD = fabricUSD + cordlessUSD + noDrillUSD + motorUSD + remoteUSD + sidetrackUSD;
     const totalUSD = perPieceUSD * quantity;
-    const perPieceISK = retailPriceFromSupplierUsd(perPieceUSD, rawArea, quantity, "cellular");
+    const perPieceISK = honeycombRetailUplift(
+      retailPriceFromSupplierUsd(perPieceUSD, rawArea, quantity, "cellular"),
+      { type: "honeycomb", sideTrack, sideTrackType },
+    );
     const totalISK = perPieceISK * quantity;
 
     const size = validateHoneycombSize({
@@ -320,9 +325,8 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
             <div data-testid="hc-honeycomb-options" className="space-y-1.5">
               <span className="block text-[10px] uppercase tracking-[.16em]">Festing</span>
               <div className="grid grid-cols-2 gap-1.5">
-                <select aria-label="Festing / Mount" data-testid="hc-mount-position" value={mountPosition} onChange={(e) => setMountPosition(e.target.value as MountPosition)} className="h-11 w-full border border-[#ccd9df] bg-transparent px-1.5 text-xs md:h-8">
+                <select aria-label="Festing / Mount" data-testid="hc-mount-position" value={mountPosition} disabled className="h-11 w-full border border-[#ccd9df] bg-transparent px-1.5 text-xs md:h-8">
                   <option value="outside">Utanáliggjandi</option>
-                  <option value="inside">Innfelld (−5 mm)</option>
                 </select>
                 <label className="flex h-11 items-center justify-between gap-1 border border-[#ccd9df] px-2 text-[10px] uppercase md:h-8"><span>Án borunar</span><input type="checkbox" aria-label="Án borunar / No-drill" data-testid="hc-no-drill" checked={noDrill} onChange={(e) => setNoDrill(e.target.checked)} /></label>
                 <label className="col-span-2 text-[10px] uppercase tracking-[.14em]">
@@ -338,7 +342,7 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
                 )}
               </div>
             </div>
-            <HoneycombMountHelp mountPosition={mountPosition} />
+            <p className="mt-2 text-xs leading-relaxed text-[#52636f]">Sláðu inn endanlega breidd og hæð gardínunnar. Enginn frádráttur er gerður frá málunum.</p>
             <Dialog>
               <DialogTrigger asChild>
                 <button type="button" data-testid="honeycomb-side-track-photo" className="flex min-h-11 w-full items-center gap-3 border border-[#ccd9df] px-2 py-1 text-left text-[10px] uppercase tracking-wide hover:bg-[#e2edf1]">
@@ -524,11 +528,10 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
               {sideTrack && <p className="text-xs text-muted-foreground">Hliðarlistar: U-listar</p>}
               <div>
                 <Label htmlFor="hc-mount-position" className="text-xs font-semibold mb-1.5 block">Festing / Mount</Label>
-                <Select value={mountPosition} onValueChange={(v) => setMountPosition(v as MountPosition)}>
+                <Select value={mountPosition} disabled>
                   <SelectTrigger id="hc-mount-position"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="outside">Utanáliggjandi / Outside</SelectItem>
-                    <SelectItem value="inside">Innfelld / Inside (−5 mm breidd)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -538,7 +541,7 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
               </label>
             </div>
 
-            <HoneycombMountHelp mountPosition={mountPosition} />
+            <p className="mt-2 text-xs leading-relaxed text-[#52636f]">Sláðu inn endanlega breidd og hæð gardínunnar. Enginn frádráttur er gerður frá málunum.</p>
 
             {/* STEP 4 — Head rail colour */}
             <div>
