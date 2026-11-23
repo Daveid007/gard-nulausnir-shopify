@@ -243,7 +243,7 @@ export default function HoneycombCalculator({ product }: { product?: any }) {
     const perPieceUSD = fabricUSD + cordlessUSD + noDrillUSD + motorUSD + remoteUSD + sidetrackUSD;
     const totalUSD = perPieceUSD * quantity;
     const perPieceISK = honeycombRetailUplift(
-      retailPriceFromSupplierUsd(perPieceUSD, rawArea, quantity, "cellular"),
+      retailPriceFromSupplierUsd(perPieceUSD, rawArea, quantity, "cellular", false),
       { type: "honeycomb", sideTrack, sideTrackType },
     );
     const totalISK = perPieceISK * quantity;

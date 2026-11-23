@@ -1,4 +1,4 @@
-import { RETAIL_PRICE_MULTIPLIER } from "./pricing.ts";
+import { RETAIL_PRICE_MULTIPLIER, increasedRetailPriceIsk } from "./pricing.ts";
 
 // Owner-approved retail formula. Keep the historical export names so existing
 // callers remain compatible; these amounts are no longer illustrative prices.
@@ -85,7 +85,10 @@ export function quoteOpenRollExample(input: OpenRollExampleInput): OpenRollExamp
   const areaIsk = OPEN_ROLL_RETAIL_AREA_RATE_ISK * input.widthCm * input.heightCm / 10_000;
   const modifiersIsk = (colorModifier! + railModifier! + holderModifier!) * RETAIL_PRICE_MULTIPLIER;
   const unroundedUnitIsk = OPEN_ROLL_RETAIL_BASE_ISK + areaIsk + modifiersIsk;
-  const unitIsk = Math.round(unroundedUnitIsk);
+  const unitIsk = increasedRetailPriceIsk(
+    OPEN_ROLL_EXAMPLE_BASE_ISK + OPEN_ROLL_EXAMPLE_AREA_RATE_ISK * input.widthCm * input.heightCm / 10_000 +
+    colorModifier! + railModifier! + holderModifier!,
+  );
   return {
     ok: true,
     baseIsk: OPEN_ROLL_RETAIL_BASE_ISK,

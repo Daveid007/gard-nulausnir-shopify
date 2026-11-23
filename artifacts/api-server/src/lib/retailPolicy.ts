@@ -1,4 +1,9 @@
-// Pure 40% gross margin: no additional retail uplifts.
+// Baseline factors are unchanged; apply the new uplift after existing unit rounding.
+export const ADDITIONAL_RETAIL_INCREASE = 1.15;
+export function increasedRetailPriceIsk(currentUnitIsk: number): number {
+  if (!Number.isFinite(currentUnitIsk) || currentUnitIsk < 0) throw new Error("Invalid retail price");
+  return Math.round(Math.round(currentUnitIsk) * ADDITIONAL_RETAIL_INCREASE);
+}
 export const RETAIL_INCREASE = 1;
 export const INSTALLATION_ISK = 0;
 export const SUPPLIER_TO_RETAIL_ISK = 2 * (1 / 0.6) * 121.16 * 1.24 * RETAIL_INCREASE;

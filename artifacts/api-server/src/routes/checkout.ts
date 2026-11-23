@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { freightBlindRetailPrice, SUPPLIER_TO_RETAIL_ISK } from "../lib/retailPolicy";
+import { freightBlindRetailPrice, SUPPLIER_TO_RETAIL_ISK, increasedRetailPriceIsk } from "../lib/retailPolicy";
 import { orderFreightUsd } from "../lib/freight";
 import { supplierRate, updateSupplierTable } from "../lib/supplierPricesRev4";
 import { z } from "zod";
@@ -1032,8 +1032,9 @@ export function buildShopifyDraftOrderLines(items: CartItem[]): ShopifyDraftOrde
     const freight = orderFreightUsd(item, items);
     const currentUnitPriceIsk = freight !== undefined ? freightBlindRetailPrice(unitUsd, freight) : Math.round(unitUsd * USD_TO_ISK_RETAIL);
     // New orders only; keep freight tables and historical orders unchanged.
-    const unitPriceIsk = item.type === "honeycomb" && item.sideTrack && item.sideTrackType === "u"
+    const previousUnitPriceIsk = item.type === "honeycomb" && item.sideTrack && item.sideTrackType === "u"
       ? Math.round(currentUnitPriceIsk * 1.25) : currentUnitPriceIsk;
+    const unitPriceIsk = increasedRetailPriceIsk(previousUnitPriceIsk);
     return {
       productHandle: productHandle(item),
       title: name,
