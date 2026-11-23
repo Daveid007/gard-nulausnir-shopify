@@ -117,6 +117,7 @@ export function ProductDetail() {
   const [sideRails, setSideRails] = useState(false);
   const [holder, setHolder] = useState(0);
   const [imageView, setImageView] = useState<"primary" | "secondary">("primary");
+  const [galleryIndex, setGalleryIndex] = useState(0);
   const [zoom, setZoom] = useState(false);
   const [mobileSummaryOpen, setMobileSummaryOpen] = useState(false);
   const [width, setWidth] = useState("80");
@@ -139,7 +140,7 @@ export function ProductDetail() {
   const price = hasLivePrice ? parsedLivePrice : 0;
   const validDimensions = widthValue >= 30 && widthValue <= 400 && heightValue >= 30 && heightValue <= 400;
   const dimensions = `${width || "—"} × ${height || "—"} cm`;
-  const activeImage = imageView === "secondary" ? product.secondary : product.image;
+  const activeImage = product.gallery?.[galleryIndex] ?? (imageView === "secondary" ? product.secondary : product.image);
   const inquiryContext = hasThedourColourOptions
     ? `${product.title} · rammalitur: ${thedourFrameColor}${isBlinddour ? ` · honeycomb-litur: ${thedourHoneycombColor}` : ""}${isRoldour ? ` · efni/net: ${thedourRoldourFabricColor}` : ""}`
     : product.title;
@@ -243,8 +244,12 @@ export function ProductDetail() {
              <div data-testid="product-box" className="grid min-w-0 md:grid-cols-[minmax(0,1.12fr)_minmax(370px,.88fr)] gap-8 md:gap-14">
                <div data-testid="gallery" className="grid min-w-0 grid-cols-[minmax(0,.27fr)_minmax(0,.73fr)] gap-3 md:gap-5 h-fit">
                  <div className="flex min-w-0 flex-col gap-3 md:gap-5">
-                   <button onClick={() => setImageView("primary")} className={`relative flex aspect-[4/3] max-h-[160px] items-center justify-center overflow-hidden border-2 bg-[#e8eef1] ${imageView === "primary" ? "border-[#24313b]" : "border-transparent opacity-65"}`}><ResponsiveImage src={product.image} alt={product.title} sizes="120px" className="max-h-full max-w-full object-contain p-2" /></button>
-                   <button onClick={() => setImageView("secondary")} className={`relative flex aspect-[4/3] max-h-[160px] items-center justify-center overflow-hidden border-2 bg-[#e8eef1] transition hover:opacity-100 ${imageView === "secondary" ? "border-[#24313b]" : "border-transparent opacity-65"}`}><ResponsiveImage src={product.secondary} alt={`${product.title}, önnur sýn`} sizes="120px" className="max-h-full max-w-full object-contain p-2" /></button>
+                   {product.gallery ? product.gallery.map((photo, index) => (
+                     <button key={photo} type="button" aria-label={`Skoða mynd ${index + 1} af ${product.title}`} aria-pressed={galleryIndex === index} onClick={() => setGalleryIndex(index)} className={`relative flex aspect-[4/3] max-h-[160px] items-center justify-center overflow-hidden border-2 bg-[#e8eef1] ${galleryIndex === index ? "border-[#24313b]" : "border-transparent opacity-65"}`}>
+                       <ResponsiveImage src={photo} alt={`${product.title}, mynd ${index + 1}`} sizes="120px" className="max-h-full max-w-full object-contain p-2" />
+                     </button>
+                   )) : <button onClick={() => setImageView("primary")} className={`relative flex aspect-[4/3] max-h-[160px] items-center justify-center overflow-hidden border-2 bg-[#e8eef1] ${imageView === "primary" ? "border-[#24313b]" : "border-transparent opacity-65"}`}><ResponsiveImage src={product.image} alt={product.title} sizes="120px" className="max-h-full max-w-full object-contain p-2" /></button>}
+                   {!product.gallery && <button onClick={() => setImageView("secondary")} className={`relative flex aspect-[4/3] max-h-[160px] items-center justify-center overflow-hidden border-2 bg-[#e8eef1] transition hover:opacity-100 ${imageView === "secondary" ? "border-[#24313b]" : "border-transparent opacity-65"}`}><ResponsiveImage src={product.secondary} alt={`${product.title}, önnur sýn`} sizes="120px" className="max-h-full max-w-full object-contain p-2" /></button>}
                  </div>
                   <div className="min-w-0">
                     <div className="relative flex w-full aspect-[4/3] max-h-[500px] items-center justify-center overflow-hidden bg-[#c8d6dc] p-4">
