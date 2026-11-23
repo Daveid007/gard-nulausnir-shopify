@@ -14,6 +14,18 @@ register(`data:text/javascript,${encodeURIComponent(`
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const pricing = await import(pathToFileURL(join(root, "src/lib/pricing.ts")).href);
+const { honeycombRetailUplift } = await import(pathToFileURL(join(root, "src/lib/honeycombRetailUplift.ts")).href);
+const uTrack = { type: "honeycomb", sideTrack: true, sideTrackType: "u" };
+assert.equal(honeycombRetailUplift(23770, uTrack), 29713);
+assert.equal(honeycombRetailUplift(24874, uTrack), 31093);
+assert.equal(honeycombRetailUplift(21757, { ...uTrack, sideTrack: false }), 21757);
+for (const type of ["honeycomb-25", "daynight", "tdbu", "roller"]) {
+  assert.equal(honeycombRetailUplift(23770, { ...uTrack, type }), 23770);
+}
+assert.equal(honeycombRetailUplift(23770, { ...uTrack, sideTrackType: "l" }), 23770);
+const calculatorSource = await readFile(join(root, "src/components/legacy-calculators/HoneycombCalculator.tsx"), "utf8");
+assert.ok(!calculatorSource.includes('value="inside"'), "45 mm calculator must not offer inside measurement");
+assert.ok(calculatorSource.includes('const mountPosition: MountPosition = "outside"'));
 const freight = await import(pathToFileURL(join(root, "src/lib/freight.ts")).href);
 const tierQuantities = [1, 3, 4, 7, 8, 10, 11, 14, 15, 18, 19, 99];
 for (const [group, rates] of Object.entries({
