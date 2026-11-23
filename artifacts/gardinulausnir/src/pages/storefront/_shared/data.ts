@@ -1,3 +1,15 @@
+const honeycombInstallationGallery = [
+  new URL("../../../assets/honeycomb-installation/4186.webp", import.meta.url).href,
+  new URL("../../../assets/honeycomb-installation/4172.webp", import.meta.url).href,
+  new URL("../../../assets/honeycomb-installation/4174.webp", import.meta.url).href,
+  new URL("../../../assets/honeycomb-installation/4177.webp", import.meta.url).href,
+  new URL("../../../assets/honeycomb-installation/4184.webp", import.meta.url).href,
+  new URL("../../../assets/honeycomb-installation/4185.webp", import.meta.url).href,
+  new URL("../../../assets/honeycomb-installation/4182.webp", import.meta.url).href,
+  new URL("../../../assets/honeycomb-installation/1839.webp", import.meta.url).href,
+  new URL("../../../assets/honeycomb-installation/1852.webp", import.meta.url).href,
+  new URL("../../../assets/honeycomb-installation/1860.webp", import.meta.url).href,
+];
 import { categoryLabel, resolveProductCategory } from "./collectionCategories.ts";
 import { CURTAIN_PRODUCT_DEFINITIONS } from "./curtains.ts";
 import { zebraPrimaryImage } from "./zebra-assets.ts";
@@ -54,7 +66,7 @@ const curtainCatalogProducts: Product[] = CURTAIN_PRODUCT_DEFINITIONS.map((defin
 }));
 
 const catalogProducts: Product[] = [
-  { id: "honeycomb-45mm", title: "Honeycomb 45 mm", subtitle: "Álfilma · algjör myrkvun", category: "Honeycomb", price: "Reiknast eftir máli", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-honeycomb-45mm.png?v=1787921250", secondary: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/02-honeycomb-45mm-detail.png?v=1787921252", colors: [], note: "100% myrkvun", sizes: ["60–120 cm", "121–180 cm", "181–240 cm"] },
+  { id: "honeycomb-45mm", title: "Honeycomb 45 mm", subtitle: "Álfilma · algjör myrkvun", category: "Honeycomb", price: "Reiknast eftir máli", image: honeycombInstallationGallery[0], secondary: honeycombInstallationGallery[1], gallery: honeycombInstallationGallery, colors: [], note: "100% myrkvun", sizes: ["60–120 cm", "121–180 cm", "181–240 cm"] },
   { id: "honeycomb-25mm", title: "Honeycomb 25 mm", subtitle: "Mjór kassi · mjúk birta", category: "Honeycomb", price: "Reiknast eftir máli", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-honeycomb-25mm.png?v=1787921264", secondary: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/02-honeycomb-25mm-detail.png?v=1787921266", colors: [], note: "Cellular", sizes: ["60–120 cm", "121–180 cm"] },
   { id: "day-night", title: "Dagur & Nótt", subtitle: "Tvö lög · dagsbirta og myrkvun", category: "Honeycomb", price: "Reiknast eftir máli", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-day-and-night.jpg?v=1787921276", secondary: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/02-day-and-night-detail.jpg?v=1787921278", colors: [], note: "Dagur & nótt", sizes: ["60–120 cm", "121–180 cm", "181–240 cm"] },
   { id: "top-down-bottom-up", title: "Top-Down Bottom-Up", subtitle: "Brautalaus ljósstýring", category: "Honeycomb", price: "Reiknast eftir máli", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-top-down-bottom-up.jpg?v=1787921285", secondary: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-top-down-bottom-up.jpg?v=1787921285", colors: [], note: "TDBU", sizes: ["60–120 cm", "121–180 cm"] },

@@ -99,8 +99,9 @@ assert.ok(direct);
 assert.equal(direct.title, "Honeycomb 45 mm");
 assert.equal(direct.subtitle, "Álfilma · algjör myrkvun");
 assert.equal(direct.price, currency.format(Math.round(123450 * 1.15)));
-assert.equal(direct.image, "https://shopify.test/direct-featured.jpg");
-assert.equal(direct.secondary, "https://shopify.test/direct-secondary.jpg");
+assert.match(direct.image, /honeycomb-installation\/4186\.webp$/);
+assert.match(direct.secondary, /honeycomb-installation\/4172\.webp$/);
+assert.equal(direct.gallery.length, 10);
 
 const collectionProduct = catalog.products.find(({ id }) => id === "windour-single-999");
 assert.ok(collectionProduct);
