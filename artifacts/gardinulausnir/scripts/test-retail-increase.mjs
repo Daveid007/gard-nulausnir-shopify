@@ -16,13 +16,14 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const pricing = await import(pathToFileURL(join(root, "src/lib/pricing.ts")).href);
 const { honeycombRetailUplift } = await import(pathToFileURL(join(root, "src/lib/honeycombRetailUplift.ts")).href);
 const uTrack = { type: "honeycomb", sideTrack: true, sideTrackType: "u" };
-assert.equal(honeycombRetailUplift(23770, uTrack), 29713);
-assert.equal(honeycombRetailUplift(24874, uTrack), 31093);
-assert.equal(honeycombRetailUplift(21757, { ...uTrack, sideTrack: false }), 21757);
+const increase = (price) => Math.round(Math.round(price) * 1.15);
+assert.equal(honeycombRetailUplift(23770, uTrack), 34170);
+assert.equal(honeycombRetailUplift(24874, uTrack), increase(31093));
+assert.equal(honeycombRetailUplift(21757, { ...uTrack, sideTrack: false }), increase(21757));
 for (const type of ["honeycomb-25", "daynight", "tdbu", "roller"]) {
-  assert.equal(honeycombRetailUplift(23770, { ...uTrack, type }), 23770);
+  assert.equal(honeycombRetailUplift(23770, { ...uTrack, type }), increase(23770));
 }
-assert.equal(honeycombRetailUplift(23770, { ...uTrack, sideTrackType: "l" }), 23770);
+assert.equal(honeycombRetailUplift(23770, { ...uTrack, sideTrackType: "l" }), increase(23770));
 const calculatorSource = await readFile(join(root, "src/components/legacy-calculators/HoneycombCalculator.tsx"), "utf8");
 assert.ok(!calculatorSource.includes('value="inside"'), "45 mm calculator must not offer inside measurement");
 assert.ok(calculatorSource.includes('const mountPosition: MountPosition = "outside"'));
@@ -46,15 +47,15 @@ const roller = await import(pathToFileURL(join(root, "src/lib/rollerWorkbookPric
 const vertical = await import(pathToFileURL(join(root, "src/lib/verticalSheerPricing.ts")).href);
 
 const originalFactor = 2 / 0.6 * 121.16 * 1.24;
-const expectedUnit = (usd) => Math.round(usd * originalFactor);
-const expectedFreightUnit = (usd, area, rate) => Math.round((usd + area * rate) * 121.16 * 1.24 / 0.6);
+const expectedUnit = (usd) => increase(usd * originalFactor);
+const expectedFreightUnit = (usd, area, rate) => increase((usd + area * rate) * 121.16 * 1.24 / 0.6);
 assert.equal(pricing.BLIND_GROSS_MARGIN, 0.40);
 assert.equal(pricing.LANDED_TO_RETAIL_ISK, 121.16 * 1.24 / 0.6);
-assert.equal(pricing.RETAIL_PRICE_MULTIPLIER, 1);
-assert.equal(pricing.increasedRetailPriceIsk(11268), 11268);
+assert.equal(pricing.RETAIL_PRICE_MULTIPLIER, 1.15);
+assert.equal(pricing.increasedRetailPriceIsk(11268), increase(11268));
 const curtains = await import(pathToFileURL(join(root, "src/lib/curtainPricing.ts")).href);
 assert.equal(curtains.CURTAIN_RETAIL_INCREASE, 1);
-assert.equal(pricing.quantityFreightBlindRetailPrice(1.95 * 15.35, 1.95, 1, "cellular"), 24340);
+assert.equal(pricing.quantityFreightBlindRetailPrice(1.95 * 15.35, 1.95, 1, "cellular"), increase(24340));
 assert.equal(pricing.retailPriceFromSupplierUsd(22.5), expectedUnit(22.5));
 assert.equal(pricing.USD_TO_ISK, 121.16);
 // The later REV 4 supplier import changed this baseline, independently of
@@ -104,7 +105,7 @@ for (const productId of windour.WINDOUR_PRODUCT_IDS) {
     quantity: 3, openingType: "single", openingDirection: "horizontal",
   });
   assert.ok(quote, productId);
-  assert.equal(quote.unitIsk, Math.round(quote.totalUsd * 121.16), productId);
+  assert.equal(quote.unitIsk, increase(quote.totalUsd * 121.16), productId);
   assert.equal(quote.totalIsk, quote.unitIsk * 3, productId);
 }
 const cartSource = await readFile(join(root, "src/lib/cart.tsx"), "utf8");
@@ -112,4 +113,4 @@ assert.match(cartSource, /orderFreightUsd\(item, orderItems\)/);
 assert.match(cartSource, /priceLineIsk\(item, items\)/);
 assert.match(cartSource, /quote\.retail\.totalIsk/);
 assert.match(cartSource, /calculateWindourQuote/);
-console.log(`Pure 40% gross margin passed: shared blind, cart, curtains, dual roller, vertical sheer, WINdoûr, and all ${roller.rollerWorkbookFabrics.length} workbook fabrics.`);
+console.log(`Additional 15% passed: shared blinds, cart, WINdoûr, and all ${roller.rollerWorkbookFabrics.length} workbook fabrics; Honeycomb U-track uplift preserved.`);

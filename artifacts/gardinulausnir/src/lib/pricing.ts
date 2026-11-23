@@ -4,9 +4,9 @@
  * The supplier price is in USD. Eligible roller, zebra and honeycomb blinds
  * use REV 5 area/quantity freight; other products keep cost-based freight.
  * All families use
- * a 40% gross margin on supplier cost plus freight, without extra uplifts,
- * followed by the current USD/ISK rate and VAT.  Do not round individual
- * fabric/accessory components: the result is rounded exactly once per unit.
+ * a 40% gross margin on supplier cost plus freight, followed by FX and VAT.
+ * The additional 15% applies to the previous rounded unit selling price.
+ * Honeycomb U tracks receive their existing 25% first, then this 15%.
  * Supplier rates, shipping assumptions and VAT stay unchanged.
  */
 import { supplierRate } from "./supplierPricesRev4.ts";
@@ -14,7 +14,7 @@ import { freightUsd, type FreightGroup } from "./freight.ts";
 export const USD_TO_ISK = 121.16;
 export const VAT_FACTOR = 1.24;
 export const MARGIN_FACTOR = 1 / 0.6;
-export const RETAIL_PRICE_MULTIPLIER = 1;
+export const RETAIL_PRICE_MULTIPLIER = 1.15;
 export const SUPPLIER_TO_RETAIL_ISK = 2 * MARGIN_FACTOR * USD_TO_ISK * VAT_FACTOR * RETAIL_PRICE_MULTIPLIER;
 /** Gross margin before installation/overheads; not a 40% cost markup.
  * Supplier cost + freight, divided by 0.60, then FX/VAT.
@@ -22,9 +22,10 @@ export const SUPPLIER_TO_RETAIL_ISK = 2 * MARGIN_FACTOR * USD_TO_ISK * VAT_FACTO
  */
 export const BLIND_GROSS_MARGIN = 0.40;
 export const LANDED_TO_RETAIL_ISK = USD_TO_ISK * VAT_FACTOR / (1 - BLIND_GROSS_MARGIN);
-export function quantityFreightBlindRetailPrice(supplierUsd: number, area: number, quantity: number, group: FreightGroup): number {
+export function quantityFreightBlindRetailPrice(supplierUsd: number, area: number, quantity: number, group: FreightGroup, applyIncrease = true): number {
   if (!Number.isFinite(supplierUsd) || supplierUsd < 0) throw new Error("Invalid supplier cost");
-  return Math.round((supplierUsd + freightUsd(area, quantity, group)) * LANDED_TO_RETAIL_ISK);
+  const base = Math.round((supplierUsd + freightUsd(area, quantity, group)) * LANDED_TO_RETAIL_ISK);
+  return applyIncrease ? increasedRetailPriceIsk(base) : base;
 }
 
 /** Adjust an existing ISK retail amount, never a supplier USD cost. */
@@ -32,7 +33,7 @@ export function increasedRetailPriceIsk(baseIsk: number): number {
   if (!Number.isFinite(baseIsk) || baseIsk < 0) {
     throw new Error(`Invalid retail price: ${baseIsk}`);
   }
-  return Math.round(baseIsk * RETAIL_PRICE_MULTIPLIER);
+  return Math.round(Math.round(baseIsk) * RETAIL_PRICE_MULTIPLIER);
 }
 
 export const MOTOR_UP_TO_4M2_USD = 34.5573219076603;
@@ -164,7 +165,7 @@ export function retailPriceFromSupplierUsd(supplierUsd: number): number {
   if (!Number.isFinite(supplierUsd) || supplierUsd < 0) {
     throw new Error(`Invalid supplier cost: ${supplierUsd}`);
   }
-  return Math.round(supplierUsd * SUPPLIER_TO_RETAIL_ISK);
+  return increasedRetailPriceIsk(supplierUsd * (2 * MARGIN_FACTOR * USD_TO_ISK * VAT_FACTOR));
 }
 
 export function retailTotalFromSupplierUsd(supplierUsd: number, quantity: number): number {

@@ -1,7 +1,8 @@
+import { increasedRetailPriceIsk } from "./pricing.ts";
 // Landed supplier cost is for TWO identical blinds, including freight to Iceland.
 export const ROLDOUr_REFERENCE = {
   productId: "roldour-slimline-duo-vertical",
-  unitPriceIsk: Math.round((42214.20 / 2) * 1.45 * 1.24),
+  unitPriceIsk: increasedRetailPriceIsk((42214.20 / 2) * 1.45 * 1.24),
   description: "DUO · lóðrétt · myrkvun + net · einföld opnun · innfelld festing · Dark Grey rammi og efni · breidd 1500–1599 mm · hæð 1200–1299 mm",
 } as const;
 
