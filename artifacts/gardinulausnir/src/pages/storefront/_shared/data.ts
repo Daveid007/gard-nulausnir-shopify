@@ -1,3 +1,8 @@
+const rollerInstallationGallery = [
+  new URL("../../../assets/roller-installation/2267.webp", import.meta.url).href,
+  new URL("../../../assets/roller-installation/2245.webp", import.meta.url).href,
+  new URL("../../../assets/roller-installation/2253.webp", import.meta.url).href,
+];
 import { categoryLabel, resolveProductCategory } from "./collectionCategories.ts";
 import { CURTAIN_PRODUCT_DEFINITIONS } from "./curtains.ts";
 import { zebraPrimaryImage } from "./zebra-assets.ts";
@@ -61,7 +66,7 @@ const catalogProducts: Product[] = [
   { id: "vertical-45mm", title: "Lóðrétt 45 mm", subtitle: "Lóðrétt myrkvunarkerfi", category: "Honeycomb", price: "Reiknast eftir máli", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-vertical-45mm.png?v=1787921294", secondary: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/02-vertical-45mm-detail.png?v=1787921297", colors: [], note: "Lóðrétt", sizes: ["121–180 cm", "181–240 cm"] },
   { id: "vertical-sheer-shades", title: "Lóðréttar vefgardínur", subtitle: "Vertical Sheer Shades · Dream Shades · 17 supplier swatches", category: "Lóðréttar vefgardínur", price: "Reiknast eftir máli", image: verticalSheerCasePrimary, secondary: verticalSheerCaseSecondary, colors: [], note: "17 efni", sizes: ["50–400 cm", "50–600 cm"] },
 
-  { id: "square-cassette", title: "Ferningskassetta", subtitle: "Hrein lína · lokað kerfi", category: "Rúllugardínur", price: "Reiknast eftir máli", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-square-cassette.png?v=1787921305", secondary: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/02-square-cassette-detail.png?v=1787921309", colors: [], note: "Blackout", sizes: ["60–120 cm", "121–180 cm", "181–240 cm"] },
+  { id: "square-cassette", title: "Ferningskassetta", subtitle: "Hrein lína · lokað kerfi", category: "Rúllugardínur", price: "Reiknast eftir máli", image: rollerInstallationGallery[0], secondary: rollerInstallationGallery[1], gallery: rollerInstallationGallery, colors: [], note: "Blackout", sizes: ["60–120 cm", "121–180 cm", "181–240 cm"] },
   { id: "arc-cassette", title: "Bogakassetta", subtitle: "Mjúk lína · ljósdreifing", category: "Rúllugardínur", price: "Reiknast eftir máli", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-arc-cassette-primary.png?v=1787921322", secondary: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/02-arc-cassette-detail.png?v=1787921324", colors: [], note: "Ljósdreifing", sizes: ["60–120 cm", "121–180 cm", "181–240 cm"] },
   { id: "open-roll", title: "Venjuleg rúllugardína", subtitle: "Klassískt opið rúllukerfi", category: "Rúllugardínur", price: "Reiknast eftir máli", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-open-roll.png?v=1787921348", secondary: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/02-open-roll-detail.png?v=1787921351", colors: [], note: "Rúllugardína", sizes: ["60–120 cm", "121–180 cm", "181–240 cm"] },
   { id: "dual-roller", title: "Tvöfalt rúll", subtitle: "Dagljós og myrkvun í tveimur lögum", category: "Rúllugardínur", price: "Reiknast eftir máli", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-dual-roller.jpg?v=1787921365", secondary: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/02-dual-roller-detail.jpg?v=1787921367", colors: [], note: "Tvö lög", sizes: ["60–120 cm", "121–180 cm", "181–240 cm"] },
