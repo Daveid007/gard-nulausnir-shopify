@@ -119,8 +119,9 @@ assert.equal(duoCollectionProduct.title, "Ramma flugnanet og myrkvunargardínur 
 assert.equal(duoCollectionProduct.category, "WINdoûr — Rammagardínur");
 assert.equal(duoCollectionProduct.subtitle, "Einangruð myrkvun og flugnanet");
 assert.equal(duoCollectionProduct.price, currency.format(Math.round(112233 * 1.15)));
-assert.equal(duoCollectionProduct.image, "https://shopify.test/duo-primary.jpg");
-assert.equal(duoCollectionProduct.secondary, "https://shopify.test/duo-secondary.jpg");
+assert.match(duoCollectionProduct.image, /windour-duo\/1972\.webp$/);
+assert.match(duoCollectionProduct.secondary, /windour-duo\/1940\.webp$/);
+assert.equal(duoCollectionProduct.gallery.length, 4);
 
 const roldourProduct = catalog.products.find(({ id }) => id === "roldour-duo-horizontal");
 assert.ok(roldourProduct);
