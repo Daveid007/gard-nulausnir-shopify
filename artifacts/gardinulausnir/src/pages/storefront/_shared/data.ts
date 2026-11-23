@@ -6,6 +6,12 @@ const dayNightGallery = [
   new URL("../../../assets/day-night/2337.webp", import.meta.url).href,
   new URL("../../../assets/day-night/2340.webp", import.meta.url).href,
 ];
+const windourDuoGallery = [
+  new URL("../../../assets/windour-duo/1972.webp", import.meta.url).href,
+  new URL("../../../assets/windour-duo/1940.webp", import.meta.url).href,
+  new URL("../../../assets/windour-duo/1941.webp", import.meta.url).href,
+  new URL("../../../assets/windour-duo/1950.webp", import.meta.url).href,
+];
 import { categoryLabel, resolveProductCategory } from "./collectionCategories.ts";
 import { CURTAIN_PRODUCT_DEFINITIONS } from "./curtains.ts";
 import { zebraPrimaryImage } from "./zebra-assets.ts";
@@ -103,6 +109,7 @@ export const products: Product[] = catalogProducts
     const resolvedCategory = resolveProductCategory(product);
     return {
       ...product,
+      ...(product.id.startsWith("windour-duo-") ? { image: windourDuoGallery[0], secondary: windourDuoGallery[1], gallery: windourDuoGallery } : {}),
       note: product.id.startsWith("windour-") ? product.note?.replace("hliðarlistar", "rammi") : product.note,
       category: resolvedCategory ? categoryLabel(resolvedCategory) : product.category,
     };
