@@ -1,3 +1,28 @@
+const dayNightGallery = [
+  new URL("../../../assets/day-night/2316.webp", import.meta.url).href,
+  new URL("../../../assets/day-night/2295.webp", import.meta.url).href,
+  new URL("../../../assets/day-night/2330.webp", import.meta.url).href,
+  new URL("../../../assets/day-night/2315.webp", import.meta.url).href,
+  new URL("../../../assets/day-night/2337.webp", import.meta.url).href,
+  new URL("../../../assets/day-night/2340.webp", import.meta.url).href,
+];
+const honeycombInstallationGallery = [
+  new URL("../../../assets/honeycomb-installation/4186.webp", import.meta.url).href,
+  new URL("../../../assets/honeycomb-installation/4172.webp", import.meta.url).href,
+  new URL("../../../assets/honeycomb-installation/4174.webp", import.meta.url).href,
+  new URL("../../../assets/honeycomb-installation/4177.webp", import.meta.url).href,
+  new URL("../../../assets/honeycomb-installation/4184.webp", import.meta.url).href,
+  new URL("../../../assets/honeycomb-installation/4185.webp", import.meta.url).href,
+  new URL("../../../assets/honeycomb-installation/4182.webp", import.meta.url).href,
+  new URL("../../../assets/honeycomb-installation/1839.webp", import.meta.url).href,
+  new URL("../../../assets/honeycomb-installation/1852.webp", import.meta.url).href,
+  new URL("../../../assets/honeycomb-installation/1860.webp", import.meta.url).href,
+];
+const rollerInstallationGallery = [
+  new URL("../../../assets/roller-installation/2267.webp", import.meta.url).href,
+  new URL("../../../assets/roller-installation/2245.webp", import.meta.url).href,
+  new URL("../../../assets/roller-installation/2253.webp", import.meta.url).href,
+];
 const windourDuoGallery = [
   new URL("../../../assets/windour-duo/1972.webp", import.meta.url).href,
   new URL("../../../assets/windour-duo/1940.webp", import.meta.url).href,
@@ -60,14 +85,14 @@ const curtainCatalogProducts: Product[] = CURTAIN_PRODUCT_DEFINITIONS.map((defin
 }));
 
 const catalogProducts: Product[] = [
-  { id: "honeycomb-45mm", title: "Honeycomb 45 mm", subtitle: "Álfilma · algjör myrkvun", category: "Honeycomb", price: "Reiknast eftir máli", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-honeycomb-45mm.png?v=1787921250", secondary: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/02-honeycomb-45mm-detail.png?v=1787921252", colors: [], note: "100% myrkvun", sizes: ["60–120 cm", "121–180 cm", "181–240 cm"] },
+  { id: "honeycomb-45mm", title: "Honeycomb 45 mm", subtitle: "Álfilma · algjör myrkvun", category: "Honeycomb", price: "Reiknast eftir máli", image: honeycombInstallationGallery[0], secondary: honeycombInstallationGallery[1], gallery: honeycombInstallationGallery, colors: [], note: "100% myrkvun", sizes: ["60–120 cm", "121–180 cm", "181–240 cm"] },
   { id: "honeycomb-25mm", title: "Honeycomb 25 mm", subtitle: "Mjór kassi · mjúk birta", category: "Honeycomb", price: "Reiknast eftir máli", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-honeycomb-25mm.png?v=1787921264", secondary: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/02-honeycomb-25mm-detail.png?v=1787921266", colors: [], note: "Cellular", sizes: ["60–120 cm", "121–180 cm"] },
-  { id: "day-night", title: "Dagur & Nótt", subtitle: "Tvö lög · dagsbirta og myrkvun", category: "Honeycomb", price: "Reiknast eftir máli", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-day-and-night.jpg?v=1787921276", secondary: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/02-day-and-night-detail.jpg?v=1787921278", colors: [], note: "Dagur & nótt", sizes: ["60–120 cm", "121–180 cm", "181–240 cm"] },
+  { id: "day-night", title: "Dagur & Nótt", subtitle: "Tvö lög · dagsbirta og myrkvun", category: "Honeycomb", price: "Reiknast eftir máli", image: dayNightGallery[0], secondary: dayNightGallery[1], gallery: dayNightGallery, colors: [], note: "Dagur & nótt", sizes: ["60–120 cm", "121–180 cm", "181–240 cm"] },
   { id: "top-down-bottom-up", title: "Top-Down Bottom-Up", subtitle: "Brautalaus ljósstýring", category: "Honeycomb", price: "Reiknast eftir máli", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-top-down-bottom-up.jpg?v=1787921285", secondary: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-top-down-bottom-up.jpg?v=1787921285", colors: [], note: "TDBU", sizes: ["60–120 cm", "121–180 cm"] },
   { id: "vertical-45mm", title: "Lóðrétt 45 mm", subtitle: "Lóðrétt myrkvunarkerfi", category: "Honeycomb", price: "Reiknast eftir máli", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-vertical-45mm.png?v=1787921294", secondary: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/02-vertical-45mm-detail.png?v=1787921297", colors: [], note: "Lóðrétt", sizes: ["121–180 cm", "181–240 cm"] },
   { id: "vertical-sheer-shades", title: "Lóðréttar vefgardínur", subtitle: "Vertical Sheer Shades · Dream Shades · 17 supplier swatches", category: "Lóðréttar vefgardínur", price: "Reiknast eftir máli", image: verticalSheerCasePrimary, secondary: verticalSheerCaseSecondary, colors: [], note: "17 efni", sizes: ["50–400 cm", "50–600 cm"] },
 
-  { id: "square-cassette", title: "Ferningskassetta", subtitle: "Hrein lína · lokað kerfi", category: "Rúllugardínur", price: "Reiknast eftir máli", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-square-cassette.png?v=1787921305", secondary: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/02-square-cassette-detail.png?v=1787921309", colors: [], note: "Blackout", sizes: ["60–120 cm", "121–180 cm", "181–240 cm"] },
+  { id: "square-cassette", title: "Ferningskassetta", subtitle: "Hrein lína · lokað kerfi", category: "Rúllugardínur", price: "Reiknast eftir máli", image: rollerInstallationGallery[0], secondary: rollerInstallationGallery[1], gallery: rollerInstallationGallery, colors: [], note: "Blackout", sizes: ["60–120 cm", "121–180 cm", "181–240 cm"] },
   { id: "arc-cassette", title: "Bogakassetta", subtitle: "Mjúk lína · ljósdreifing", category: "Rúllugardínur", price: "Reiknast eftir máli", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-arc-cassette-primary.png?v=1787921322", secondary: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/02-arc-cassette-detail.png?v=1787921324", colors: [], note: "Ljósdreifing", sizes: ["60–120 cm", "121–180 cm", "181–240 cm"] },
   { id: "open-roll", title: "Venjuleg rúllugardína", subtitle: "Klassískt opið rúllukerfi", category: "Rúllugardínur", price: "Reiknast eftir máli", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-open-roll.png?v=1787921348", secondary: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/02-open-roll-detail.png?v=1787921351", colors: [], note: "Rúllugardína", sizes: ["60–120 cm", "121–180 cm", "181–240 cm"] },
   { id: "dual-roller", title: "Tvöfalt rúll", subtitle: "Dagljós og myrkvun í tveimur lögum", category: "Rúllugardínur", price: "Reiknast eftir máli", image: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/01-primary-dual-roller.jpg?v=1787921365", secondary: "https://cdn.shopify.com/s/files/1/0678/4974/8567/files/02-dual-roller-detail.jpg?v=1787921367", colors: [], note: "Tvö lög", sizes: ["60–120 cm", "121–180 cm", "181–240 cm"] },
