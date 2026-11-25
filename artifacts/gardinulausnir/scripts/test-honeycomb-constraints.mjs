@@ -80,7 +80,7 @@ assert.equal(pricing.validateHoneycombSize({
   widthMm: 500,
   heightMm: 800,
   mountPosition: "inside",
-}).ok, false, "inside mount must apply the 5 mm width deduction");
+}).ok, true, "inside mount uses the entered width; Grace applies any deduction");
 
 assert.equal(pricing.tdbuSupplierRate("KB420"), 42.48, "TDBU premium REV 4 workbook rate");
 assert.equal(pricing.SUPPLIER_TO_RETAIL_ISK, 2 / 0.6 * 121.16 * 1.24, "retail conversion changed");

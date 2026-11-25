@@ -28,7 +28,6 @@ const DN_REMOTE_USD = 0;
 const DN_SIDETRACK_USD_PER_M = 10;
 const DN_MIN_SQM = 1;
 const MOTOR_OVER_4M2_USD = 71.1311073101807;
-const INSIDE_MOUNT_DEDUCTION_MM = 5;
 type HoneycombOperation = "manual" | "cordless" | "motor";
 type TdbuOperation = "manual" | "cordless";
 type HoneycombSizeLimits = {
@@ -56,10 +55,10 @@ function motorSupplierUsd(areaSqm: number): number {
   return areaSqm > 4 ? MOTOR_OVER_4M2_USD : DN_MOTOR_USD;
 }
 
-function effectiveWidthMm(widthMm: number, mountPosition: "inside" | "outside"): number {
-  const width = mountPosition === "inside" ? widthMm - INSIDE_MOUNT_DEDUCTION_MM : widthMm;
-  if (width <= 0) throw new Error(`Inside-mount width must exceed ${INSIDE_MOUNT_DEDUCTION_MM}mm`);
-  return width;
+function effectiveWidthMm(widthMm: number, _mountPosition: "inside" | "outside"): number {
+  // Customer measurements are sent unchanged; the supplier applies any production deduction.
+  if (widthMm <= 0) throw new Error("Width must be positive");
+  return widthMm;
 }
 
 function assertHoneycombSize(input: {

@@ -119,7 +119,6 @@ export interface RollerWorkbookQuoteSuccess {
 
 export type RollerWorkbookQuoteResult = RollerWorkbookQuoteSuccess | RollerWorkbookQuoteFailure;
 
-const INSIDE_WIDTH_DEDUCTION_MM = 5;
 const MINIMUM_BILLED_SQM = 1;
 
 /** The accessory values are the visible rows 341–345 in the price sheet. */
@@ -287,7 +286,7 @@ export function validateRollerWorkbookQuote(input: RollerWorkbookQuoteInput): re
     if (!limits) errors.push(`${input.family} does not support ${input.operation} operation.`);
     if (limits && isFinitePositive(input.widthCm) && isFinitePositive(input.heightCm) &&
       (input.mountPosition === "inside" || input.mountPosition === "outside")) {
-      const effectiveWidthMm = input.widthCm * 10 - (input.family !== "roller" && input.mountPosition === "inside" ? INSIDE_WIDTH_DEDUCTION_MM : 0);
+      const effectiveWidthMm = input.widthCm * 10;
       const heightMm = input.heightCm * 10;
       const areaSqm = (effectiveWidthMm / 1000) * (heightMm / 1000);
       if (
@@ -316,7 +315,7 @@ export function quoteRollerWorkbookBlind(input: RollerWorkbookQuoteInput): Rolle
   const fabric = fabricByCode.get(input.fabricCode.trim())!;
   const limits = getRollerWorkbookSizeLimits(input.family, input.operation, input.fabricCode)!;
   const enteredWidthMm = input.widthCm * 10;
-  const effectiveWidthMm = enteredWidthMm - (input.family !== "roller" && input.mountPosition === "inside" ? INSIDE_WIDTH_DEDUCTION_MM : 0);
+  const effectiveWidthMm = enteredWidthMm;
   const heightMm = input.heightCm * 10;
   const actualAreaSqm = (effectiveWidthMm / 1000) * (heightMm / 1000);
   const billedAreaSqm = Math.max(MINIMUM_BILLED_SQM, actualAreaSqm);
@@ -382,9 +381,7 @@ export function quoteRollerWorkbookBlind(input: RollerWorkbookQuoteInput): Rolle
       totalIsk: unitIsk * input.quantity,
     },
     notes: [
-      input.family === "roller" ? "Entered width is used without deduction." : input.mountPosition === "inside"
-        ? "Inside mount deducts 5 mm from entered width before size and area calculation."
-        : "Outside mount uses the entered width without deduction.",
+      "Entered width and height are used without deduction; the supplier applies any production deduction.",
       "Fabric and area-priced options have a 1 m² minimum billing area.",
       "U track is USD 10/m and L track USD 5/m, each once for both sides; cassette has no workbook price.",
       "Remote is included with every motor. Hub is not offered.",
