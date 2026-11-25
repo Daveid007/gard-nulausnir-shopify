@@ -8,7 +8,7 @@ import { LEGACY_CART_OPEN_EVENT, LegacyCalculator, type LegacyCalculatorKind } f
 import { ProductInfoFooter } from "@/components/ProductInfoFooter";
 import { MeasurementGuideTrigger } from "@/components/MeasurementGuide";
 import { ResponsiveImage } from "@/components/ResponsiveImage";
-import { WarrantyButton } from "@/components/WarrantyButton";
+import { ServiceBenefits } from "@/components/ServiceBenefits";
 import WindourCalculator, { WINDOUR_CART_OPEN_EVENT } from "@/components/WindourCalculator";
 import { ThedourScreenWizard } from "@/components/ThedourScreenWizard";
 import VerticalSheerCalculator, { VERTICAL_SHEER_CART_OPEN_EVENT } from "@/components/VerticalSheerCalculator";
@@ -197,7 +197,7 @@ export function ProductDetail() {
 
   return (
     <div className="min-h-screen bg-[#f7f9fa] text-[#24313b]">
-      <div className="bg-[#a2c2e2] px-5 py-2 text-center text-[9px] uppercase tracking-[.22em] text-[#24313b]">Ókeypis ráðgjöf · Sérsniðið á Íslandi</div>
+      <div className="bg-[#a2c2e2] px-5 py-2 text-center text-[9px] uppercase tracking-[.22em] text-[#24313b]">Frí uppsetning · Frí mæling · 5 ára ábyrgð</div>
       <header className="border-b border-[#d8e1e5] px-5 md:px-10">
         <div className={`flex h-[74px] items-center justify-between ${product.id === "honeycomb-45mm" ? "md:h-16" : ""}`}>
         <BrandLogo className="h-9 w-[182px] sm:h-10 sm:w-[202px]" />
@@ -229,9 +229,9 @@ export function ProductDetail() {
       </header>
 
       <main id="top">
-        <div className={`mx-auto flex max-w-[1510px] items-center justify-between gap-4 px-5 pt-5 md:px-10 mb-5 ${product.id === "honeycomb-45mm" ? "md:pt-2 md:mb-1" : "md:pt-8"}`}>
+        <div className={`mx-auto flex max-w-[1510px] flex-col items-start gap-4 md:flex-row md:items-center md:justify-between px-5 pt-5 md:px-10 mb-5 ${product.id === "honeycomb-45mm" ? "md:pt-2 md:mb-1" : "md:pt-8"}`}>
           <Link href="/collection" className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[.18em] text-[#667984]"><ArrowLeft size={14} /> Allar gardínur</Link>
-          <WarrantyButton />
+          <ServiceBenefits className="w-full md:w-auto" />
         </div>
         <section id="vörulýsing" className="mx-auto max-w-[1510px] px-5 pb-16 md:px-10 md:pb-28">
           {legacyCalculator ? (

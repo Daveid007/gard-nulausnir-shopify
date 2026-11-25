@@ -8,6 +8,7 @@ import { HelpDrawer } from "./_shared/HelpDrawer";
 import { Footer } from "./_shared/Storefront";
 import { ResponsiveImage } from "@/components/ResponsiveImage";
 import { WarrantyButton } from "@/components/WarrantyButton";
+import { ServiceBenefits } from "@/components/ServiceBenefits";
 import { SupplierCertifications } from "@/components/SupplierCertifications";
 import homepageFamily from "@/assets/homepage-family.jpg";
 import { curtainProductCoverImage } from "./_shared/curtains-assets";
@@ -74,9 +75,9 @@ function HeroBanner() {
         </div>
         <div className="flex min-h-[330px] flex-col items-center justify-center gap-4 bg-[#edf2f4] p-5 md:min-h-[520px] md:p-10">
           <ResponsiveImage src={homepageFamily} alt="Fjölskylda við glugga með myrkvunargardínu" fetchPriority="high" sizes="(min-width: 768px) 55vw, 100vw" className="max-h-[380px] max-w-full object-contain" />
-          <div className="w-full max-w-lg bg-[#f7f9fa]/90 px-4 py-3 text-[#24313b]">
-            <h2 className="text-base font-semibold">Frí mæling á höfuðborgarsvæðinu</h2>
-            <p className="mt-1 text-sm leading-6 text-[#43515a]">Við komum og aðstoðum við nákvæmar mælingar svo gardínurnar passi fullkomlega í gluggann.</p>
+          <div className="w-full max-w-2xl bg-[#f7f9fa]/90 p-3 text-[#24313b]">
+            <h2 className="sr-only">Innifalið í þjónustu</h2>
+            <ServiceBenefits />
           </div>
         </div>
       </div>

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { ShieldCheck } from "lucide-react";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
@@ -5,12 +6,12 @@ export function WarrantyText() {
   return <>Við bjóðum <strong className="text-[#24313b]">5 ára ábyrgð</strong> á vélbúnaði og brautum fyrir allar okkar gardínur.</>;
 }
 
-export function WarrantyButton({ label = "5 ára ábyrgð", className }: { label?: string; className?: string }) {
+export function WarrantyButton({ label = "5 ára ábyrgð", className, hideIcon = false }: { label?: ReactNode; className?: string; hideIcon?: boolean }) {
   return (
     <Dialog>
       <DialogTrigger asChild>
         <button type="button" className={className ?? "inline-flex min-h-11 shrink-0 items-center justify-center gap-2 border border-[#94b3cf] bg-[#e2edf6] px-3 py-2 text-xs font-medium text-[#24313b] transition hover:bg-[#cddfec] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6892b8] focus-visible:ring-offset-2"}>
-          <ShieldCheck size={17} aria-hidden="true" />
+          {!hideIcon && <ShieldCheck size={17} aria-hidden="true" />}
           {label}
         </button>
       </DialogTrigger>

@@ -97,10 +97,11 @@ function CalculatorCartStatus() {
               )}
             </div>
             <div className="border-t border-[#ccd9df] pt-5">
-              <label className="mb-3 flex items-start gap-2 text-xs">
+              <label className="mb-4 flex cursor-pointer items-center gap-3 border border-[#94b3cf] bg-[#e2edf6] px-3 py-3 text-xs">
                 <input type="checkbox" checked={installation} disabled={!items.length || checkoutBusy}
-                  onChange={(event) => setInstallation(event.target.checked)} />
-                Ókeypis uppsetning
+                  onChange={(event) => setInstallation(event.target.checked)} className="h-4 w-4" />
+                <span className="flex-1"><span className="block font-semibold">Frí uppsetning</span><span className="block text-[10px] text-[#596872]">Hakaðu við ef þú vilt að við setjum gardínurnar upp</span></span>
+                <span className="font-semibold">0 kr.</span>
               </label>
               <div className="mb-5 flex justify-between font-serif text-2xl">
                 <span>Samtals</span>
