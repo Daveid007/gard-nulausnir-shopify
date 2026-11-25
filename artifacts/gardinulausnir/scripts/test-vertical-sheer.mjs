@@ -28,7 +28,7 @@ assert.deepEqual(pricing.VERTICAL_SHEER_LIMITS.motor, {
   maxAreaSqm: 24,
 });
 
-// Cached workbook example: 40 × 56 inches -> 1011 × 1422.4 mm and 1.4380464 m².
+// 40 × 56 inches -> 1016 × 1422.4 mm, 1.4451584 m²; no deduction (Grace applies it).
 const manual = pricing.calculateVerticalSheerQuote({
   widthCm: 101.6,
   heightCm: 142.24,
@@ -36,12 +36,12 @@ const manual = pricing.calculateVerticalSheerQuote({
   installation: "inmount",
   fabricCode: "MC-B-100102",
 });
-assert.equal(manual.productionWidthMm, 1011);
+assert.equal(manual.productionWidthMm, 1016);
 assert.equal(manual.productionHeightMm, 1422.4);
-assert.equal(manual.areaSqm, 1.4380464);
-assert.equal(manual.billedAreaSqm, 1.4380464);
-assert.ok(Math.abs(manual.fabricSupplierUsd - 26.4580332497597) < 1e-12);
-assert.ok(Math.abs(manual.supplierCostUsd - 26.4580332497597) < 1e-12);
+assert.equal(manual.areaSqm, 1.016 * 1.4224);
+assert.equal(manual.billedAreaSqm, 1.016 * 1.4224);
+assert.ok(Math.abs(manual.fabricSupplierUsd - pricing.VERTICAL_SHEER_RATE_USD_PER_SQM * 1.016 * 1.4224) < 1e-12);
+assert.ok(Math.abs(manual.supplierCostUsd - pricing.VERTICAL_SHEER_RATE_USD_PER_SQM * 1.016 * 1.4224) < 1e-12);
 
 // The independent retail check intentionally does not call the pricing helper.
 const independentRetail = Math.round((26.4580332497597 * 2 / 0.6) * 121.16 * 1.24);
@@ -91,12 +91,12 @@ assert.equal(
 );
 assert.equal(
   pricing.validateVerticalSheerDimensions({
-    widthCm: 100,
+    widthCm: 99.9,
     heightCm: 100,
     operation: "motor",
   }).ok,
   false,
-  "motor minimum production width is 1000 mm after the workbook deduction",
+  "motor minimum width is 1000 mm, measured without deduction",
 );
 
 assert.equal(categories.resolveProductCategory({ id: "vertical-sheer-shades" }), "vertical-sheer");

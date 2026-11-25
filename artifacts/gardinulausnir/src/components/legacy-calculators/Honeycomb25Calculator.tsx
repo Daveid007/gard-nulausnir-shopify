@@ -209,7 +209,7 @@ export default function Honeycomb25Calculator({ product }: { product?: any }) {
   }, [fabricCode, fabricType, grouped]);
 
   const calc = useMemo(() => {
-    const effectiveWidth = mountPosition === "inside" ? width - 5 : width;
+    const effectiveWidth = width;
     const w = Math.max(0.3, effectiveWidth / 1000);
     const h = Math.max(0.3, height / 1000);
     const rawArea = w * h;

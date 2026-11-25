@@ -133,7 +133,7 @@ export default function DayNightCalculator({ product }: { product?: any }) {
   }
 
   const calc = useMemo(() => {
-    const w = Math.max(0.3, (mountPosition === "inside" ? width - 5 : width) / 1000);
+    const w = Math.max(0.3, width / 1000);
     const h = Math.max(0.3, height / 1000);
     const rawArea = w * h;
     const billedArea = Math.max(MIN_SQM_PER_PIECE, rawArea);

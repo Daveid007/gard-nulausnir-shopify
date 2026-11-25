@@ -32,7 +32,5 @@ export function orderFreightUsd(item: FreightItem, items: readonly FreightItem[]
   const config = item.configuration;
   const width = config ? config.widthCm * 10 : item.width!;
   const height = config ? config.heightCm * 10 : item.height!;
-  const mount = config ? config.mountPosition : item.mountPosition;
-  const deduction = group !== "roller" && mount === "inside" ? 5 : 0;
-  return freightUsd((width - deduction) * height / 1e6, quantity, group);
+  return freightUsd(width * height / 1e6, quantity, group);
 }

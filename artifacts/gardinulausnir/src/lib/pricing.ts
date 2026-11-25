@@ -43,7 +43,6 @@ export const NO_DRILL_USD_PER_SQM = 3;
 export const U_TRACK_USD_PER_M = 10;
 export const L_TRACK_USD_PER_M = 5;
 export const HOLDER_USD = 5;
-export const INSIDE_MOUNT_DEDUCTION_MM = 5;
 export type MountPosition = "inside" | "outside";
 
 export type HoneycombOperation = "manual" | "cordless" | "motor";
@@ -121,9 +120,7 @@ export function validateHoneycombSize(input: {
   areaSqm: number;
   limits?: HoneycombSizeLimits;
 } {
-  const effectiveWidthMm = input.mountPosition === "inside"
-    ? input.widthMm - INSIDE_MOUNT_DEDUCTION_MM
-    : input.widthMm;
+  const effectiveWidthMm = input.widthMm;
   const areaSqm = (effectiveWidthMm / 1000) * (input.heightMm / 1000);
   const limits = honeycombSizeLimits(input.product, input.operation);
   const ok = Boolean(
@@ -223,10 +220,8 @@ export function blindSupplierUsd(
   options: BlindAccessoryOptions = {},
   minimumArea = 1,
 ): number {
-  const effectiveWidthMm = options.mountPosition === "inside"
-    ? widthMm - INSIDE_MOUNT_DEDUCTION_MM
-    : widthMm;
-  if (effectiveWidthMm <= 0) throw new Error(`Inside-mount width must exceed ${INSIDE_MOUNT_DEDUCTION_MM}mm`);
+  const effectiveWidthMm = widthMm;
+  if (effectiveWidthMm <= 0) throw new Error("Width must be positive");
   const area = billedArea(effectiveWidthMm, heightMm, minimumArea);
   if (!Number.isFinite(fabricUsdPerSqm) || fabricUsdPerSqm < 0) {
     throw new Error(`Invalid fabric supplier cost: ${fabricUsdPerSqm}`);
@@ -242,7 +237,7 @@ export function blindRetailPriceIsk(
   minimumArea = 1,
   quantity = 1,
 ): number {
-  const area = (widthMm - (options.mountPosition === "inside" ? 5 : 0)) * heightMm / 1e6;
+  const area = widthMm * heightMm / 1e6;
   return quantityFreightBlindRetailPrice(blindSupplierUsd(widthMm, heightMm, fabricUsdPerSqm, options, minimumArea), area, quantity, options.productStyle === "daynight" ? "daynight" : "cellular");
 }
 

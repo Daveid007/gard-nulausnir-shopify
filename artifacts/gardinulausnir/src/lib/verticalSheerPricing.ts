@@ -16,7 +16,6 @@ export const VERTICAL_SHEER_PRODUCT_ID = "vertical-sheer-shades";
 export const VERTICAL_SHEER_RATE_USD_PER_SQM = 18.3985949617201;
 export const VERTICAL_SHEER_MOTOR_USD = 88;
 export const VERTICAL_SHEER_REMOTE_USD = 7;
-export const VERTICAL_SHEER_WIDTH_DEDUCTION_MM = 5;
 export const VERTICAL_SHEER_MINIMUM_BILLED_SQM = 1;
 
 export type VerticalSheerOperation = "manual-chain" | "manual-wand" | "motor";
@@ -145,7 +144,7 @@ export function validateVerticalSheerDimensions(
 ): VerticalSheerDimensionResult {
   const widthMm = input.widthCm * 10;
   const heightMm = input.heightCm * 10;
-  const productionWidthMm = widthMm - VERTICAL_SHEER_WIDTH_DEDUCTION_MM;
+  const productionWidthMm = widthMm;
   const productionHeightMm = heightMm;
   const areaSqm = (productionWidthMm / 1000) * (productionHeightMm / 1000);
   const billedAreaSqm = Math.max(VERTICAL_SHEER_MINIMUM_BILLED_SQM, areaSqm);

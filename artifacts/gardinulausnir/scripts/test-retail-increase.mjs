@@ -80,7 +80,7 @@ for (const rate of [12.5, 15.63, 16.0010700873129, 26.3427429770029]) {
     { operation: "manual", sideTrack: true, sideTrackType: "l" },
   ]) {
     const supplierUsd = pricing.blindSupplierUsd(1200, 1500, rate, options);
-    const area = (1200 - (options.mountPosition === "inside" ? 5 : 0)) * 1500 / 1e6;
+    const area = 1200 * 1500 / 1e6;
     assert.equal(pricing.blindRetailPriceIsk(1200, 1500, rate, options), expectedFreightUnit(supplierUsd, area, 34.5));
   }
 }
