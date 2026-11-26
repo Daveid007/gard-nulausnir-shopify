@@ -197,7 +197,7 @@ export function ProductDetail() {
 
   return (
     <div className="min-h-screen bg-[#f7f9fa] text-[#24313b]">
-      <div className="bg-[#a2c2e2] px-5 py-2 text-center text-[9px] uppercase tracking-[.22em] text-[#24313b]">Frí uppsetning · Frí mæling · 5 ára ábyrgð</div>
+      <div className="bg-[#a2c2e2] px-5 py-2 text-center text-[9px] uppercase tracking-[.22em] text-[#24313b]">Frí uppsetning og mæling á höfuðborgarsvæðinu · 5 ára ábyrgð</div>
       <header className="border-b border-[#d8e1e5] px-5 md:px-10">
         <div className={`flex h-[74px] items-center justify-between ${product.id === "honeycomb-45mm" ? "md:h-16" : ""}`}>
         <BrandLogo className="h-9 w-[182px] sm:h-10 sm:w-[202px]" />
