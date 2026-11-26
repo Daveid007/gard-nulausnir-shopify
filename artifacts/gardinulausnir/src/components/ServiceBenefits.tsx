@@ -23,7 +23,7 @@ export function ServiceBenefits({ className = "" }: { className?: string }) {
       <li>
         <div className={`${itemClass} h-full cursor-default hover:bg-[#e2edf6]`}>
           <Wrench size={17} aria-hidden="true" className="shrink-0" />
-          <BenefitText title="Frí uppsetning" detail="Við setjum gardínurnar upp" />
+          <BenefitText title="Frí uppsetning" detail="Á höfuðborgarsvæðinu" />
         </div>
       </li>
       <li>
